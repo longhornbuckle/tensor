@@ -1,0 +1,328 @@
+<pre class='metadata'>
+Title: The Tensor
+Shortname: the-tensor
+Status: iso/WD
+Group: iso
+Level: 0
+URL: https://github.com/longhornbuckle/tensor
+Editor: Richard Warren Hornbuckle, longhornbuckle@utexas.edu
+Editor: Enrico
+Editor Term: Author, Authors
+Abstract: A proposal for a C++ STL tensor container.
+Boilerplate: omit conformance
+Boilerplate: omit copyright
+Boilerplate: style-syntax-highlighting off
+</pre>
+
+Introduction {#intro}
+=====================
+
+Tensor is a container that reinterprets a contiguous buffer as a multidimensional array.
+It provides an interface to perform Linear Algebra operations.
+It is an evolution of the std::valarray and std::vector templates into a multidimensional context - incorporating many concepts introduced via std::mdspan.
+Furthermore, it wants to introduce an interface that allows the user to perform operations on a multidimensional container and guarantees a large margin of customization.
+
+Motivation {#motiv}
+===================
+
+TODO
+
+Description {#descript}
+=======================
+
+<h3>Concepts</h3>
+
+<h4>Tensor</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept tensor_expression = requires
+{
+  typename T::value_type;
+  typename T::index_type;
+  typename T::size_type;
+  typename T::extents_type;
+  typename T::rank_type;
+} &&
+requires( const T& t, typename T::rank_type n )
+{
+  { t.size() }      noexcept -> same_as< typename T::size_type >;
+  { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
+  { T::rank() }     noexcept -> same_as< typename T::rank_type >;
+  { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
+} &&
+requires( T& t, auto ... indices )
+{
+  { t.operator[]( indices ... ) } -> convertible_to< typename T::value_type >;
+} &&
+// Constexpr functions
+is_constexpr( T::rank() );
+</code>
+</pre>
+
+<h4>Tensor View</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept tensor_view =
+tensor_expression< T > &&
+requires
+{
+  typename T::layout_type;
+  typename T::accessor_type;
+  typename T::reference;
+  typename T::data_handle_type;
+  typename T::mapping_type;
+} &&
+requires( const T& t, typename T::rank_type n )
+{
+  { T::rank_dynamic() }         noexcept -> same_as< typename T::rank_type >;
+  { T::static_extent( n ) }     noexcept -> same_as< typename T::size_type >;
+  { T::is_always_strided() }    noexcept -> same_as< bool >;
+  { T::is_always_exhaustive() } noexcept -> same_as< bool >;
+  { T::is_always_unique() }     noexcept -> same_as< bool >;
+  { t.is_strided() }            noexcept -> same_as< bool >;
+  { t.is_exhaustive() }         noexcept -> same_as< bool >;
+  { t.is_unique() }             noexcept -> same_as< bool >;
+  { t.stride( n ) }             noexcept -> same_as< typename T::index_type >;
+  { t.accessor() }              noexcept -> convertible_to< typename T::accessor_type >;
+  { t.data_handle() }           noexcept -> convertible_to< typename T::data_handle_type >;
+  { t.mapping() }               noexcept -> convertible_to< typename T::mapping_type >;
+} &&
+requires( T& t, auto ... indices )
+{
+  { t.operator[]( indices ... ) } -> same_as< typename T::reference >;
+} &&
+// Constexpr functions
+is_constexpr( T::rank_dynamic() ) &&
+is_constexpr( T::static_extent( typename T::rank_type() ) ) &&
+is_constexpr( T::is_always_strided() ) &&
+is_constexpr( T::is_always_exhaustive() ) &&
+is_constexpr( T::is_always_unique() );
+</code>
+</pre>
+
+<h4>Writable Tensor</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept writable_tensor =
+tensor_view< T > &&
+requires( T& t, typename T::value_type v, auto ... indices )
+{
+  { t.operator[]( indices ... ) = v } -> same_as<typename T::reference>;
+};
+</code>
+</pre>
+
+<h4>Static Tensor</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept static_tensor =
+tensor_view< T > &&
+( T::rank_dynamic() == 0 ) &&
+is_constexpr( T() );
+</code>
+</pre>
+
+<h4>Dynamic Tensor</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept dynamic_tensor =
+tensor_view< T > &&
+requires
+{
+  typename T::allocator_type
+} &&
+requires( const T& t, typename T::extents_type s, typename T::allocator_type alloc )
+{
+  { t.max_size() -> same_as<typename T::size_type> };
+  { t.capacity() -> same_as<typename T::size_type> };
+  { t.resize( s ) };
+  // TBD on capacity_extents()
+  // TBD on reserve( ... )
+  { t.get_allocator() } -> same_as<typename T::allocator_type>;
+  { T( alloc ) };
+  { T( s, alloc ) };
+};
+</code>
+</pre>
+
+<h3>Tensor</h3>
+<pre class="highlight">
+<code class="language-c++">
+template < class T,
+           class Extents,
+           class LayoutPolicy   = layout_right,
+           class Allocator      = allocator<T>,
+           class AccessorPolicy = default_accessor<T> >
+class tensor
+{
+  public:
+    using value_type       = T;
+    using accessor_type    = AccessorPolicy;
+    using reference        = typename accessor_type::reference;
+    using const_reference  = typename const accessor_type::reference;
+    using data_handle_type = typename accessor_type::data_handle_type;
+    using extents_type     = Extents;
+    using index_type       = typename extents_type::index_type;
+    using size_type        = typename extents_type::size_type;
+    using rank_type        = typename extents_type::rank_type;
+    using layout_type      = LayoutPolicy;
+    using mapping_type     = typename layout_type::template mapping<Extents>;
+    using allocator_type   = Allocator;
+    
+    // Constructors
+    constexpr tensor();
+    explicit constexpr tensor( const allocator_type& alloc );
+    explicit constexpr tensor( extents_type s, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( mapping_type m, const allocator_type& alloc = allocator_type() );
+
+    constexpr tensor( const initializer_list< value_type >& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    constexpr tensor( const initializer_list< value_type >& il, const mapping_type& m, const allocator_type& alloc = allocator_type() );
+    
+    template < class InputIt >
+    constexpr tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    template < class InputIt >
+    constexpr tensor( InputIt first, InputIt last, const mapping_type& m, const allocator_type& alloc = allocator_type() );
+    
+    template < class R >
+    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const allocator_type& alloc = allocator_type() );
+    template < class R >
+    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const extents_type& s, const allocator_type& a = allocator_type() );
+
+    // NOTE: These constructors require one of:
+    //    A: ( extents_type::rank_dynamic() == 0 ) && ( mapping_type().required_span_size() == size of initializer_list, iterator pair, or range )
+    //    B: ( extents_type::rank_dynamic() == 1 ) && ( mapping_type( extents_type(N) ).required_span_size() == size of initializer_list, iterator pair, or range ) (for some integer value N)
+    explicit constexpr tensor( const initializer_list< value_type >& il, const allocator_type& alloc = allocator_type() );
+    template < class InputIt >
+    constexpr tensor( InputIt first, InputIt last, const allocator_type& alloc = allocator_type() );
+    template < class R >
+    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const allocator_type& alloc = allocator_type() );
+    
+    template < tensor_expression Tensor >
+    explicit constexpr tensor( const Tensor& t, const allocator_type& alloc = allocator_type() );
+
+    constexpr tensor( const tensor& rhs );
+    constexpr tensor( const tensor& rhs, const allocator_type& alloc );
+    constexpr tensor( tensor&& rhs );
+    constexpr tensor( tensor&& rhs, const allocator_type& alloc );
+
+    // Destructor
+    constexpr ~tensor();
+
+    // Assignment
+    constexpr tensor& operator = ( tensor&& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_move_assignment );
+    constexpr tensor& operator = ( const tensor& rhs );
+    template < tensor_expression Tensor >
+    constexpr tensor& operator = ( const Tensor& rhs );
+    // NOTE: This assignment operator requires the same requirements as the constructors
+    constexpr tensor& operator = ( const initializer_list< value_type > il );
+
+    // Members
+    constexpr swap( tensor& rhs ) noexcept( allocator_traits<allocator_type>::propagate_on_container_swap )
+    [[nodiscard]] constexpr bool empty() const noexcept;
+    [[nodiscard]] constexpr const extents_type& extents() const noexcept;
+    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept;
+    [[nodiscard]] static constexpr size_type static_extent( rank_type n ) noexcept;
+    [[nodiscard]] constexpr size_type size() const noexcept;
+    [[nodiscard]] constexpr size_type max_size() const noexcept;
+    [[nodiscard]] constexpr extents_type capacity() const noexcept;
+    constexpr void resize( extents_type new_size );
+    constexpr void resize( extents_type new_size, const value_type& value );
+    constexpr void reserve( extents_type new_cap );
+    constexpr void shrink_to_fit();
+    [[nodiscard]] constexpr bool is_unique() const noexcept;
+    [[nodiscard]] constexpr bool is_exhaustive() const noexcept;
+    [[nodiscard]] constexpr bool is_strided() const noexcept;
+    [[nodiscard]] static constexpr bool is_always_unique() noexcept;
+    [[nodiscard]] static constexpr bool is_always_exhaustive() noexcept;
+    [[nodiscard]] static constexpr bool is_always_strided() noexcept;
+    [[nodiscard]] static constexpr rank_type rank() noexcept;
+    [[nodiscard]] static constexpr rank_type rank_dynamic() noexcept;
+    [[nodiscard]] constexpr size_type stride( rank_type n ) const noexcept;
+    [[nodiscard]] constexpr const mapping_type& mapping() const noexcept;
+    [[nodiscard]] constexpr const data_handle_type data_handle() const noexcept;
+    [[nodiscard]] constexpr data_handle_type data_handle() noexcept;
+    [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
+    [[nodiscard]] constexpr const accessor_type& accessor() const noexcept;
+
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr const_reference operator[]( OtherIndexType ... indices ) const noexcept;
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr const_reference operator()( OtherIndexType ... indices ) const noexcept;
+
+    template < tensor_expression Tensor >
+    constexpr tensor& operator+=( const Tensor& t );
+    template < tensor_expression Tensor >
+    constexpr tensor& operator-=( const Tensor& t );
+    constexpr tensor& operator*=( const value_type& value );
+    constexpr tensor& operator/=( const value_type& value );
+    constexpr tensor& operator%=( const value_type& value );
+    constexpr tensor& operator&=( const value_type& value );
+    constexpr tensor& operator|=( const value_type& value );
+    constexpr tensor& operator^=( const value_type& value );
+    constexpr tensor& operator>>=( const value_type& value );
+    constexpr tensor& operator<<=( const value_type& value );
+};
+
+// Non-member functions
+// Addition
+// Substraction
+// Negation
+// Scalar Multiplication
+// Scalar Division
+// Matrix Multiplication
+// Vector-Matrix Multiplication
+// Vector Inner Product
+// Vector Outer Product
+// Transpose
+// Conjugate
+// Modulo
+
+</code>
+</pre>
+
+Mandates:
+- T is a complete object type that is neither an abstract class type nor an array type.
+- is_same_v< Allocator::value_type, T > is true.
+- is_same_v< AccessorPolicy::element_type, T > is true.
+- Extents is a specialization of extents.
+- Allocator shall meet the allocator requirements.
+- LayoutPolicy shall meet the layout mapping policy requirements.
+- AccessorPolicy shall meet the accessor policy requirements.
+
+<h3>Tensor Expressions</h3>
+TODO: Tensor Expressions
+
+Design Questions {#questions}
+=============================
+
+<h3>Fixed Size Tensor</h3>
+
+<h3>Capacity</h3>
+
+<h3>Dynamic Only Extents</h3>
+
+<h3>[[[nodiscard]]] clarification</h3>
+
+<h3>Safe Memory Access</h3>
+
+<h3>Resize mapping_type</h3>
+
+<h3>Limitations without Iterators</h3>
+
+<h3>Element-wise Functions</h3>
+
+<h3>Comparison Operators</h3>
+
+<h3>mdslice or subtensor</h3>
+
+<h3>Additional Vector-like functions</h3>
+
+<h3>Rank One Extents Implicit Conversions</h3>
+
+Related Work {#related}
+=======================
