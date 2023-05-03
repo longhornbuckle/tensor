@@ -20,12 +20,32 @@ Introduction {#intro}
 Tensor is a container that reinterprets a contiguous buffer as a multidimensional array.
 It provides an interface to perform Linear Algebra operations.
 It is an evolution of the std::valarray and std::vector templates into a multidimensional context - incorporating many concepts introduced via std::mdspan.
-Furthermore, it wants to introduce an interface that allows the user to perform operations on a multidimensional container and guarantees a large margin of customization.
+Furthermore, it introduces an interface that allows the user to perform operations on a multidimensional container and guarantees a large margin of customization.
 
-Motivation {#motiv}
-===================
+Motivation and Scope {#motiv}
+=============================
 
-TODO
+The motivation of this proposal is to provide a foundational container from which the standard can expand linear algebraic operations.
+
+More specifically, this proposal seeks to establish:
+- A multidimensional container which:
+    - Provides valarray-like interfaces and efficiency.
+    - Provides vector-like functionality in multiple dimensions.
+    - Makes use of layout and accessor policy concepts established via mdspan.
+- A unifying relationship between vectors (rank 1 tensors), matrices (rank 2 tensors), and more generic N-dimensional tensors.
+- A framework for defining efficient implementations of linear algebraic functions using concepts and template expression types.
+
+This proposal differs from a couple similar existing works:
+- D1684R0 mdarray: The authors do not believe this work is incompatable with this proposal.
+However, the authors of this work take a different approach of essentially defining an adaptor which reinterpret's an owned container with single dimensional access into a multidimensional framework.
+While such an adaptor may be useful, it both significant obscurs behavior and constrains the implementation to the frameworks of existing containers.
+- P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
+The authors have the following concerns in regards to the current iteration of P1385:
+    - The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.
+    - The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt the mdspan paradigms wholesale.
+    - The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.
+
+The scope of this proposal is contained to the definition of this new container as well as related class and concepts.
 
 Description {#descript}
 =======================
@@ -324,10 +344,12 @@ at(...)
 How should resize work?
 
 <h3>Noexcept Swap and Move Mapping and AccessorPolicy</h3>
-If the allocator is swappable and moveable, then we expect the container to be noexcept. This requires additional constraints on mapping and accessor.
+If the allocator is swappable and moveable, then container swap and move is expected to be noexcept. This requires additional constraints on mapping and accessor.
 
 <h3>[[ assume( restrict p ) ]]<h3>
 Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization
+
+<h3>Vector and Matrix Aliases</h3>
 
 <h3>Limitations without Iterators</h3>
 Some constructors/functions don't work well
@@ -346,6 +368,9 @@ push_front, emplace_front, push_back, emplace_back, insert, ...
 
 <h3>Rank One Extents Implicit Conversions</h3>
 alleviates verbosity of rank one tensors
+
+Acknowledgements {#acknowledge}
+===============================
 
 Related Work {#related}
 =======================
