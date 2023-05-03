@@ -70,6 +70,7 @@ requires( const T& t, typename T::rank_type n ) // Functions
   // Size functions
   { T::rank_dynamic() }         noexcept -> ::std::same_as<typename T::rank_type>;
   { T::static_extent( n ) }     noexcept -> ::std::same_as<typename T::size_type>;
+  { t.size() }                  noexcept -> ::std::same_as<typename T::size_type>;
   // Layout functions
   { T::is_always_strided() }    noexcept -> ::std::same_as<bool>;
   { T::is_always_exhaustive() } noexcept -> ::std::same_as<bool>;
@@ -100,15 +101,6 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
   #endif
 };
 
-// Owning tensor concept
-template < class T >
-concept owning_tensor< T > =
-tensor_view< T > &&
-requires( const T& t )
-{
-  { t.size() } noexcept -> same_as< typename T::size_type >;
-};
-
 // Writable tensor concept
 template < class T >
 concept writable_tensor =
@@ -127,7 +119,7 @@ requires( T& t, typename T::value_type v, auto ... indices ) /* NOTE: there migh
 // Static tensor concept
 template < class T >
 concept static_tensor =
-owning_tensor<T> &&
+tensor_view<T> &&
 ( T::rank_dynamic() == 0 ) &&
 requires
 {
@@ -137,7 +129,7 @@ requires
 // Dynamic tensor concept
 template < class T >
 concept dynamic_tensor =
-owning_tensor<T> &&
+tensor_view<T> &&
 requires
 {
   // Types
@@ -157,6 +149,32 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   { T( alloc ) };
   { T( s, alloc ) };
 };
+
+// Unary tensor expression concept
+template < class T >
+concept unary_tensor_expression =
+tensor_expression< T > &&
+requires ( T t )
+{
+  { t.underlying() } -> tensor_expression;
+  { t.operator auto() };
+} &&
+( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+
+// Binary tensor expression concept
+template < class T >
+concept binary_tensor_expression =
+tensor_expression< T > &&
+requires ( T t )
+{
+  { t.first() } -> tensor_expression;
+  { t.second() } -> tensor_expression;
+  { t.operator auto() };
+} &&
+( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+
 
 #else
 

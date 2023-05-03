@@ -1989,10 +1989,11 @@ dfn > a.self-link::before      { content: "#"; }
        <ol class="toc">
         <li><a href="#tensor-expression"><span class="secno">3.1.1</span> <span class="content">Tensor Expression</span></a>
         <li><a href="#tensor-view"><span class="secno">3.1.2</span> <span class="content">Tensor View</span></a>
-        <li><a href="#owning-tensor"><span class="secno">3.1.3</span> <span class="content">Owning Tensor</span></a>
-        <li><a href="#writable-tensor"><span class="secno">3.1.4</span> <span class="content">Writable Tensor</span></a>
-        <li><a href="#static-tensor"><span class="secno">3.1.5</span> <span class="content">Static Tensor</span></a>
-        <li><a href="#dynamic-tensor"><span class="secno">3.1.6</span> <span class="content">Dynamic Tensor</span></a>
+        <li><a href="#writable-tensor"><span class="secno">3.1.3</span> <span class="content">Writable Tensor</span></a>
+        <li><a href="#static-tensor"><span class="secno">3.1.4</span> <span class="content">Static Tensor</span></a>
+        <li><a href="#dynamic-tensor"><span class="secno">3.1.5</span> <span class="content">Dynamic Tensor</span></a>
+        <li><a href="#unary-tensor-expression"><span class="secno">3.1.6</span> <span class="content">Unary Tensor Expression</span></a>
+        <li><a href="#binary-tensor-expression"><span class="secno">3.1.7</span> <span class="content">Binary Tensor Expression</span></a>
        </ol>
       <li><a href="#tensor"><span class="secno">3.2</span> <span class="content">Tensor</span></a>
       <li><a href="#tensor-expressions"><span class="secno">3.3</span> <span class="content">Tensor Expressions</span></a>
@@ -2104,6 +2105,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>{</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_dynamic</c-><c- p>()</c-> <c- p>}</c->         <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>static_extent</c-><c- p>(</c-> <c- n>n</c-> <c- p>)</c-> <c- p>}</c->     <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-><c- p>;</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>size</c-><c- p>()</c-> <c- p>}</c->                  <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_strided</c-><c- p>()</c-> <c- p>}</c->    <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- b>bool</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_exhaustive</c-><c- p>()</c-> <c- p>}</c-> <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- b>bool</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_unique</c-><c- p>()</c-> <c- p>}</c->     <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- b>bool</c-> <c- o>></c-><c- p>;</c->
@@ -2125,35 +2127,26 @@ The authors have the following concerns in regards to the current iteration of P
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>reference</c-> <c- o>></c-><c- p>;</c->
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.3" id="owning-tensor"><span class="secno">3.1.3. </span><span class="content">Owning Tensor</span><a class="self-link" href="#owning-tensor"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
-<c- n>concept</c-> <c- n>owning_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>=</c->
-<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
-<c- n>requires</c-><c- p>(</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-> <c- p>)</c->
-<c- p>{</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>size</c-><c- p>()</c-> <c- p>}</c-> <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-><c- p>;</c->
-<c- p>};</c->
-</code></pre>
-   <h4 class="heading settled" data-level="3.1.4" id="writable-tensor"><span class="secno">3.1.4. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.3" id="writable-tensor"><span class="secno">3.1.3. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>writable_tensor</c-> <c- o>=</c->
-<c- n>owning_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-> <c- n>v</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- o>=</c-> <c- n>v</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- p>;</c-><typename tU0003AU0003Areference>
 <c- p>};</c->
 </typename></code></pre>
-   <h4 class="heading settled" data-level="3.1.5" id="static-tensor"><span class="secno">3.1.5. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.4" id="static-tensor"><span class="secno">3.1.4. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>static_tensor</c-> <c- o>=</c->
-<c- n>owning_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_dynamic</c-><c- p>()</c-> <c- o>==</c-> <c- mi>0</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>T</c-> <c- p>{}</c-> <c- p>};</c->
 <c- p>};</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.6" id="dynamic-tensor"><span class="secno">3.1.6. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.5" id="dynamic-tensor"><span class="secno">3.1.5. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>dynamic_tensor</c-> <c- o>=</c->
 <c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
@@ -2172,6 +2165,31 @@ The authors have the following concerns in regards to the current iteration of P
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>s</c-><c- p>,</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
 <c- p>};</c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.6" id="unary-tensor-expression"><span class="secno">3.1.6. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>concept</c-> <c- n>unary_tensor_expression</c-> <c- o>=</c->
+<c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>requires</c-> <c- p>(</c-> <c- n>T</c-> <c- n>t</c-> <c- p>)</c->
+<c- p>{</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>underlying</c-><c- p>()</c-> <c- p>}</c-> <c- o>-></c-> <c- n>tensor_expression</c-><c- p>;</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>};</c->
+<c- p>}</c-> <c- o>&amp;&amp;</c->
+<c- p>(</c-> <c- n>static_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- o>||</c->
+  <c- n>dynamic_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- p>);</c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.7" id="binary-tensor-expression"><span class="secno">3.1.7. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>concept</c-> <c- n>binary_tensor_expression</c-> <c- o>=</c->
+<c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>requires</c-> <c- p>(</c-> <c- n>T</c-> <c- n>t</c-> <c- p>)</c->
+<c- p>{</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>first</c-><c- p>()</c-> <c- p>}</c-> <c- o>-></c-> <c- n>tensor_expression</c-><c- p>;</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>second</c-><c- p>()</c-> <c- p>}</c-> <c- o>-></c-> <c- n>tensor_expression</c-><c- p>;</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>};</c->
+<c- p>}</c-> <c- o>&amp;&amp;</c->
+<c- p>(</c-> <c- n>static_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- o>||</c->
+  <c- n>dynamic_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- p>);</c->
 </code></pre>
    <h3 class="heading settled" data-level="3.2" id="tensor"><span class="secno">3.2. </span><span class="content">Tensor</span><a class="self-link" href="#tensor"></a></h3>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
@@ -2235,7 +2253,8 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- o>~</c-><c- n>tensor</c-><c- p>();</c->
 
     <c- c1>// Assignment</c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- n>tensor</c-><c- o>&amp;&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_move_assignment</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- n>tensor</c-><c- o>&amp;&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_move_assignment</c-> <c- o>&amp;&amp;</c->
+                                                            <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
@@ -2243,7 +2262,8 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>initializer_list</c-><c- o>&lt;</c-> <c- n>value_type</c-> <c- o>></c-> <c- n>il</c-> <c- p>);</c->
 
     <c- c1>// Members</c->
-    <c- n>constexpr</c-> <c- nf>swap</c-><c- p>(</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>s</c-><allocator_type><c- o>:</c-><c- n>propagate_on_container_swap</c-> <c- p>)</c->
+    <c- n>constexpr</c-> <c- nf>swap</c-><c- p>(</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_swap</c-> <c- o>&amp;&amp;</c->
+                                            <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>)</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- n>empty</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>extents</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>extent</c-><c- p>(</c-> <c- n>rank_type</c-> <c- n>n</c-> <c- p>)</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
@@ -2302,7 +2322,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- c1>// Transpose</c->
 <c- c1>// Conjugate</c->
 <c- c1>// Modulo</c->
-</allocator_type></extents></typename></t></t></code></pre>
+</extents></typename></t></t></code></pre>
    <p>Mandates:</p>
    <ul>
     <li data-md>
