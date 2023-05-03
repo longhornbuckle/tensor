@@ -52,7 +52,7 @@ Description {#descript}
 
 <h3>Concepts</h3>
 
-<h4>Tensor</h4>
+<h4>Tensor Expression</h4>
 <pre class="highlight">
 <code class="language-c++">
 template < class T >
@@ -66,11 +66,10 @@ concept tensor_expression = requires
 } &&
 requires( const T& t, typename T::rank_type n )
 {
-  { t.size() }      noexcept -> same_as< typename T::size_type >;
   { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
   { T::rank() }     noexcept -> same_as< typename T::rank_type >;
   { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
-  integral_constant< typename T::rank_type,T::rank() >::value;
+  integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
 requires( T& t, auto ... indices )
 {
@@ -107,8 +106,8 @@ requires( const T& t, typename T::rank_type n )
   { t.accessor() }              noexcept -> convertible_to< typename T::accessor_type >;
   { t.data_handle() }           noexcept -> convertible_to< typename T::data_handle_type >;
   { t.mapping() }               noexcept -> convertible_to< typename T::mapping_type >;
-  integral_constant< typename T::rank_type,T::rank_dynamic() >::value;
-  integral_constant< typename T::size_type,T::static_extent( n ) >::value;
+  integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
+  integral_constant< typename T::size_type, T::static_extent( n ) >::value;
   bool_constant< T::is_always_strided() >::value;
   bool_constant< T::is_always_exhaustive() >::value;
   bool_constant< T::is_always_unique() >::value;
@@ -120,12 +119,25 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
+<h4>Owning Tensor</h4>
+<pre class="highlight">
+<code class="language-c++">
+template < class T >
+concept owning_tensor< T > =
+tensor_view< T > &&
+requires( const T& t )
+{
+  { t.size() } noexcept -> same_as< typename T::size_type >;
+};
+</code>
+</pre>
+
 <h4>Writable Tensor</h4>
 <pre class="highlight">
 <code class="language-c++">
 template < class T >
 concept writable_tensor =
-tensor_view< T > &&
+owning_tensor< T > &&
 requires( T& t, typename T::value_type v, auto ... indices )
 {
   { t.operator[]( indices ... ) = v } -> same_as<typename T::reference>;
@@ -138,7 +150,7 @@ requires( T& t, typename T::value_type v, auto ... indices )
 <code class="language-c++">
 template < class T >
 concept static_tensor =
-tensor_view< T > &&
+owning_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
 requires
 {
@@ -346,7 +358,7 @@ How should resize work?
 <h3>Noexcept Swap and Move Mapping and AccessorPolicy</h3>
 If the allocator is swappable and moveable, then container swap and move is expected to be noexcept. This requires additional constraints on mapping and accessor.
 
-<h3>[[ assume( restrict p ) ]]<h3>
+<h3>[[ assume( restrict p ) ]]</h3>
 Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization
 
 <h3>Vector and Matrix Aliases</h3>

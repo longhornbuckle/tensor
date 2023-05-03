@@ -38,6 +38,8 @@ requires( const T& t, typename T::rank_type n ) // Functions
   { T::rank() }     noexcept -> ::std::same_as<typename T::rank_type>;
   // Member accessors
   { t.extents() }   noexcept -> ::std::convertible_to<typename T::extents_type>;
+  // Constexpr functions
+  ::std::integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
 requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce index_type ... instead of auto ... using C++17 style enable_if */
 {
@@ -48,9 +50,7 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
   #if LINALG_USE_PAREN_OPERATOR
   { t.operator()( indices ... ) } -> ::std::convertible_to<typename T::value_type>;
   #endif
-} &&
-// Constexpr functions
-LINALG_DETAIL::is_constexpr( []{ typename T::rank_type nodiscard_warning = T::rank(); } );
+};
 
 // Tensor view concept
 template < class T >
@@ -82,6 +82,12 @@ requires( const T& t, typename T::rank_type n ) // Functions
   { t.accessor() }              noexcept -> ::std::convertible_to<typename T::accessor_type>;
   { t.data_handle() }           noexcept -> ::std::convertible_to<typename T::data_handle_type>;
   { t.mapping() }               noexcept -> ::std::convertible_to<typename T::mapping_type>;
+  // Constexpr functions
+  integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
+  integral_constant< typename T::size_type, T::static_extent( n ) >::value;
+  bool_constant< T::is_always_strided() >::value;
+  bool_constant< T::is_always_exhaustive() >::value;
+  bool_constant< T::is_always_unique() >::value;
 } &&
 requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce index_type ... instead of auto ... using C++17 style enable_if */
 {
@@ -92,13 +98,16 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
   #if LINALG_USE_PAREN_OPERATOR
   { t.operator()( indices ... ) } -> ::std::same_as<typename T::reference>;
   #endif
-} &&
-// Constexpr functions
-LINALG_DETAIL::is_constexpr( []{ typename T::rank_type nodiscard_warning = T::rank_dynamic(); } ) &&
-LINALG_DETAIL::is_constexpr( []{ typename T::size_type nodiscard_warning = T::static_extent( typename T::rank_type() ); } ) &&
-LINALG_DETAIL::is_constexpr( []{ bool nodiscard_warning = T::is_always_strided(); } ) &&
-LINALG_DETAIL::is_constexpr( []{ bool nodiscard_warning = T::is_always_exhaustive(); } ) &&
-LINALG_DETAIL::is_constexpr( []{ bool nodiscard_warning = T::is_always_unique(); } );
+};
+
+// Owning tensor concept
+template < class T >
+concept owning_tensor< T > =
+tensor_view< T > &&
+requires( const T& t )
+{
+  { t.size() } noexcept -> same_as< typename T::size_type >;
+};
 
 // Writable tensor concept
 template < class T >
@@ -118,14 +127,17 @@ requires( T& t, typename T::value_type v, auto ... indices ) /* NOTE: there migh
 // Static tensor concept
 template < class T >
 concept static_tensor =
-tensor_view<T> &&
+owning_tensor<T> &&
 ( T::rank_dynamic() == 0 ) &&
-LINALG_DETAIL::is_constexpr( []{ T(); } )
+requires
+{
+  { T() };
+};
 
 // Dynamic tensor concept
 template < class T >
 concept dynamic_tensor =
-tensor_view<T> &&
+owning_tensor<T> &&
 requires
 {
   // Types
@@ -144,7 +156,7 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   // Constructors
   { T( alloc ) };
   { T( s, alloc ) };
-}
+};
 
 #else
 
