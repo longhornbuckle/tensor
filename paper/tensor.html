@@ -1958,7 +1958,7 @@ dfn > a.self-link::before      { content: "#"; }
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">The Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-02">2 May 2023</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-03">3 May 2023</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2041,13 +2041,12 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>extent</c-><c- p>(</c-> <c- n>n</c-> <c- p>)</c-> <c- p>}</c-> <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- p>}</c->     <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>extents</c-><c- p>()</c-> <c- p>}</c->   <c- n>noexcept</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>extents_type</c-> <c- o>></c-><c- p>;</c->
+  <c- n>integral_constant</c-><c- o>&lt;</c->  <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-><c- p>,</c-><c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-> <c- o>></c-><c- p>;</c->
-<c- p>}</c-> <c- o>&amp;&amp;</c->
-<c- c1>// Constexpr functions</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- p>);</c->
+<c- p>}</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.2" id="tensor-view"><span class="secno">3.1.2. </span><span class="content">Tensor View</span><a class="self-link" href="#tensor-view"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
@@ -2075,17 +2074,16 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>accessor</c-><c- p>()</c-> <c- p>}</c->              <c- n>noexcept</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>accessor_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>data_handle</c-><c- p>()</c-> <c- p>}</c->           <c- n>noexcept</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>data_handle_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>mapping</c-><c- p>()</c-> <c- p>}</c->               <c- n>noexcept</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>mapping_type</c-> <c- o>></c-><c- p>;</c->
+  <c- n>integral_constant</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-><c- p>,</c-><c- n>T</c-><c- o>::</c-><c- n>rank_dynamic</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
+  <c- n>integral_constant</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-><c- p>,</c-><c- n>T</c-><c- o>::</c-><c- n>static_extent</c-><c- p>(</c-> <c- n>n</c-> <c- p>)</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
+  <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_strided</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
+  <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_exhaustive</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
+  <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_unique</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>reference</c-> <c- o>></c-><c- p>;</c->
 <c- p>}</c-> <c- o>&amp;&amp;</c->
-<c- c1>// Constexpr functions</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_dynamic</c-><c- p>()</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>static_extent</c-><c- p>(</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-><c- p>()</c-> <c- p>)</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_strided</c-><c- p>()</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_exhaustive</c-><c- p>()</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
-<c- n>is_constexpr</c-><c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_unique</c-><c- p>()</c-> <c- p>);</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.3" id="writable-tensor"><span class="secno">3.1.3. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
@@ -2113,16 +2111,16 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- k>const</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>extents_type</c-> <c- n>s</c-><c- p>,</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>allocator_type</c-> <c- n>alloc</c-> <c- p>)</c->
 <c- p>{</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>max_size</c-><c- p>()</c-> <c- o>-></c-> <c- n>same_as</c-> <typename tU0003AU0003Asize_type><c- p>};</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>capacity</c-><c- p>()</c-> <c- o>-></c-> <c- n>same_as</c-> <typename tU0003AU0003Asize_type><c- p>};</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>max_size</c-><c- p>()</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-> <c- p>};</c->
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>capacity</c-><c- p>()</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-> <c- p>};</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>resize</c-><c- p>(</c-> <c- n>s</c-> <c- p>)</c-> <c- p>};</c->
   <c- c1>// TBD on capacity_extents()</c->
   <c- c1>// TBD on reserve( ... )</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>get_allocator</c-><c- p>()</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- p>;</c-><typename tU0003AU0003Aallocator_type>
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>get_allocator</c-><c- p>()</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>allocator_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>s</c-><c- p>,</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
 <c- p>};</c->
-</typename></typename></typename></code></pre>
+</code></pre>
    <h3 class="heading settled" data-level="3.2" id="tensor①"><span class="secno">3.2. </span><span class="content">Tensor</span><a class="self-link" href="#tensor①"></a></h3>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Extents</c-><c- p>,</c->
@@ -2135,7 +2133,7 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- n>using</c-> <c- n>value_type</c->       <c- o>=</c-> <c- n>T</c-><c- p>;</c->
     <c- n>using</c-> <c- n>accessor_type</c->    <c- o>=</c-> <c- n>AccessorPolicy</c-><c- p>;</c->
     <c- n>using</c-> <c- n>reference</c->        <c- o>=</c-> <c- n>typename</c-> <c- n>accessor_type</c-><c- o>::</c-><c- n>reference</c-><c- p>;</c->
-    <c- n>using</c-> <c- n>const_reference</c->  <c- o>=</c-> <c- n>typename</c-> <c- k>const</c-> <c- n>accessor_type</c-><c- o>::</c-><c- n>reference</c-><c- p>;</c->
+    <c- n>using</c-> <c- n>const_reference</c->  <c- o>=</c-> <c- n>add_const_t</c-><c- p>;</c-><typename accessor_typeU0003AU0003Areference>
     <c- n>using</c-> <c- n>data_handle_type</c-> <c- o>=</c-> <c- n>typename</c-> <c- n>accessor_type</c-><c- o>::</c-><c- n>data_handle_type</c-><c- p>;</c->
     <c- n>using</c-> <c- n>extents_type</c->     <c- o>=</c-> <c- n>Extents</c-><c- p>;</c->
     <c- n>using</c-> <c- n>index_type</c->       <c- o>=</c-> <c- n>typename</c-> <c- n>extents_type</c-><c- o>::</c-><c- n>index_type</c-><c- p>;</c->
@@ -2148,8 +2146,8 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- c1>// Constructors</c->
     <c- n>constexpr</c-> <c- nf>tensor</c-><c- p>();</c->
     <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- p>);</c->
-    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- n>extents_type</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
-    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- n>mapping_type</c-> <c- n>m</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
+    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
+    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
 
     <c- n>constexpr</c-> <c- nf>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>initializer_list</c-><c- o>&lt;</c-> <c- n>value_type</c-> <c- o>>&amp;</c-> <c- n>il</c-><c- p>,</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- nf>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>initializer_list</c-><c- o>&lt;</c-> <c- n>value_type</c-> <c- o>>&amp;</c-> <c- n>il</c-><c- p>,</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
@@ -2160,9 +2158,9 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- n>InputIt</c-> <c- n>first</c-><c- p>,</c-> <c- n>InputIt</c-> <c- n>last</c-><c- p>,</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
     
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>R</c-> <c- o>></c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>from_range_t</c-><c- p>,</c-> <c- n>R</c-><c- o>&amp;&amp;</c-> <c- n>rg</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>from_range_t</c-><c- p>,</c-> <c- n>R</c-><c- o>&amp;&amp;</c-> <c- n>rg</c-><c- p>,</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>R</c-> <c- o>></c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>from_range_t</c-><c- p>,</c-> <c- n>R</c-><c- o>&amp;&amp;</c-> <c- n>rg</c-><c- p>,</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>s</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>a</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>from_range_t</c-><c- p>,</c-> <c- n>R</c-><c- o>&amp;&amp;</c-> <c- n>rg</c-><c- p>,</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>m</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
 
     <c- c1>// NOTE: These constructors require one of:</c->
     <c- c1>//    A: ( extents_type::rank_dynamic() == 0 ) &amp;&amp; ( mapping_type().required_span_size() == size of initializer_list, iterator pair, or range )</c->
@@ -2200,10 +2198,10 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- k>static</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>static_extent</c-><c- p>(</c-> <c- n>rank_type</c-> <c- n>n</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>size</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>max_size</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
-    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>extents_type</c-> <c- n>capacity</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
-    <c- n>constexpr</c-> <c- b>void</c-> <c- n>resize</c-><c- p>(</c-> <c- n>extents_type</c-> <c- n>new_size</c-> <c- p>);</c->
-    <c- n>constexpr</c-> <c- b>void</c-> <c- n>resize</c-><c- p>(</c-> <c- n>extents_type</c-> <c- n>new_size</c-><c- p>,</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
-    <c- n>constexpr</c-> <c- b>void</c-> <c- n>reserve</c-><c- p>(</c-> <c- n>extents_type</c-> <c- n>new_cap</c-> <c- p>);</c->
+    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>capacity</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
+    <c- n>constexpr</c-> <c- b>void</c-> <c- n>resize</c-><c- p>(</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>new_size</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- b>void</c-> <c- n>resize</c-><c- p>(</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>new_size</c-><c- p>,</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- b>void</c-> <c- n>reserve</c-><c- p>(</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>new_cap</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- b>void</c-> <c- n>shrink_to_fit</c-><c- p>();</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- n>is_unique</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- n>is_exhaustive</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
@@ -2215,8 +2213,8 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- k>static</c-> <c- n>constexpr</c-> <c- n>rank_type</c-> <c- n>rank_dynamic</c-><c- p>()</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>stride</c-><c- p>(</c-> <c- n>rank_type</c-> <c- n>n</c-> <c- p>)</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>mapping</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
-    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>data_handle_type</c-> <c- n>data_handle</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
-    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>data_handle_type</c-> <c- n>data_handle</c-><c- p>()</c-> <c- n>noexcept</c-><c- p>;</c->
+    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>data_handle_type</c-><c- o>&amp;</c-> <c- n>data_handle</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
+    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>data_handle_type</c-><c- o>&amp;</c-> <c- n>data_handle</c-><c- p>()</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>allocator_type</c-> <c- n>get_allocator</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>accessor_type</c-><c- o>&amp;</c-> <c- n>accessor</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
 
@@ -2252,7 +2250,7 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
 <c- c1>// Transpose</c->
 <c- c1>// Conjugate</c->
 <c- c1>// Modulo</c->
-</allocator_type></extents></t></t></code></pre>
+</allocator_type></extents></typename></t></t></code></pre>
    <p>Mandates:</p>
    <ul>
     <li data-md>

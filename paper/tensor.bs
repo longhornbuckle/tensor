@@ -50,13 +50,12 @@ requires( const T& t, typename T::rank_type n )
   { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
   { T::rank() }     noexcept -> same_as< typename T::rank_type >;
   { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
+  integral_constant<  typename T::rank_type,T::rank() >::value;
 } &&
 requires( T& t, auto ... indices )
 {
   { t.operator[]( indices ... ) } -> convertible_to< typename T::value_type >;
-} &&
-// Constexpr functions
-is_constexpr( T::rank() );
+}
 </code>
 </pre>
 
@@ -88,17 +87,16 @@ requires( const T& t, typename T::rank_type n )
   { t.accessor() }              noexcept -> convertible_to< typename T::accessor_type >;
   { t.data_handle() }           noexcept -> convertible_to< typename T::data_handle_type >;
   { t.mapping() }               noexcept -> convertible_to< typename T::mapping_type >;
+  integral_constant< typename T::rank_type,T::rank_dynamic() >::value;
+  integral_constant< typename T::size_type,T::static_extent( n ) >::value;
+  bool_constant< T::is_always_strided() >::value;
+  bool_constant< T::is_always_exhaustive() >::value;
+  bool_constant< T::is_always_unique() >::value;
 } &&
 requires( T& t, auto ... indices )
 {
   { t.operator[]( indices ... ) } -> same_as< typename T::reference >;
 } &&
-// Constexpr functions
-is_constexpr( T::rank_dynamic() ) &&
-is_constexpr( T::static_extent( typename T::rank_type() ) ) &&
-is_constexpr( T::is_always_strided() ) &&
-is_constexpr( T::is_always_exhaustive() ) &&
-is_constexpr( T::is_always_unique() );
 </code>
 </pre>
 
@@ -138,12 +136,12 @@ requires
 } &&
 requires( const T& t, typename T::extents_type s, typename T::allocator_type alloc )
 {
-  { t.max_size() -> same_as<typename T::size_type> };
-  { t.capacity() -> same_as<typename T::size_type> };
+  { t.max_size() -> same_as< typename T::size_type > };
+  { t.capacity() -> same_as< typename T::size_type > };
   { t.resize( s ) };
   // TBD on capacity_extents()
   // TBD on reserve( ... )
-  { t.get_allocator() } -> same_as<typename T::allocator_type>;
+  { t.get_allocator() } -> same_as< typename T::allocator_type >;
   { T( alloc ) };
   { T( s, alloc ) };
 };
@@ -164,7 +162,7 @@ class tensor
     using value_type       = T;
     using accessor_type    = AccessorPolicy;
     using reference        = typename accessor_type::reference;
-    using const_reference  = typename const accessor_type::reference;
+    using const_reference  = add_const_t<typename accessor_type::reference>;
     using data_handle_type = typename accessor_type::data_handle_type;
     using extents_type     = Extents;
     using index_type       = typename extents_type::index_type;
@@ -177,8 +175,8 @@ class tensor
     // Constructors
     constexpr tensor();
     explicit constexpr tensor( const allocator_type& alloc );
-    explicit constexpr tensor( extents_type s, const allocator_type& alloc = allocator_type() );
-    explicit constexpr tensor( mapping_type m, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( const extents_type& s, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( const mapping_type& m, const allocator_type& alloc = allocator_type() );
 
     constexpr tensor( const initializer_list< value_type >& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
     constexpr tensor( const initializer_list< value_type >& il, const mapping_type& m, const allocator_type& alloc = allocator_type() );
@@ -189,9 +187,9 @@ class tensor
     constexpr tensor( InputIt first, InputIt last, const mapping_type& m, const allocator_type& alloc = allocator_type() );
     
     template < class R >
-    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const allocator_type& alloc = allocator_type() );
+    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const extents_type& s, const allocator_type& alloc = allocator_type() );
     template < class R >
-    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const extents_type& s, const allocator_type& a = allocator_type() );
+    constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const mapping_type& m, const allocator_type& alloc = allocator_type() );
 
     // NOTE: These constructors require one of:
     //    A: ( extents_type::rank_dynamic() == 0 ) && ( mapping_type().required_span_size() == size of initializer_list, iterator pair, or range )
@@ -229,10 +227,10 @@ class tensor
     [[nodiscard]] static constexpr size_type static_extent( rank_type n ) noexcept;
     [[nodiscard]] constexpr size_type size() const noexcept;
     [[nodiscard]] constexpr size_type max_size() const noexcept;
-    [[nodiscard]] constexpr extents_type capacity() const noexcept;
-    constexpr void resize( extents_type new_size );
-    constexpr void resize( extents_type new_size, const value_type& value );
-    constexpr void reserve( extents_type new_cap );
+    [[nodiscard]] constexpr size_type capacity() const noexcept;
+    constexpr void resize( const extents_type& new_size );
+    constexpr void resize( const extents_type& new_size, const value_type& value );
+    constexpr void reserve( const extents_type& new_cap );
     constexpr void shrink_to_fit();
     [[nodiscard]] constexpr bool is_unique() const noexcept;
     [[nodiscard]] constexpr bool is_exhaustive() const noexcept;
@@ -244,8 +242,8 @@ class tensor
     [[nodiscard]] static constexpr rank_type rank_dynamic() noexcept;
     [[nodiscard]] constexpr size_type stride( rank_type n ) const noexcept;
     [[nodiscard]] constexpr const mapping_type& mapping() const noexcept;
-    [[nodiscard]] constexpr const data_handle_type data_handle() const noexcept;
-    [[nodiscard]] constexpr data_handle_type data_handle() noexcept;
+    [[nodiscard]] constexpr const data_handle_type& data_handle() const noexcept;
+    [[nodiscard]] constexpr data_handle_type& data_handle() noexcept;
     [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
     [[nodiscard]] constexpr const accessor_type& accessor() const noexcept;
 

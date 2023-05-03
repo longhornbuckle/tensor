@@ -51,7 +51,7 @@ class tensor
     /// @brief Type returned by mutable index access
     using reference                = typename accessor_type::reference;
     /// @brief Type returned by const index access
-    using const_reference          = const typename accessor_type::reference;
+    using const_reference          = ::std::add_const_t<typename accessor_type::reference>;
     /// @brief Type used to point to th beginning of the element buffer
     using data_handle_type         = typename accessor_type::data_handle_type;
     /// @brief Type used for indexing
@@ -212,7 +212,7 @@ class tensor
     /// @brief Attempt to allocate sufficient resources for a size tensor and construct
     /// @param s defines the length of each dimension of the tensor
     /// @param alloc allocator used to construct with
-    constexpr tensor( extents_type s, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( extents_type s, const allocator_type& alloc = allocator_type() );
     /// @brief Construct by applying lambda to every element in the tensor
     /// @tparam Lambda lambda expression with an operator()( indices ... ) defined
     /// @param lambda lambda expression to be performed on each element
@@ -329,10 +329,10 @@ class tensor
 
     /// @brief Get a const pointer to the beginning of the element array
     /// @returns const data_handle_type
-    [[nodiscard]] inline constexpr const data_handle_type data_handle() const noexcept;
+    [[nodiscard]] constexpr const data_handle_type data_handle() const noexcept;
     /// @brief Get a pointer to the beginning of the element array
     /// @returns data_handle_type
-    [[nodiscard]] inline constexpr data_handle_type data_handle() noexcept;
+    [[nodiscard]] constexpr data_handle_type data_handle() noexcept;
     /// @brief returns the allocator being used
     /// @returns the allocator being used
     [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
