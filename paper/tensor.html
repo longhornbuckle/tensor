@@ -1965,7 +1965,7 @@ dfn > a.self-link::before      { content: "#"; }
      <dd><a class="u-url" href="https://github.com/longhornbuckle/tensor">https://github.com/longhornbuckle/tensor</a>
      <dt class="editor">Authors:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:longhornbuckle@utexas.edu">Richard Warren Hornbuckle</a>
-     <dd class="editor p-author h-card vcard"><span class="p-name fn">Enrico</span>
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-email email" href="mailto:aurumpuro@gmail.com">Enrico Mauro</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2005,12 +2005,15 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#nodiscard-clarification"><span class="secno">4.4</span> <span class="content">[<span>[nodiscard]</span>] clarification</span></a>
       <li><a href="#safe-memory-access"><span class="secno">4.5</span> <span class="content">Safe Memory Access</span></a>
       <li><a href="#resize-mapping_type"><span class="secno">4.6</span> <span class="content">Resize mapping_type</span></a>
-      <li><a href="#limitations-without-iterators"><span class="secno">4.7</span> <span class="content">Limitations without Iterators</span></a>
-      <li><a href="#element-wise-functions"><span class="secno">4.8</span> <span class="content">Element-wise Functions</span></a>
-      <li><a href="#comparison-operators"><span class="secno">4.9</span> <span class="content">Comparison Operators</span></a>
-      <li><a href="#mdslice-or-subtensor"><span class="secno">4.10</span> <span class="content">mdslice or subtensor</span></a>
-      <li><a href="#additional-vector-like-functions"><span class="secno">4.11</span> <span class="content">Additional Vector-like functions</span></a>
-      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.12</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
+      <li><a href="#noexcept-swap-and-move-mapping-and-accessorpolicy"><span class="secno">4.7</span> <span class="content">Noexcept Swap and Move Mapping and AccessorPolicy</span></a>
+      <li><a href="#-assume-restrict-x"><span class="secno">4.8</span> <span class="content">[[[ assume( restrict x )]]]</span></a>
+      <li><a href="#"><span class="secno">4.9</span> <span class="content"> </span></a>
+      <li><a href="#limitations-without-iterators"><span class="secno">4.10</span> <span class="content">Limitations without Iterators</span></a>
+      <li><a href="#element-wise-functions"><span class="secno">4.11</span> <span class="content">Element-wise Functions</span></a>
+      <li><a href="#comparison-operators"><span class="secno">4.12</span> <span class="content">Comparison Operators</span></a>
+      <li><a href="#mdslice-or-subtensor"><span class="secno">4.13</span> <span class="content">mdslice or subtensor</span></a>
+      <li><a href="#additional-vector-like-functions"><span class="secno">4.14</span> <span class="content">Additional Vector-like functions</span></a>
+      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.15</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
      </ol>
     <li><a href="#related"><span class="secno">5</span> <span class="content">Related Work</span></a>
    </ol>
@@ -2041,7 +2044,7 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>extent</c-><c- p>(</c-> <c- n>n</c-> <c- p>)</c-> <c- p>}</c-> <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>size_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- p>}</c->     <c- n>noexcept</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-> <c- o>></c-><c- p>;</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>extents</c-><c- p>()</c-> <c- p>}</c->   <c- n>noexcept</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>extents_type</c-> <c- o>></c-><c- p>;</c->
-  <c- n>integral_constant</c-><c- o>&lt;</c->  <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-><c- p>,</c-><c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
+  <c- n>integral_constant</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_type</c-><c- p>,</c-><c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
@@ -2219,9 +2222,9 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>accessor_type</c-><c- o>&amp;</c-> <c- n>accessor</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
 
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- p>...</c-> <c- n>OtherIndexType</c-> <c- o>></c->
-    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>const_reference</c-> <c- n>operator</c-><c- p>[](</c-> <c- n>OtherIndexType</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
+    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>const_reference</c-> <c- n>operator</c-><c- p>[](</c-> <c- n>OtherIndexType</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c-> <c- k>const</c-><c- p>;</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- p>...</c-> <c- n>OtherIndexType</c-> <c- o>></c->
-    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>const_reference</c-> <c- n>operator</c-><c- p>()(</c-> <c- n>OtherIndexType</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
+    <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>reference</c-> <c- n>operator</c-><c- p>[](</c-> <c- n>OtherIndexType</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>);</c->
 
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>+=</c-><c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>t</c-> <c- p>);</c->
@@ -2277,12 +2280,15 @@ Furthermore, it wants to introduce an interface that allows the user to perform 
    <h3 class="heading settled" data-level="4.4" id="nodiscard-clarification"><span class="secno">4.4. </span><span class="content">[<span>[nodiscard]</span>] clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
    <h3 class="heading settled" data-level="4.5" id="safe-memory-access"><span class="secno">4.5. </span><span class="content">Safe Memory Access</span><a class="self-link" href="#safe-memory-access"></a></h3>
    <h3 class="heading settled" data-level="4.6" id="resize-mapping_type"><span class="secno">4.6. </span><span class="content">Resize mapping_type</span><a class="self-link" href="#resize-mapping_type"></a></h3>
-   <h3 class="heading settled" data-level="4.7" id="limitations-without-iterators"><span class="secno">4.7. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
-   <h3 class="heading settled" data-level="4.8" id="element-wise-functions"><span class="secno">4.8. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
-   <h3 class="heading settled" data-level="4.9" id="comparison-operators"><span class="secno">4.9. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
-   <h3 class="heading settled" data-level="4.10" id="mdslice-or-subtensor"><span class="secno">4.10. </span><span class="content">mdslice or subtensor</span><a class="self-link" href="#mdslice-or-subtensor"></a></h3>
-   <h3 class="heading settled" data-level="4.11" id="additional-vector-like-functions"><span class="secno">4.11. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
-   <h3 class="heading settled" data-level="4.12" id="rank-one-extents-implicit-conversions"><span class="secno">4.12. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
+   <h3 class="heading settled" data-level="4.7" id="noexcept-swap-and-move-mapping-and-accessorpolicy"><span class="secno">4.7. </span><span class="content">Noexcept Swap and Move Mapping and AccessorPolicy</span><a class="self-link" href="#noexcept-swap-and-move-mapping-and-accessorpolicy"></a></h3>
+   <h3 class="heading settled" data-level="4.8" id="-assume-restrict-x"><span class="secno">4.8. </span><span class="content">[[[ assume( restrict x )]]]</span><a class="self-link" href="#-assume-restrict-x"></a></h3>
+   <h3 class="heading settled" data-level="4.9" id><span class="secno">4.9. </span><span class="content"> </span><a class="self-link" href="#"></a></h3>
+   <h3 class="heading settled" data-level="4.10" id="limitations-without-iterators"><span class="secno">4.10. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
+   <h3 class="heading settled" data-level="4.11" id="element-wise-functions"><span class="secno">4.11. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
+   <h3 class="heading settled" data-level="4.12" id="comparison-operators"><span class="secno">4.12. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
+   <h3 class="heading settled" data-level="4.13" id="mdslice-or-subtensor"><span class="secno">4.13. </span><span class="content">mdslice or subtensor</span><a class="self-link" href="#mdslice-or-subtensor"></a></h3>
+   <h3 class="heading settled" data-level="4.14" id="additional-vector-like-functions"><span class="secno">4.14. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
+   <h3 class="heading settled" data-level="4.15" id="rank-one-extents-implicit-conversions"><span class="secno">4.15. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
    <h2 class="heading settled" data-level="5" id="related"><span class="secno">5. </span><span class="content">Related Work</span><a class="self-link" href="#related"></a></h2>
   </main>
 <script>

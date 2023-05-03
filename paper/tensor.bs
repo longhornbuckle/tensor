@@ -6,7 +6,7 @@ Group: iso
 Level: 0
 URL: https://github.com/longhornbuckle/tensor
 Editor: Richard Warren Hornbuckle, longhornbuckle@utexas.edu
-Editor: Enrico
+Editor: Enrico Mauro, aurumpuro@gmail.com
 Editor Term: Author, Authors
 Abstract: A proposal for a C++ STL tensor container.
 Boilerplate: omit conformance
@@ -50,7 +50,7 @@ requires( const T& t, typename T::rank_type n )
   { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
   { T::rank() }     noexcept -> same_as< typename T::rank_type >;
   { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
-  integral_constant<  typename T::rank_type,T::rank() >::value;
+  integral_constant< typename T::rank_type,T::rank() >::value;
 } &&
 requires( T& t, auto ... indices )
 {
@@ -120,7 +120,10 @@ template < class T >
 concept static_tensor =
 tensor_view< T > &&
 ( T::rank_dynamic() == 0 ) &&
-is_constexpr( T() );
+requires
+{
+  { T {} };
+};
 </code>
 </pre>
 
@@ -248,9 +251,9 @@ class tensor
     [[nodiscard]] constexpr const accessor_type& accessor() const noexcept;
 
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr const_reference operator[]( OtherIndexType ... indices ) const noexcept;
+    [[nodiscard]] constexpr const_reference operator[]( OtherIndexType ... indices ) const;
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr const_reference operator()( OtherIndexType ... indices ) const noexcept;
+    [[nodiscard]] constexpr reference operator[]( OtherIndexType ... indices );
 
     template < tensor_expression Tensor >
     constexpr tensor& operator+=( const Tensor& t );
@@ -299,28 +302,50 @@ Design Questions {#questions}
 =============================
 
 <h3>Fixed Size Tensor</h3>
+A) fs_tensor and dr_tensor
+B) tensor fixed size buffer and allocator specialization
+C) Don't address
 
-<h3>Capacity</h3>
+<h3>Capacity and Reserve</h3>
+A) reserve( size_type )
+B) reserve( extents_type )
+C) Additional capacity Extents template parameter
 
 <h3>Dynamic Only Extents</h3>
+Avoids allocation on construction
 
 <h3>[[[nodiscard]]] clarification</h3>
+P0009 and P0600
 
 <h3>Safe Memory Access</h3>
+at(...)
 
 <h3>Resize mapping_type</h3>
+How should resize work?
+
+<h3>Noexcept Swap and Move Mapping and AccessorPolicy</h3>
+If the allocator is swappable and moveable, then we expect the container to be noexcept. This requires additional constraints on mapping and accessor.
+
+<h3>[[ assume( restrict p ) ]]<h3>
+Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization
 
 <h3>Limitations without Iterators</h3>
+Some constructors/functions don't work well
 
 <h3>Element-wise Functions</h3>
+element-wise multiply and divide
 
 <h3>Comparison Operators</h3>
+Defining a norm
 
 <h3>mdslice or subtensor</h3>
+How should non-owning views be created. Relevant: P2630
 
 <h3>Additional Vector-like functions</h3>
+push_front, emplace_front, push_back, emplace_back, insert, ...
 
 <h3>Rank One Extents Implicit Conversions</h3>
+alleviates verbosity of rank one tensors
 
 Related Work {#related}
 =======================
