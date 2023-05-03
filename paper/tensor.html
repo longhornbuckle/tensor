@@ -1988,7 +1988,7 @@ dfn > a.self-link::before      { content: "#"; }
        <a href="#concepts"><span class="secno">3.1</span> <span class="content">Concepts</span></a>
        <ol class="toc">
         <li><a href="#tensor-expression"><span class="secno">3.1.1</span> <span class="content">Tensor Expression</span></a>
-        <li><a href="#tensor-view"><span class="secno">3.1.2</span> <span class="content">Tensor View</span></a>
+        <li><a href="#readable-tensor"><span class="secno">3.1.2</span> <span class="content">Readable Tensor</span></a>
         <li><a href="#writable-tensor"><span class="secno">3.1.3</span> <span class="content">Writable Tensor</span></a>
         <li><a href="#static-tensor"><span class="secno">3.1.4</span> <span class="content">Static Tensor</span></a>
         <li><a href="#dynamic-tensor"><span class="secno">3.1.5</span> <span class="content">Dynamic Tensor</span></a>
@@ -2004,21 +2004,25 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#fixed-size-tensor"><span class="secno">4.1</span> <span class="content">Fixed Size Tensor</span></a>
       <li><a href="#capacity-and-reserve"><span class="secno">4.2</span> <span class="content">Capacity and Reserve</span></a>
       <li><a href="#dynamic-only-extents"><span class="secno">4.3</span> <span class="content">Dynamic Only Extents</span></a>
-      <li><a href="#nodiscard-clarification"><span class="secno">4.4</span> <span class="content">[<span>[nodiscard]</span>] clarification</span></a>
+      <li><a href="#nodiscard-clarification"><span class="secno">4.4</span> <span class="content">[<span>[nodiscard]</span>] Clarification</span></a>
       <li><a href="#safe-memory-access"><span class="secno">4.5</span> <span class="content">Safe Memory Access</span></a>
       <li><a href="#resize-mapping_type"><span class="secno">4.6</span> <span class="content">Resize mapping_type</span></a>
-      <li><a href="#noexcept-swap-and-move-mapping-and-accessorpolicy"><span class="secno">4.7</span> <span class="content">Noexcept Swap and Move Mapping and AccessorPolicy</span></a>
-      <li><a href="#-assume-restrict-p"><span class="secno">4.8</span> <span class="content">[[ assume( restrict p ) ]]</span></a>
-      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.9</span> <span class="content">Vector and Matrix Aliases</span></a>
-      <li><a href="#limitations-without-iterators"><span class="secno">4.10</span> <span class="content">Limitations without Iterators</span></a>
-      <li><a href="#element-wise-functions"><span class="secno">4.11</span> <span class="content">Element-wise Functions</span></a>
-      <li><a href="#comparison-operators"><span class="secno">4.12</span> <span class="content">Comparison Operators</span></a>
-      <li><a href="#mdslice-or-subtensor"><span class="secno">4.13</span> <span class="content">mdslice or subtensor</span></a>
-      <li><a href="#additional-vector-like-functions"><span class="secno">4.14</span> <span class="content">Additional Vector-like functions</span></a>
-      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.15</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
+      <li><a href="#-assume-restrict-p"><span class="secno">4.7</span> <span class="content">[[ assume( restrict p ) ]]</span></a>
+      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.8</span> <span class="content">Vector and Matrix Aliases</span></a>
+      <li><a href="#limitations-without-iterators"><span class="secno">4.9</span> <span class="content">Limitations without Iterators</span></a>
+      <li><a href="#mdslice-or-subtensor"><span class="secno">4.10</span> <span class="content">mdslice or subtensor</span></a>
+      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.11</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
      </ol>
-    <li><a href="#acknowledge"><span class="secno">5</span> <span class="content">Acknowledgements</span></a>
-    <li><a href="#related"><span class="secno">6</span> <span class="content">Related Work</span></a>
+    <li>
+     <a href="#considered-not-pursued"><span class="secno">5</span> <span class="content">Considered. Not Pursued.</span></a>
+     <ol class="toc">
+      <li><a href="#additional-vector-like-functions"><span class="secno">5.1</span> <span class="content">Additional Vector-like functions</span></a>
+      <li><a href="#comparison-operators"><span class="secno">5.2</span> <span class="content">Comparison Operators</span></a>
+      <li><a href="#element-wise-functions"><span class="secno">5.3</span> <span class="content">Element-wise Functions</span></a>
+      <li><a href="#tensor①"><span class="secno">5.4</span> <span class="content">tensor<boolU0002C...></boolU0002C...></span></a>
+     </ol>
+    <li><a href="#acknowledge"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
+    <li><a href="#related"><span class="secno">7</span> <span class="content">Related Work</span></a>
    </ol>
   </nav>
   <main>
@@ -2049,7 +2053,7 @@ Furthermore, it introduces an interface that allows the user to perform operatio
    <p>This proposal differs from a couple similar existing works:</p>
    <ul>
     <li data-md>
-     <p>D1684R0 mdarray: The authors do not believe this work is incompatable with this proposal.
+     <p>D1684 mdarray: The authors do not believe this work is incompatable with this proposal.
 However, the authors of this work take a different approach of essentially defining an adaptor which reinterpret’s an owned container with single dimensional access into a multidimensional framework.
 While such an adaptor may be useful, it both significant obscurs behavior and constrains the implementation to the frameworks of existing containers.</p>
     <li data-md>
@@ -2068,7 +2072,8 @@ The authors have the following concerns in regards to the current iteration of P
    <h2 class="heading settled" data-level="3" id="descript"><span class="secno">3. </span><span class="content">Description</span><a class="self-link" href="#descript"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="concepts"><span class="secno">3.1. </span><span class="content">Concepts</span><a class="self-link" href="#concepts"></a></h3>
    <h4 class="heading settled" data-level="3.1.1" id="tensor-expression"><span class="secno">3.1.1. </span><span class="content">Tensor Expression</span><a class="self-link" href="#tensor-expression"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>tensor_expression</c-> <c- o>=</c-> <c- n>requires</c->
 <c- p>{</c->
   <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-><c- p>;</c->
@@ -2088,10 +2093,12 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>convertible_to</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-> <c- o>></c-><c- p>;</c->
 <c- p>}</c->
+<c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.2" id="tensor-view"><span class="secno">3.1.2. </span><span class="content">Tensor View</span><a class="self-link" href="#tensor-view"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
-<c- n>concept</c-> <c- n>tensor_view</c-> <c- o>=</c->
+   <h4 class="heading settled" data-level="3.1.2" id="readable-tensor"><span class="secno">3.1.2. </span><span class="content">Readable Tensor</span><a class="self-link" href="#readable-tensor"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>concept</c-> <c- n>readable_tensor</c-> <c- o>=</c->
 <c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c->
 <c- p>{</c->
@@ -2125,31 +2132,37 @@ The authors have the following concerns in regards to the current iteration of P
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>reference</c-> <c- o>></c-><c- p>;</c->
-<c- p>}</c-> <c- o>&amp;&amp;</c->
+<c- p>};</c->
+<c- p>}</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.3" id="writable-tensor"><span class="secno">3.1.3. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>writable_tensor</c-> <c- o>=</c->
-<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>readable_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-> <c- n>v</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- o>=</c-> <c- n>v</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- p>;</c-><typename tU0003AU0003Areference>
 <c- p>};</c->
+<c- p>}</c->
 </typename></code></pre>
    <h4 class="heading settled" data-level="3.1.4" id="static-tensor"><span class="secno">3.1.4. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>static_tensor</c-> <c- o>=</c->
-<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>writable_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank_dynamic</c-><c- p>()</c-> <c- o>==</c-> <c- mi>0</c-> <c- p>)</c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c->
 <c- p>{</c->
   <c- p>{</c-> <c- n>T</c-> <c- p>{}</c-> <c- p>};</c->
 <c- p>};</c->
+<c- p>}</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.5" id="dynamic-tensor"><span class="secno">3.1.5. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>concept</c-> <c- n>dynamic_tensor</c-> <c- o>=</c->
-<c- n>tensor_view</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- n>writable_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c->
 <c- p>{</c->
   <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>allocator_type</c->
@@ -2165,9 +2178,11 @@ The authors have the following concerns in regards to the current iteration of P
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
   <c- p>{</c-> <c- n>T</c-><c- p>(</c-> <c- n>s</c-><c- p>,</c-> <c- n>alloc</c-> <c- p>)</c-> <c- p>};</c->
 <c- p>};</c->
+<c- p>}</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.6" id="unary-tensor-expression"><span class="secno">3.1.6. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>unary_tensor_expression</c-> <c- o>=</c->
 <c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-> <c- p>(</c-> <c- n>T</c-> <c- n>t</c-> <c- p>)</c->
@@ -2177,9 +2192,11 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- p>(</c-> <c- n>static_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- o>||</c->
   <c- n>dynamic_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- p>);</c->
+<c- p>}</c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.7" id="binary-tensor-expression"><span class="secno">3.1.7. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>binary_tensor_expression</c-> <c- o>=</c->
 <c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
 <c- n>requires</c-> <c- p>(</c-> <c- n>T</c-> <c- n>t</c-> <c- p>)</c->
@@ -2190,9 +2207,11 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>}</c-> <c- o>&amp;&amp;</c->
 <c- p>(</c-> <c- n>static_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- o>||</c->
   <c- n>dynamic_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- p>);</c->
+<c- p>}</c->
 </code></pre>
    <h3 class="heading settled" data-level="3.2" id="tensor"><span class="secno">3.2. </span><span class="content">Tensor</span><a class="self-link" href="#tensor"></a></h3>
-<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Extents</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
@@ -2309,7 +2328,7 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>&lt;&lt;=</c-><c- p>(</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
 <c- p>};</c->
 
-<c- c1>// Non-member functions</c->
+<c- c1>// IN WORK: Non-member functions</c->
 <c- c1>// Addition</c->
 <c- c1>// Substraction</c->
 <c- c1>// Negation</c->
@@ -2322,6 +2341,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- c1>// Transpose</c->
 <c- c1>// Conjugate</c->
 <c- c1>// Modulo</c->
+<c- p>}</c->
 </extents></typename></t></t></code></pre>
    <p>Mandates:</p>
    <ul>
@@ -2341,7 +2361,7 @@ The authors have the following concerns in regards to the current iteration of P
      <p>AccessorPolicy shall meet the accessor policy requirements.</p>
    </ul>
    <h3 class="heading settled" data-level="3.3" id="tensor-expressions"><span class="secno">3.3. </span><span class="content">Tensor Expressions</span><a class="self-link" href="#tensor-expressions"></a></h3>
-    TODO: Tensor Expressions 
+    This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts. 
    <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Design Questions</span><a class="self-link" href="#questions"></a></h2>
    <p>These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.</p>
    <h3 class="heading settled" data-level="4.1" id="fixed-size-tensor"><span class="secno">4.1. </span><span class="content">Fixed Size Tensor</span><a class="self-link" href="#fixed-size-tensor"></a></h3>
@@ -2349,7 +2369,7 @@ The authors have the following concerns in regards to the current iteration of P
 There are several ways this could be addressed: 
    <ol>
     <li data-md>
-     <p>Split the functionality into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
+     <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
 fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
 dr_tensor would adopt the existing tensor interface wholesale.
 This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
@@ -2403,7 +2423,7 @@ A similar and full solution would be to package the pointer and allocator requir
       <li data-md>
        <p>Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of the desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.</p>
       <li data-md>
-       <p>Resizing the multi-dimensional container can be prohibitively expensive without allowing reallocation. Consider resizing a dense {M,N} tensor with MxN capacity into an {1,MxN} tensor. MxN-1 elements must now be moved. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.</p>
+       <p>Resizing the multi-dimensional container may be prohibitively expensive without allowing reallocation. Consider resizing a dense layout_left {M,N} tensor with MxN capacity into an {1,MxN} tensor. N-1 elements must now be moved - followed by (M-1)xN element constructions. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.</p>
       <li data-md>
        <p>While implementers could choose to implement capacity as an extents_type (discussed in the next alternative), there is insufficient directive in how resize will be performed to make meaningful use of it. (As just discussed, {M,N} and {MxN,1} are very different tensors.)</p>
      </ul>
@@ -2427,9 +2447,11 @@ A similar and full solution would be to package the pointer and allocator requir
      <ul>
       <li data-md>
        <p>This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
-It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result iin redefining the extents and construction of new elements. No element moves would be required.</p>
+It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result in redefining the extents and construction of new elements. No element moves would be required.</p>
       <li data-md>
        <p>The client no longer has to interpret what required span size is needed for the desired extents.</p>
+      <li data-md>
+       <p>It provides additional benefits in resize behavior which the mdarray adaptor interface cannot provide.</p>
      </ul>
      <p>Disadvantages:</p>
      <ul>
@@ -2466,32 +2488,148 @@ It encourages implementations of ordered strided layouts which still allow effic
      </ul>
    </ol>
    <h3 class="heading settled" data-level="4.3" id="dynamic-only-extents"><span class="secno">4.3. </span><span class="content">Dynamic Only Extents</span><a class="self-link" href="#dynamic-only-extents"></a></h3>
-    Avoids allocation on construction 
-   <h3 class="heading settled" data-level="4.4" id="nodiscard-clarification"><span class="secno">4.4. </span><span class="content">[<span>[nodiscard]</span>] clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
-    P0009 and P0600 
+    Should tensor require extents_type::dynamic_rank() != 0? 
+   <p>If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type&amp; alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.</p>
+   <h3 class="heading settled" data-level="4.4" id="nodiscard-clarification"><span class="secno">4.4. </span><span class="content">[<span>[nodiscard]</span>] Clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
+    The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [<span>[nodiscard]</span>] to the empty() function consistent with the specification of a number of STL containers. 
+   <p>P0600 is the proposal which motivated the addition of <span>[nodiscard]</span> to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [<span>[nodiscard]</span>] on future additions to the proposal:</p>
+   <blockquote>
+    <p>It should be added where:</p>
+    <ul>
+     <li data-md>
+      <p>For existing API’s:</p>
+      <ul>
+       <li data-md>
+        <p>...</p>
+      </ul>
+     <li data-md>
+      <p>For new API’s (not been in the C++ standard yet):</p>
+      <ul>
+       <li data-md>
+        <p>not using the return value is usually an error.</p>
+      </ul>
+    </ul>
+   </blockquote>
+   <p>In the authors' opinions, P0009 did not adhere to this guidance. The authors have marked which functions could be marked no [<span>[nodiscard]</span>] in accordance to the guidance provided by P0600; however, the authors seek clarity on the appropriate direction to take.</p>
    <h3 class="heading settled" data-level="4.5" id="safe-memory-access"><span class="secno">4.5. </span><span class="content">Safe Memory Access</span><a class="self-link" href="#safe-memory-access"></a></h3>
-    at(...) 
+    Safe memory access is important to avoid undefined behaviors if the user tries to access an invalid location. This is further highlighted in the recent paper P2759. 
+   <p>
+    Tensor could provide an additional function similar to several existing containers which guards against out-of-bounds access.
+This protection may be provided through the introduction of the member function, at( OtherIndexTypes... indices ).
+The effects are the same as the operator[]( OtherIndexTypes... indices ) member function; however, an exception std::out_of_range is thrown if, for an index r in the range [0, rank()), !(get
+    <r>(idx...) &lt; extent(r)).</r>
+   </p>
+   <p>In the authors' experience - much in high performance computing, at( OtherIndexTypes ... indices  ) receives very little use and other paradigms and tools are needed to ensure memory safe access.
+The authors do not wish to engage in evolving a better approach to memory safe access. The authors merely seek guidance on whether at( OtherIndexTypes ... indices ) is a desired function.
+The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices ).</p>
    <h3 class="heading settled" data-level="4.6" id="resize-mapping_type"><span class="secno">4.6. </span><span class="content">Resize mapping_type</span><a class="self-link" href="#resize-mapping_type"></a></h3>
-    How should resize work? 
-   <h3 class="heading settled" data-level="4.7" id="noexcept-swap-and-move-mapping-and-accessorpolicy"><span class="secno">4.7. </span><span class="content">Noexcept Swap and Move Mapping and AccessorPolicy</span><a class="self-link" href="#noexcept-swap-and-move-mapping-and-accessorpolicy"></a></h3>
-    If the allocator is swappable and moveable, then container swap and move is expected to be noexcept. This requires additional constraints on mapping and accessor. 
-   <h3 class="heading settled" data-level="4.8" id="-assume-restrict-p"><span class="secno">4.8. </span><span class="content">[[ assume( restrict p ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
+   <p>The layout policy and mapping concepts established by P0900 are insufficient for handling resizing of containers - likely because there was no need to address it. The current approach for the implementation is to isolate pieces of code where this is needed such that users may implement custom overloads.</p>
+   <p>The mapping_type needs to provide a mechanism allowing for the container to resize. There are several possible approaches:</p>
+   <ul>
+    <li data-md>
+     <p>enforce an additional container mapping concept which requires the mapping_type to provide an additional function:</p>
+<pre class="highlight"><code class="language-c++ highlight"> <c- b>void</c-> <c- nf>resize</c-><c- p>(</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>e</c-> <c- p>);</c-> </code> </pre>
+    <li data-md>
+     <p>another approach could be to enforce a copy-like constructor:</p>
+<pre class="highlight"><code class="language-c++ highlight"> <c- b>void</c-> <c- nf>mapping_type</c-><c- p>(</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>map</c-><c- p>,</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>new_e</c-> <c- p>);</c-> </code> </pre>
+     <p>However, this approach may be less efficient owing to an additional assignment required.</p>
+   </ul>
+   <h3 class="heading settled" data-level="4.7" id="-assume-restrict-p"><span class="secno">4.7. </span><span class="content">[[ assume( restrict p ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
     Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization 
-   <h3 class="heading settled" data-level="4.9" id="vector-and-matrix-aliases"><span class="secno">4.9. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
-   <h3 class="heading settled" data-level="4.10" id="limitations-without-iterators"><span class="secno">4.10. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
+   <h3 class="heading settled" data-level="4.8" id="vector-and-matrix-aliases"><span class="secno">4.8. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
+   <p>The authors would like to add additonal aliases to the standard as well for both convenience and clarity:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>R</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>C</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>Extents</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>tensor_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>Extents</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>R</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>C</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>matrix_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>vector_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+
+<c- n>namespace</c-> <c- n>pmr</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>Extents</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>tensor</c-> <c- o>=</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>Extents</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>pmr</c-><c- o>::</c-><c- n>polymorphic_allocator</c-><c- p>,</c-><t> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>R</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>C</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>matrix</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>R</c-><c- p>,</c-> <c- n>C</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>pmr</c-><c- o>::</c-><c- n>polymorphic_allocator</c-><c- p>,</c-><t> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
+           <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
+           <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
+<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>N</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>pmr</c-><c- o>::</c-><c- n>polymorphic_allocator</c-><c- p>,</c-><t> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- p>}</c->
+<c- p>}</c->
+</t></t></t></t></t></t></decltypeU00028nU00029U0002Cn></t></decltypeU00028rU00029U0002CrU0002Cc></t></t></decltypeU00028nU00029U0002Cn></decltypeU00028nU00029U0002Cn></t></t></decltypeU00028rU00029U0002CrU0002Cc></decltypeU00028rU00029U0002CrU0002Cc></t></t></code></pre>
+   <p>There are some glaring issues with adding these:</p>
+   <ul>
+    <li data-md>
+     <p>vector is already a well used std template class.</p>
+     <ul>
+      <li data-md>
+       <p>If the desired direction is to separate tensor into fs_tensor and dr_tensor, then this issue may go away by using fs_vector and dr_vector. Although, there will still be some confusion in that fs_vector and dr_vector have no relation to vector.</p>
+      <li data-md>
+       <p>Are there alternative names or approaches that would be desired?</p>
+     </ul>
+    <li data-md>
+     <p>tensor_view is just a renaming of mdspan. This could be confusing. It is also worth noting mdspan does not provide some member functions which tensor does, but does not require data ownership to perform.</p>
+     <ul>
+      <li data-md>
+       <p>Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?</p>
+     </ul>
+   </ul>
+   <h3 class="heading settled" data-level="4.9" id="limitations-without-iterators"><span class="secno">4.9. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
     Some constructors/functions don’t work well 
-   <h3 class="heading settled" data-level="4.11" id="element-wise-functions"><span class="secno">4.11. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
-    element-wise multiply and divide 
-   <h3 class="heading settled" data-level="4.12" id="comparison-operators"><span class="secno">4.12. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
-    Defining a norm 
-   <h3 class="heading settled" data-level="4.13" id="mdslice-or-subtensor"><span class="secno">4.13. </span><span class="content">mdslice or subtensor</span><a class="self-link" href="#mdslice-or-subtensor"></a></h3>
+   <h3 class="heading settled" data-level="4.10" id="mdslice-or-subtensor"><span class="secno">4.10. </span><span class="content">mdslice or subtensor</span><a class="self-link" href="#mdslice-or-subtensor"></a></h3>
     How should non-owning views be created. Relevant: P2630 
-   <h3 class="heading settled" data-level="4.14" id="additional-vector-like-functions"><span class="secno">4.14. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
-    push_front, emplace_front, push_back, emplace_back, insert, ... 
-   <h3 class="heading settled" data-level="4.15" id="rank-one-extents-implicit-conversions"><span class="secno">4.15. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
+   <h3 class="heading settled" data-level="4.11" id="rank-one-extents-implicit-conversions"><span class="secno">4.11. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
     alleviates verbosity of rank one tensors 
-   <h2 class="heading settled" data-level="5" id="acknowledge"><span class="secno">5. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledge"></a></h2>
-   <h2 class="heading settled" data-level="6" id="related"><span class="secno">6. </span><span class="content">Related Work</span><a class="self-link" href="#related"></a></h2>
+   <h2 class="heading settled" data-level="5" id="considered-not-pursued"><span class="secno">5. </span><span class="content">Considered. Not Pursued.</span><a class="self-link" href="#considered-not-pursued"></a></h2>
+   <p>Below are additional topics which may merit additional discussion.</p>
+   <h3 class="heading settled" data-level="5.1" id="additional-vector-like-functions"><span class="secno">5.1. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
+    Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ... 
+   <p>The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.</p>
+   <p>Additionally, single elements cannot simply be pushed; rather, entire subrank tensors would be added and removed. Considerable thought must given to the form those tensors would taken and how they would interact with existing mapping constructs.</p>
+   <h3 class="heading settled" data-level="5.2" id="comparison-operators"><span class="secno">5.2. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
+    Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal. 
+   <h3 class="heading settled" data-level="5.3" id="element-wise-functions"><span class="secno">5.3. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
+    Element-wise (or Hadamard) multiply and divide was additionally considered. The authors want to gauge interest before persuing. 
+   <h3 class="heading settled" data-level="5.4" id="tensor①"><span class="secno">5.4. </span><span class="content">tensor<boolU0002C...></boolU0002C...></span><a class="self-link" href="#tensor①"></a></h3>
+    A specialization of tensor analogous to vector
+   <bool>
+     was considered. (Very briefly) 
+    <h2 class="heading settled" data-level="6" id="acknowledge"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledge"></a></h2>
+    <h2 class="heading settled" data-level="7" id="related"><span class="secno">7. </span><span class="content">Related Work</span><a class="self-link" href="#related"></a></h2>
+   </bool>
   </main>
 <script>
 (function() {

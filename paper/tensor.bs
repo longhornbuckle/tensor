@@ -55,6 +55,7 @@ Description {#descript}
 <h4>Tensor Expression</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
 concept tensor_expression = requires
 {
@@ -75,14 +76,16 @@ requires( T& t, auto ... indices )
 {
   { t.operator[]( indices ... ) } -> convertible_to< typename T::value_type >;
 }
+}
 </code>
 </pre>
 
-<h4>Tensor View</h4>
+<h4>Readable Tensor</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
-concept tensor_view =
+concept readable_tensor =
 tensor_expression< T > &&
 requires
 {
@@ -116,34 +119,39 @@ requires( const T& t, typename T::rank_type n )
 requires( T& t, auto ... indices )
 {
   { t.operator[]( indices ... ) } -> same_as< typename T::reference >;
-} &&
+};
+}
 </code>
 </pre>
 
 <h4>Writable Tensor</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
 concept writable_tensor =
-tensor_view< T > &&
+readable_tensor< T > &&
 requires( T& t, typename T::value_type v, auto ... indices )
 {
   { t.operator[]( indices ... ) = v } -> same_as<typename T::reference>;
 };
+}
 </code>
 </pre>
 
 <h4>Static Tensor</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
 concept static_tensor =
-tensor_view< T > &&
+writable_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
 requires
 {
   { T {} };
 };
+}
 </code>
 </pre>
 
@@ -151,8 +159,9 @@ requires
 <pre class="highlight">
 <code class="language-c++">
 template < class T >
+namespace std {
 concept dynamic_tensor =
-tensor_view< T > &&
+writable_tensor< T > &&
 requires
 {
   typename T::allocator_type
@@ -168,12 +177,14 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   { T( alloc ) };
   { T( s, alloc ) };
 };
+}
 </code>
 </pre>
 
 <h4>Unary Tensor Expression</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
 concept unary_tensor_expression =
 tensor_expression< T > &&
@@ -184,12 +195,14 @@ requires ( T t )
 } &&
 ( static_tensor< decltype( declval< T >().operator auto() ) > ||
   dynamic_tensor< decltype( declval< T >().operator auto() ) > );
+}
 </code>
 </pre>
 
 <h4>Binary Tensor Expression</h4>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T >
 concept binary_tensor_expression =
 tensor_expression< T > &&
@@ -201,12 +214,14 @@ requires ( T t )
 } &&
 ( static_tensor< decltype( declval< T >().operator auto() ) > ||
   dynamic_tensor< decltype( declval< T >().operator auto() ) > );
+}
 </code>
 </pre>
 
 <h3>Tensor</h3>
 <pre class="highlight">
 <code class="language-c++">
+namespace std {
 template < class T,
            class Extents,
            class LayoutPolicy   = layout_right,
@@ -324,7 +339,7 @@ class tensor
     constexpr tensor& operator<<=( const value_type& value );
 };
 
-// Non-member functions
+// IN WORK: Non-member functions
 // Addition
 // Substraction
 // Negation
@@ -337,7 +352,7 @@ class tensor
 // Transpose
 // Conjugate
 // Modulo
-
+}
 </code>
 </pre>
 
@@ -351,7 +366,7 @@ Mandates:
 - AccessorPolicy shall meet the accessor policy requirements.
 
 <h3>Tensor Expressions</h3>
-TODO: Tensor Expressions
+This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
 
 Design Questions {#questions}
 =============================
@@ -361,7 +376,7 @@ These are issues for which different approaches may be taken. Many have pros and
 <h3>Fixed Size Tensor</h3>
 On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
 There are several ways this could be addressed:
-1.  Split the functionality into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
+1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
     fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
     dr_tensor would adopt the existing tensor interface wholesale.
     This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
@@ -390,8 +405,9 @@ The expected behavior of reserve also needs further guidance. There are several 
     
     Disadvantages:
     - Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of the desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.
-    - Resizing the multi-dimensional container can be prohibitively expensive without allowing reallocation. Consider resizing a dense {M,N} tensor with MxN capacity into an {1,MxN} tensor. MxN-1 elements must now be moved. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.
+    - Resizing the multi-dimensional container may be prohibitively expensive without allowing reallocation. Consider resizing a dense layout_left {M,N} tensor with MxN capacity into an {1,MxN} tensor. N-1 elements must now be moved - along with (M-1)xN element constructions and destructions. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.
     - While implementers could choose to implement capacity as an extents_type (discussed in the next alternative), there is insufficient directive in how resize will be performed to make meaningful use of it. (As just discussed, {M,N} and {MxN,1} are very different tensors.)
+
 2.  The reserve( const extents_type& e ) member function is a directive that informs a tensor object of a planned change in size, so that it can manage the storage allocation accordingly.
     - After the call, the capacity is greater than or equal to the mapping_type(e).required_span_size() if reallocation happens, and equal to the previous capacity otherwise.
     - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
@@ -402,12 +418,13 @@ The expected behavior of reserve also needs further guidance. There are several 
     
     Advantages:
     - This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
-    It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result iin redefining the extents and construction of new elements. No element moves would be required.
+    It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result in redefining the extents, construction of new elements, and destruction of no-longer-contained elements. No element moves would be required.
     - The client no longer has to interpret what required span size is needed for the desired extents.
     - It provides additional benefits in resize behavior which the mdarray adaptor interface cannot provide.
     
     Disadvantages:
     - Adds the most additional memory footprint.
+
 3.  This option is the same as 2.; however, it introduces a separate template parameter for the capacity:
     <pre class="highlight">
     <code class="language-c++">
@@ -431,42 +448,147 @@ The expected behavior of reserve also needs further guidance. There are several 
     - Introduces another template parameter; however, this can be marginalized through appropriate aliasing.
 
 <h3>Dynamic Only Extents</h3>
-Avoids allocation on construction
+Should tensor require extents_type::dynamic_rank() != 0?
 
-<h3>[[[nodiscard]]] clarification</h3>
-P0009 and P0600
+If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
+
+<h3>[[[nodiscard]]] Clarification</h3>
+The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
+
+P0600 is the proposal which motivated the addition of [[nodiscard]] to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [[[nodiscard]]] on future additions to the proposal:
+> It should be added where:
+> 
+> - For existing API’s:
+>   
+>     - ...
+>   
+> - For new API’s (not been in the C++ standard yet):
+>   
+>     - not using the return value is usually an error.
+
+In the authors' opinions, P0009 did not adhere to this guidance. The authors have marked which functions could be marked no [[[nodiscard]]] in accordance to the guidance provided by P0600; however, the authors seek clarity on the appropriate direction to take.
 
 <h3>Safe Memory Access</h3>
-at(...)
+Safe memory access is important to avoid undefined behaviors if the user tries to access an invalid location. This is further highlighted in the recent paper P2759.
+
+Tensor could provide an additional function similar to several existing containers which guards against out-of-bounds access.
+This protection may be provided through the introduction of the member function, at( OtherIndexTypes... indices ).
+The effects are the same as the operator[]( OtherIndexTypes... indices ) member function; however, an exception std::out_of_range is thrown if, for an index r in the range [0, rank()), !(get<r>(idx...) < extent(r)).
+
+In the authors' experience - much in high performance computing, at( OtherIndexTypes ... indices  ) receives very little use and other paradigms and tools are needed to ensure memory safe access.
+The authors do not wish to engage in evolving a better approach to memory safe access. The authors merely seek guidance on whether at( OtherIndexTypes ... indices ) is a desired function.
+The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices ).
 
 <h3>Resize mapping_type</h3>
-How should resize work?
 
-<h3>Noexcept Swap and Move Mapping and AccessorPolicy</h3>
-If the allocator is swappable and moveable, then container swap and move is expected to be noexcept. This requires additional constraints on mapping and accessor.
+The layout policy and mapping concepts established by P0900 are insufficient for handling resizing of containers - likely because there was no need to address it. The current approach for the implementation is to isolate pieces of code where this is needed such that users may implement custom overloads.
+
+The mapping_type needs to provide a mechanism allowing for the container to resize. There are several possible approaches:
+- enforce an additional container mapping concept which requires the mapping_type to provide an additional function:
+<pre class="highlight"> <code class="language-c++"> void resize( const extents_type& e ); </code> </pre>
+- another approach could be to enforce a copy-like constructor:
+<pre class="highlight"> <code class="language-c++"> void mapping_type( const mapping_type& map, const extents_type& new_e ); </code> </pre>
+    However, this approach may be less efficient owing to an additional assignment required.
 
 <h3>[[ assume( restrict p ) ]]</h3>
 Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization
 
 <h3>Vector and Matrix Aliases</h3>
 
+The authors would like to add additonal aliases to the standard as well for both convenience and clarity:
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T,
+           auto  R,
+           auto  C,
+           class LayoutPolicy   = layout_right,
+           class Allocator      = allocator<T>,
+           class AccessorPolicy = default_accessor<T> >
+using matrix = tensor< T, extents<decltype(R),R,C>, LayoutPolicy, extents<decltype(R),R,C>, Allocator, AccessorPolicy >;
+template < class T,
+           auto  N,
+           class LayoutPolicy   = layout_right,
+           class Allocator      = allocator<T>,
+           class AccessorPolicy = default_accessor<T> >
+using vector = tensor< T, extents<decltype(N),N>, LayoutPolicy, extents<decltype(N),N>, Allocator, AccessorPolicy >;
+
+template < class T,
+           class Extents,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using tensor_view = mdspan< T, Extents, LayoutPolicy, AccessorPolicy >;
+template < class T,
+           auto  R,
+           auto  C,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using matrix_view = mdspan< T, extents<decltype(R),R,C>, LayoutPolicy, AccessorPolicy >;
+template < class T,
+           auto  N,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using vector_view = mdspan< T, extents<decltype(N),N>, LayoutPolicy, AccessorPolicy >;
+
+namespace pmr {
+template < class T,
+           class Extents,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using tensor = ::std::tensor< T, Extents, LayoutPolicy, ::std::pmr::polymorphic_allocator<T>, AccessorPolicy >;
+template < class T,
+           auto  R,
+           auto  C,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using matrix = ::std::matrix< T, R, C, LayoutPolicy, ::std::pmr::polymorphic_allocator<T>, AccessorPolicy >;
+template < class T,
+           auto  N,
+           class LayoutPolicy   = layout_right,
+           class AccessorPolicy = default_accessor<T> >
+using vector = ::std::vector< T, N, LayoutPolicy, ::std::pmr::polymorphic_allocator<T>, AccessorPolicy >;
+}
+}
+</code>
+</pre>
+
+There are some glaring issues with adding these:
+- vector is already a well used std template class.
+    - If the desired direction is to separate tensor into fs_tensor and dr_tensor, then this issue may go away by using fs_vector and dr_vector. Although, there will still be some confusion in that fs_vector and dr_vector have no relation to vector.
+    - Are there alternative names or approaches that would be desired?
+- tensor_view is just a renaming of mdspan. This could be confusing. It is also worth noting mdspan does not provide some member functions which tensor does, but does not require data ownership to perform.
+    - Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?
+
 <h3>Limitations without Iterators</h3>
 Some constructors/functions don't work well
-
-<h3>Element-wise Functions</h3>
-element-wise multiply and divide
-
-<h3>Comparison Operators</h3>
-Defining a norm
 
 <h3>mdslice or subtensor</h3>
 How should non-owning views be created. Relevant: P2630
 
-<h3>Additional Vector-like functions</h3>
-push_front, emplace_front, push_back, emplace_back, insert, ...
-
 <h3>Rank One Extents Implicit Conversions</h3>
 alleviates verbosity of rank one tensors
+
+Considered. Not Pursued.
+========================
+
+Below are additional topics which may merit additional discussion.
+
+<h3>Additional Vector-like functions</h3>
+Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ...
+
+The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.
+
+Additionally, single elements cannot simply be pushed; rather, entire subrank tensors would be added and removed. Considerable thought must given to the form those tensors would taken and how they would interact with existing mapping constructs.
+
+<h3>Comparison Operators</h3>
+Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal.
+
+<h3>Element-wise Functions</h3>
+Element-wise (or Hadamard) multiply and divide was additionally considered. The authors want to gauge interest before persuing.
+
+<h3>tensor<bool,...></h3>
+A specialization of tensor analogous to vector<bool> was considered. (Very briefly)
 
 Acknowledgements {#acknowledge}
 ===============================
