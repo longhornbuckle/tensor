@@ -261,7 +261,7 @@ class tensor
 
     constexpr tensor( const tensor& rhs );
     constexpr tensor( const tensor& rhs, const allocator_type& alloc );
-    constexpr tensor( tensor&& rhs );
+    constexpr tensor( tensor&& rhs ) noexcept;
     constexpr tensor( tensor&& rhs, const allocator_type& alloc );
 
     // Destructor
@@ -356,15 +356,78 @@ TODO: Tensor Expressions
 Design Questions {#questions}
 =============================
 
+These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.
+
 <h3>Fixed Size Tensor</h3>
-A) fs_tensor and dr_tensor
-B) tensor fixed size buffer and allocator specialization
-C) Don't address
+On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
+There are several ways this could be addressed:
+1.  Split the functionality into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
+    fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
+    dr_tensor would adopt the existing tensor interface wholesale.
+    This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
+    The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.
+2.  Another partial solution would be to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
+    - The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.
+    - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer.
+    A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.
+    - This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.
+3.  Not addressing fixed size tensors would allow more focus on the existing tensor class; however, there are drawbacks:
+    - Many existing applications already make use of these optimization to improvement performance.
+    - Many existing c++ libraries such as Boost and Eigen already provide such optimizations. Not providing it would discourage standard adoption.
+    - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
 
 <h3>Capacity and Reserve</h3>
-A) reserve( size_type )
-B) reserve( extents_type )
-C) Additional capacity Extents template parameter
+The expected behavior of reserve also needs further guidance. There are several options to take:
+1.  The reserve( const size_type& cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.
+    - After the call, the capacity is greater than or equal to cap if reallocation happens, and equal to the previous capacity otherwise.
+    - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
+    - Pointers and references into the tensor may not be valid after calling reserve.
+    - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant mapping_type(s).required_span_size() <= cap shall incur no re-allocation.
+
+    Advantages:
+    - This conforms to the existing interface for reserving existing containers.
+    - Introduces little memory overhead comparable to existing containers.
+    
+    Disadvantages:
+    - Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of the desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.
+    - Resizing the multi-dimensional container can be prohibitively expensive without allowing reallocation. Consider resizing a dense {M,N} tensor with MxN capacity into an {1,MxN} tensor. MxN-1 elements must now be moved. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.
+    - While implementers could choose to implement capacity as an extents_type (discussed in the next alternative), there is insufficient directive in how resize will be performed to make meaningful use of it. (As just discussed, {M,N} and {MxN,1} are very different tensors.)
+2.  The reserve( const extents_type& e ) member function is a directive that informs a tensor object of a planned change in size, so that it can manage the storage allocation accordingly.
+    - After the call, the capacity is greater than or equal to the mapping_type(e).required_span_size() if reallocation happens, and equal to the previous capacity otherwise.
+    - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
+    - Pointers and references into the tensor may not be valid after calling reserve.
+    - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) <= e.extent(r) for all r in the range[0,rank()) shall incur no re-allocation.
+    - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) > e.extent(r) for all r in the range[0,rank()) or mapping_type(s).required_span_size() > currrent mapping_type's required_span_size() re-allocation shall be attempted.
+    - After successfully calling reserve, if neither of the above two conditions are true, then re-allocation behavior is implementation defined.
+    
+    Advantages:
+    - This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
+    It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result iin redefining the extents and construction of new elements. No element moves would be required.
+    - The client no longer has to interpret what required span size is needed for the desired extents.
+    
+    Disadvantages:
+    - Adds the most additional memory footprint.
+3.  This option is the same as 2.; however, it introduces a separate template parameter for the capacity:
+    <pre class="highlight">
+    <code class="language-c++">
+    template < class T,
+               class Extents,
+               class LayoutPolicy   = layout_right,
+               class CapExtents     = Extents,
+               class Allocator      = allocator<T>,
+               class AccessorPolicy = default_accessor<T> >
+    class tensor;
+    </code>
+    </pre>
+    - This requires the additional mandate that for all r in the range [0,rank()), ( CapExtents::static_extent(r) == Extents::static_extent(r) || ( CapExtents::static_extent(r) != std::dynamic_extent && Extents::static_extent(r) == dynamic_extent ).
+    - This allows for some parallels to the Boost static_vector and subsequent P0843 fixed_capacity_vector / static_vector; however, unlike those proposes - it does not guarantee local memory access. (An allocator is still used even if none of the capacity extents are dynamic.)
+    
+    Advantages:
+    - Same advantages as 2.
+    - Reduces memory footprint overhead - potentially to zero.
+    
+    Disadvantages:
+    - Introduces another template parameter; however, this can be marginalized through appropriate aliasing.
 
 <h3>Dynamic Only Extents</h3>
 Avoids allocation on construction
