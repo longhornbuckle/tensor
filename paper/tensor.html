@@ -2253,7 +2253,7 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- o>~</c-><c- n>tensor</c-><c- p>();</c->
 
     <c- c1>// Assignment</c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- n>tensor</c-><c- o>&amp;&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_move_assignment</c-> <c- o>&amp;&amp;</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- n>tensor</c-><c- o>&amp;&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_move_assignment</c-> <c- o>||</c->
                                                             <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
@@ -2262,8 +2262,8 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>initializer_list</c-><c- o>&lt;</c-> <c- n>value_type</c-> <c- o>></c-> <c- n>il</c-> <c- p>);</c->
 
     <c- c1>// Members</c->
-    <c- n>constexpr</c-> <c- nf>swap</c-><c- p>(</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_swap</c-> <c- o>&amp;&amp;</c->
-                                            <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>)</c->
+    <c- n>constexpr</c-> <c- nf>swap</c-><c- p>(</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>)</c-> <c- n>noexcept</c-><c- p>(</c-> <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>propagate_on_container_swap</c-> <c- o>||</c->
+                                            <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>);</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- n>empty</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>extents</c-><c- p>()</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>size_type</c-> <c- n>extent</c-><c- p>(</c-> <c- n>rank_type</c-> <c- n>n</c-> <c- p>)</c-> <c- k>const</c-> <c- n>noexcept</c-><c- p>;</c->
@@ -2343,6 +2343,7 @@ The authors have the following concerns in regards to the current iteration of P
    <h3 class="heading settled" data-level="3.3" id="tensor-expressions"><span class="secno">3.3. </span><span class="content">Tensor Expressions</span><a class="self-link" href="#tensor-expressions"></a></h3>
     TODO: Tensor Expressions 
    <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Design Questions</span><a class="self-link" href="#questions"></a></h2>
+   <p>These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.</p>
    <h3 class="heading settled" data-level="4.1" id="fixed-size-tensor"><span class="secno">4.1. </span><span class="content">Fixed Size Tensor</span><a class="self-link" href="#fixed-size-tensor"></a></h3>
     On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
 There are several ways this could be addressed: 
@@ -2400,7 +2401,7 @@ A similar and full solution would be to package the pointer and allocator requir
      <p>Disadvantages:</p>
      <ul>
       <li data-md>
-       <p>Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of some desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.</p>
+       <p>Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of the desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.</p>
       <li data-md>
        <p>Resizing the multi-dimensional container can be prohibitively expensive without allowing reallocation. Consider resizing a dense {M,N} tensor with MxN capacity into an {1,MxN} tensor. MxN-1 elements must now be moved. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.</p>
       <li data-md>

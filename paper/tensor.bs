@@ -268,7 +268,7 @@ class tensor
     constexpr ~tensor();
 
     // Assignment
-    constexpr tensor& operator = ( tensor&& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_move_assignment &&
+    constexpr tensor& operator = ( tensor&& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_move_assignment ||
                                                             allocator_traits< allocator_type >::is_always_equal );
     constexpr tensor& operator = ( const tensor& rhs );
     template < tensor_expression Tensor >
@@ -277,8 +277,8 @@ class tensor
     constexpr tensor& operator = ( const initializer_list< value_type > il );
 
     // Members
-    constexpr swap( tensor& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_swap &&
-                                            allocator_traits< allocator_type >::is_always_equal )
+    constexpr swap( tensor& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_swap ||
+                                            allocator_traits< allocator_type >::is_always_equal );
     [[nodiscard]] constexpr bool empty() const noexcept;
     [[nodiscard]] constexpr const extents_type& extents() const noexcept;
     [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept;
