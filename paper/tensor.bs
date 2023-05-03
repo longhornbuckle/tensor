@@ -36,7 +36,7 @@ More specifically, this proposal seeks to establish:
 - A framework for defining efficient implementations of linear algebraic functions using concepts and template expression types.
 
 This proposal differs from a couple similar existing works:
-- D1684R0 mdarray: The authors do not believe this work is incompatable with this proposal.
+- D1684 mdarray: The authors do not believe this work is incompatable with this proposal.
 However, the authors of this work take a different approach of essentially defining an adaptor which reinterpret's an owned container with single dimensional access into a multidimensional framework.
 While such an adaptor may be useful, it both significant obscurs behavior and constrains the implementation to the frameworks of existing containers.
 - P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
@@ -404,6 +404,7 @@ The expected behavior of reserve also needs further guidance. There are several 
     - This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
     It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result iin redefining the extents and construction of new elements. No element moves would be required.
     - The client no longer has to interpret what required span size is needed for the desired extents.
+    - It provides additional benefits in resize behavior which the mdarray adaptor interface cannot provide.
     
     Disadvantages:
     - Adds the most additional memory footprint.
