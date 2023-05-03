@@ -2423,7 +2423,7 @@ A similar and full solution would be to package the pointer and allocator requir
       <li data-md>
        <p>Not all layout policies are exhaustive or unique. This means the required_span_size() may be considerably less than the product of the desired extents. This requires the client to perform additional and perhaps error-prone logic to determine the desired capacity - potentially resulting in inefficiencies.</p>
       <li data-md>
-       <p>Resizing the multi-dimensional container may be prohibitively expensive without allowing reallocation. Consider resizing a dense layout_left {M,N} tensor with MxN capacity into an {1,MxN} tensor. N-1 elements must now be moved - followed by (M-1)xN element constructions. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.</p>
+       <p>Resizing the multi-dimensional container may be prohibitively expensive without allowing reallocation. Consider resizing a dense layout_left {M,N} tensor with MxN capacity into an {1,MxN} tensor. N-1 elements must now be moved - along with (M-1)xN element constructions and destructions. More complex layout schemes will result in more complex and expensive sort-like approaches to perform resize; however, without a more expressive interface there is no other way to provide guarantees when re-allocation will not occur.</p>
       <li data-md>
        <p>While implementers could choose to implement capacity as an extents_type (discussed in the next alternative), there is insufficient directive in how resize will be performed to make meaningful use of it. (As just discussed, {M,N} and {MxN,1} are very different tensors.)</p>
      </ul>
@@ -2447,7 +2447,7 @@ A similar and full solution would be to package the pointer and allocator requir
      <ul>
       <li data-md>
        <p>This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
-It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result in redefining the extents and construction of new elements. No element moves would be required.</p>
+It encourages implementations of ordered strided layouts which still allow efficient memory access, but introduce appropriate gaps such that appropriately bounded resize operations only result in redefining the extents, construction of new elements, and destruction of no-longer-contained elements. No element moves would be required.</p>
       <li data-md>
        <p>The client no longer has to interpret what required span size is needed for the desired extents.</p>
       <li data-md>
