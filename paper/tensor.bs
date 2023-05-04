@@ -177,6 +177,7 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   { T( alloc ) };
   { T( s, alloc ) };
 };
+
 }
 </code>
 </pre>
@@ -410,6 +411,7 @@ The expected behavior of reserve also needs further guidance. There are several 
 
 2.  The reserve( const extents_type& e ) member function is a directive that informs a tensor object of a planned change in size, so that it can manage the storage allocation accordingly.
     - After the call, the capacity is greater than or equal to the mapping_type(e).required_span_size() if reallocation happens, and equal to the previous capacity otherwise.
+    - After the call, the capacity is at least sufficient to contain the required elements in each dimension of e. If the existing capacity is insufficient, then reallocation may be attempted. If no reallocation occurs, then the capacity remains the same.
     - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
     - Pointers and references into the tensor may not be valid after calling reserve.
     - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) <= e.extent(r) for all r in the range[0,rank()) shall incur no re-allocation.
@@ -490,8 +492,21 @@ The mapping_type needs to provide a mechanism allowing for the container to resi
 <pre class="highlight"> <code class="language-c++"> void mapping_type( const mapping_type& map, const extents_type& new_e ); </code> </pre>
     However, this approach may be less efficient owing to an additional assignment required.
 
-<h3>[[ assume( restrict p ) ]]</h3>
-Owning tensor concepts may use such in a way similar to C99 restrict to achieve valarray-like optimization
+<h3>[[ assume( restrict( [[maybe_unused]] p ) ) ]]</h3>
+C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function
+
+<pre class="highlight">
+<code class="language-c++">
+[[nodiscard]] constexpr bool restrict( void* p ) noexcept { return true; }
+</code>
+</pre>
+In the context of an [[ assume( ) ]],
+- The assume statement would be considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.
+- This function would allow the compiler to treat the pointer, p, as a restrict pointer in the same context as the C99 restrict keyword for the duration of the assume statement's lifetime.
+
+The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.
+
+Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.
 
 <h3>Vector and Matrix Aliases</h3>
 
