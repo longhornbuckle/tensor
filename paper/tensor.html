@@ -2010,16 +2010,17 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#-assume-restrict-p"><span class="secno">4.7</span> <span class="content">[[ assume( restrict( p ) ) ]]</span></a>
       <li><a href="#vector-and-matrix-aliases"><span class="secno">4.8</span> <span class="content">Vector and Matrix Aliases</span></a>
       <li><a href="#limitations-without-iterators"><span class="secno">4.9</span> <span class="content">Limitations without Iterators</span></a>
-      <li><a href="#mdslice-or-subtensor"><span class="secno">4.10</span> <span class="content">mdslice or subtensor</span></a>
+      <li><a href="#mdslice-submdspan-or-subtensor"><span class="secno">4.10</span> <span class="content">mdslice, submdspan, or subtensor</span></a>
       <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.11</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
      </ol>
     <li>
      <a href="#considered-not-pursued"><span class="secno">5</span> <span class="content">Considered. Not Pursued.</span></a>
      <ol class="toc">
-      <li><a href="#additional-vector-like-functions"><span class="secno">5.1</span> <span class="content">Additional Vector-like functions</span></a>
-      <li><a href="#comparison-operators"><span class="secno">5.2</span> <span class="content">Comparison Operators</span></a>
-      <li><a href="#element-wise-functions"><span class="secno">5.3</span> <span class="content">Element-wise Functions</span></a>
-      <li><a href="#tensor①"><span class="secno">5.4</span> <span class="content">tensor<boolU0002C...></boolU0002C...></span></a>
+      <li><a href="#multi-dimensional-iterators"><span class="secno">5.1</span> <span class="content">Multi-dimensional Iterators</span></a>
+      <li><a href="#additional-vector-like-functions"><span class="secno">5.2</span> <span class="content">Additional Vector-like functions</span></a>
+      <li><a href="#comparison-operators"><span class="secno">5.3</span> <span class="content">Comparison Operators</span></a>
+      <li><a href="#element-wise-functions"><span class="secno">5.4</span> <span class="content">Element-wise Functions</span></a>
+      <li><a href="#tensor-bool"><span class="secno">5.5</span> <span class="content">tensor&lt; bool, ... ></span></a>
      </ol>
     <li><a href="#acknowledge"><span class="secno">6</span> <span class="content">Acknowledgements</span></a>
     <li><a href="#related"><span class="secno">7</span> <span class="content">Related Work</span></a>
@@ -2539,16 +2540,20 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
    </ul>
    <h3 class="heading settled" data-level="4.7" id="-assume-restrict-p"><span class="secno">4.7. </span><span class="content">[[ assume( restrict( p ) ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
     C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function 
-<pre class="highlight"><code class="language-c++ highlight"><c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- kr>restrict</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- b>void</c-><c- o>*</c-> <c- n>p</c-> <c- p>)</c-> <c- n>noexcept</c-> <c- p>{</c-> <c- k>return</c-> true<c- p>;</c-> <c- p>}</c->
+<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- kr>restrict</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>T</c-><c- o>*</c-> <c- n>p</c-> <c- p>)</c-> <c- n>noexcept</c-> <c- n>requires</c-> <c- n>is_same_v</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>remove_reference_t</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>></c-> <c- p>{</c-> <c- k>return</c-> true<c- p>;</c-> <c- p>}</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- kr>restrict</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>ref</c-> <c- p>)</c-> <c- n>noexcept</c-> <c- n>requires</c-> <c- n>is_same_v</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>remove_reference_t</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>></c-> <c- p>{</c-> <c- k>return</c-> true<c- p>;</c-> <c- p>}</c->
 </code></pre>
    <p>In the context of an [[ assume( ) ]],</p>
    <ul>
     <li data-md>
      <p>The assume statement would be considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.</p>
     <li data-md>
-     <p>This function would allow the compiler to treat the pointer, p, as a restrict pointer in the same context as the C99 restrict keyword for the duration of the assume statement’s lifetime.</p>
+     <p>This function would allow the compiler to treat the pointer, p, or reference, ref, as a restrict pointer or reference in the same context as the C99 restrict keyword for the duration of the assume statement’s lifetime.</p>
    </ul>
    <p>The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.</p>
+   <p>A shorter syntax may be to remove the assume() altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume().</p>
    <p>Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.</p>
    <h3 class="heading settled" data-level="4.8" id="vector-and-matrix-aliases"><span class="secno">4.8. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
    <p>The authors would like to add additonal aliases to the standard as well for both convenience and clarity:</p>
@@ -2622,22 +2627,77 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
      </ul>
    </ul>
    <h3 class="heading settled" data-level="4.9" id="limitations-without-iterators"><span class="secno">4.9. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
-    Some constructors/functions don’t work well 
-   <h3 class="heading settled" data-level="4.10" id="mdslice-or-subtensor"><span class="secno">4.10. </span><span class="content">mdslice or subtensor</span><a class="self-link" href="#mdslice-or-subtensor"></a></h3>
-    How should non-owning views be created. Relevant: P2630 
+    Several functions have no reasonable general solution when neither of the following are true: 
+<pre class="highlight"><code class="language-c++ highlight"><c- n>mapping_type</c-><c- o>::</c-><c- n>is_always_exhaustive</c-><c- p>()</c->
+<c- n>mapping_type</c-><c- o>::</c-><c- n>is_always_unique</c-><c- p>()</c->
+</code></pre>
+   <p>These functions include:</p>
+   <ul>
+    <li data-md>
+     <p>Constructors and assignmment operators on what amounts to one dimensional spans.</p>
+    <li data-md>
+     <p>Constructors and assignmment operators on disparate tensor types.</p>
+    <li data-md>
+     <p>Resize functions.</p>
+   </ul>
+   <p>If mapping_type::is_always_exhaustive() is true, then these functions may rely on iterating over the one dimensional span bounded by the required_span_size().
+If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.</p>
+   <p>If neither are true, then the authors believe a more definition of iterators within the context of multidimensional containers is needed.
+Without such concepts, the current implementation is to isolate these functions in a way the user may provide custom overloads.</p>
+   <h3 class="heading settled" data-level="4.10" id="mdslice-submdspan-or-subtensor"><span class="secno">4.10. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
+    Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of P0009 have proposed a reasonable implementation to achieve this in proposal P2630. 
+   <p>If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.</p>
+   <p>The authors of this proposal are preferential to the implementation of P2630; however, are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
    <h3 class="heading settled" data-level="4.11" id="rank-one-extents-implicit-conversions"><span class="secno">4.11. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
-    alleviates verbosity of rank one tensors 
+    One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose: 
+<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- k>auto</c-> <c- n>N</c-><c- p>,</c-> … <c- o>></c->
+<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- n>tensor</c-><c- p>,</c-><tU0002CextentsU0003Csize_tU0002Cn>…<c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> … <c- o>></c->
+<c- n>using</c-> <c- n>dyn_vector</c-> <c- o>=</c-> <c- n>vector</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>dynamic_extent</c-><c- p>,</c-> … <c- o>></c-><c- p>;</c->
+
+<c- b>size_t</c-> <c- n>n</c-> <c- o>=</c-> …<c- p>;</c->
+<c- n>dyn_vector</c-> <tU0002C...><c- nf>vec</c-><c- p>(</c-> <c- n>extents</c-><c- p>(</c-><size_tU0002Cdynamic_extent> <c- n>n</c-> <c- p>)</c-> <c- p>);</c->
+<c- b>size_t</c-> <c- n>m</c-> <c- o>=</c-> <c- n>vec</c-><c- p>.</c-><c- n>extents</c-><c- p>().</c-><c- n>extent</c-><c- p>(</c-><c- mi>0</c-><c- p>);</c->
+</size_tU0002Cdynamic_extent></tU0002C...></tU0002CextentsU0003Csize_tU0002Cn></code></pre>
+   <p>
+    The code is clearly uglier than it need be.
+If the standard was to adopt a specialization which allowed extents
+    <tU0002Cdyn_extent>
+      to be implicitly constructible from the underlying integer type as well as allow extents
+     <tU0002Cn> to be implicitly convertible to the related integer type, then such code becomes significantly less verboseand feels more natural:</tU0002Cn>
+    </tU0002Cdyn_extent>
+   </p>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- k>auto</c-> <c- n>N</c-><c- p>,</c-> … <c- o>></c->
+<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- n>tensor</c-><c- p>,</c-><tU0002CextentsU0003Csize_tU0002Cn>…<c- o>></c-><c- p>;</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> … <c- o>></c->
+<c- n>using</c-> <c- n>dyn_vector</c-> <c- o>=</c-> <c- n>vector</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>dynamic_extent</c-><c- p>,</c-> … <c- o>></c-><c- p>;</c->
+
+<c- b>size_t</c-> <c- n>n</c-> <c- o>=</c-> …<c- p>;</c->
+<c- n>dyn_vector</c-> <tU0002C...><c- nf>vec</c-><c- p>(</c-> <c- n>n</c-> <c- p>);</c->
+<c- b>size_t</c-> <c- n>m</c-> <c- o>=</c-> <c- n>vec</c-><c- p>.</c-><c- n>extents</c-><c- p>();</c->
+</tU0002C...></tU0002CextentsU0003Csize_tU0002Cn></code></pre>
+   <p>The authors would like to gauge interest in allowing such specializations.</p>
    <h2 class="heading settled" data-level="5" id="considered-not-pursued"><span class="secno">5. </span><span class="content">Considered. Not Pursued.</span><a class="self-link" href="#considered-not-pursued"></a></h2>
    <p>Below are additional topics which may merit additional discussion.</p>
-   <h3 class="heading settled" data-level="5.1" id="additional-vector-like-functions"><span class="secno">5.1. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
+   <h3 class="heading settled" data-level="5.1" id="multi-dimensional-iterators"><span class="secno">5.1. </span><span class="content">Multi-dimensional Iterators</span><a class="self-link" href="#multi-dimensional-iterators"></a></h3>
+    Iterators which operate on multidimensional containers and views is a key concept not yet introduced to the standard. While the lack of them complicates certain implementations, the authors are choosing not to pursue defining these for a several reasons: 
+   <ul>
+    <li data-md>
+     <p>The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan.</p>
+    <li data-md>
+     <p>Previous versions of P0009 mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.</p>
+    <li data-md>
+     <p>Multi-dimensional iterators is a complex concept likely requiring its own proposal.</p>
+   </ul>
+   <h3 class="heading settled" data-level="5.2" id="additional-vector-like-functions"><span class="secno">5.2. </span><span class="content">Additional Vector-like functions</span><a class="self-link" href="#additional-vector-like-functions"></a></h3>
     Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ... 
    <p>The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.</p>
    <p>Additionally, single elements cannot simply be pushed; rather, entire subrank tensors would be added and removed. Considerable thought must given to the form those tensors would taken and how they would interact with existing mapping constructs.</p>
-   <h3 class="heading settled" data-level="5.2" id="comparison-operators"><span class="secno">5.2. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
+   <h3 class="heading settled" data-level="5.3" id="comparison-operators"><span class="secno">5.3. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
     Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal. 
-   <h3 class="heading settled" data-level="5.3" id="element-wise-functions"><span class="secno">5.3. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
-    Element-wise (or Hadamard) multiply and divide was additionally considered. The authors want to gauge interest before persuing. 
-   <h3 class="heading settled" data-level="5.4" id="tensor①"><span class="secno">5.4. </span><span class="content">tensor<boolU0002C...></boolU0002C...></span><a class="self-link" href="#tensor①"></a></h3>
+   <h3 class="heading settled" data-level="5.4" id="element-wise-functions"><span class="secno">5.4. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
+    Element-wise (or Hadamard) multiply and divide was additionally considered. The authors note other langauges like MATLAB and Python provide operator like syntax for achieving this. The authors want to gauge interest before pursuing. 
+   <h3 class="heading settled" data-level="5.5" id="tensor-bool"><span class="secno">5.5. </span><span class="content">tensor&lt; bool, ... ></span><a class="self-link" href="#tensor-bool"></a></h3>
     A specialization of tensor analogous to vector
    <bool>
      was considered. (Very briefly) 

@@ -497,14 +497,19 @@ C++23 introduced the assume attribute which could be used to achieve valarray-li
 
 <pre class="highlight">
 <code class="language-c++">
-[[nodiscard]] constexpr bool restrict( [[maybe_unused]] void* p ) noexcept { return true; }
+template < class T >
+[[nodiscard]] constexpr bool restrict( [[maybe_unused]] T* p ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
+template < class T >
+[[nodiscard]] constexpr bool restrict( [[maybe_unused]] T& ref ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
 </code>
 </pre>
 In the context of an [[ assume( ) ]],
 - The assume statement would be considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.
-- This function would allow the compiler to treat the pointer, p, as a restrict pointer in the same context as the C99 restrict keyword for the duration of the assume statement's lifetime.
+- This function would allow the compiler to treat the pointer, p, or reference, ref, as a restrict pointer or reference in the same context as the C99 restrict keyword for the duration of the assume statement's lifetime.
 
 The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.
+
+A shorter syntax may be to remove the assume() altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume().
 
 Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.
 
@@ -576,18 +581,75 @@ There are some glaring issues with adding these:
     - Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?
 
 ## Limitations without Iterators
-Some constructors/functions don't work well
+Several functions have no reasonable general solution when neither of the following are true:
+<pre class="highlight">
+<code class="language-c++">
+mapping_type::is_always_exhaustive()
+mapping_type::is_always_unique()
+</code>
+</pre>
+These functions include:
+- Constructors and assignmment operators on what amounts to one dimensional spans.
+- Constructors and assignmment operators on disparate tensor types.
+- Resize functions.
 
-## mdslice or subtensor
-How should non-owning views be created. Relevant: P2630
+If mapping_type::is_always_exhaustive() is true, then these functions may rely on iterating over the one dimensional span bounded by the required_span_size().
+If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.
+
+If neither are true, then the authors believe a more definition of iterators within the context of multidimensional containers is needed.
+Without such concepts, the current implementation is to isolate these functions in a way the user may provide custom overloads.
+
+## mdslice, submdspan, or subtensor
+Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of P0009 have proposed a reasonable implementation to achieve this in proposal P2630.
+
+If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.
+
+The authors of this proposal are preferential to the implementation of P2630; however, are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.
 
 ## Rank One Extents Implicit Conversions
-alleviates verbosity of rank one tensors
+One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose:
+
+<pre class="highlight">
+<code class="language-c++">
+template < T, auto N, … >
+using vector = tensor<T,extents<size_t,N>,…>;
+template < T, … >
+using dyn_vector = vector< T, dynamic_extent, … >;
+
+size_t n = …;
+dyn_vector<T,...> vec( extents<size_t,dynamic_extent>( n ) );
+size_t m = vec.extents().extent(0);
+</code>
+</pre>
+
+The code is clearly uglier than it need be.
+If the standard was to adopt a specialization which allowed extents<T,dyn_extent> to be implicitly constructible from the underlying integer type as well as allow extents<T,N> to be implicitly convertible to the related integer type, then such code becomes significantly less verboseand feels more natural:
+
+<pre class="highlight">
+<code class="language-c++">
+template < T, auto N, … >
+using vector = tensor<T,extents<size_t,N>,…>;
+template < T, … >
+using dyn_vector = vector< T, dynamic_extent, … >;
+
+size_t n = …;
+dyn_vector<T,...> vec( n );
+size_t m = vec.extents();
+</code>
+</pre>
+
+The authors would like to gauge interest in allowing such specializations.
 
 Considered. Not Pursued.
 ========================
 
 Below are additional topics which may merit additional discussion.
+
+## Multi-dimensional Iterators
+Iterators which operate on multidimensional containers and views is a key concept not yet introduced to the standard. While the lack of them complicates certain implementations, the authors are choosing not to pursue defining these for a several reasons:
+- The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan.
+- Previous versions of P0009 mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.
+- Multi-dimensional iterators is a complex concept likely requiring its own proposal.
 
 ## Additional Vector-like functions
 Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ...
@@ -600,9 +662,9 @@ Additionally, single elements cannot simply be pushed; rather, entire subrank te
 Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal.
 
 ## Element-wise Functions
-Element-wise (or Hadamard) multiply and divide was additionally considered. The authors want to gauge interest before persuing.
+Element-wise (or Hadamard) multiply and divide was additionally considered. The authors note other langauges like MATLAB and Python provide operator like syntax for achieving this. The authors want to gauge interest before pursuing.
 
-## tensor<bool,...>
+## tensor< bool, ... >
 A specialization of tensor analogous to vector<bool> was considered. (Very briefly)
 
 Acknowledgements {#acknowledge}
