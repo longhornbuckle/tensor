@@ -42,7 +42,7 @@ While such an adaptor may be useful, it both significant obscurs behavior and co
 - P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
 The authors have the following concerns in regards to the current iteration of P1385:
     - The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.
-    - The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt the mdspan paradigms wholesale.
+    - The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.
     - The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.
 
 The scope of this proposal is contained to the definition of this new container as well as related class and concepts.
@@ -50,9 +50,9 @@ The scope of this proposal is contained to the definition of this new container 
 Description {#descript}
 =======================
 
-<h3>Concepts</h3>
+## Concepts
 
-<h4>Tensor Expression</h4>
+### Tensor Expression
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -80,7 +80,7 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
-<h4>Readable Tensor</h4>
+### Readable Tensor
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -124,7 +124,7 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
-<h4>Writable Tensor</h4>
+### Writable Tensor
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -139,7 +139,7 @@ requires( T& t, typename T::value_type v, auto ... indices )
 </code>
 </pre>
 
-<h4>Static Tensor</h4>
+### Static Tensor
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -155,7 +155,7 @@ requires
 </code>
 </pre>
 
-<h4>Dynamic Tensor</h4>
+### Dynamic Tensor
 <pre class="highlight">
 <code class="language-c++">
 template < class T >
@@ -182,7 +182,7 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
 </code>
 </pre>
 
-<h4>Unary Tensor Expression</h4>
+### Unary Tensor Expression
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -200,7 +200,7 @@ requires ( T t )
 </code>
 </pre>
 
-<h4>Binary Tensor Expression</h4>
+### Binary Tensor Expression
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -219,7 +219,7 @@ requires ( T t )
 </code>
 </pre>
 
-<h3>Tensor</h3>
+## Tensor
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -366,7 +366,7 @@ Mandates:
 - LayoutPolicy shall meet the layout mapping policy requirements.
 - AccessorPolicy shall meet the accessor policy requirements.
 
-<h3>Tensor Expressions</h3>
+## Tensor Expressions
 This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
 
 Design Questions {#questions}
@@ -374,7 +374,7 @@ Design Questions {#questions}
 
 These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.
 
-<h3>Fixed Size Tensor</h3>
+## Fixed Size Tensor
 On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
 There are several ways this could be addressed:
 1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
@@ -392,7 +392,7 @@ There are several ways this could be addressed:
     - Many existing c++ libraries such as Boost and Eigen already provide such optimizations. Not providing it would discourage standard adoption.
     - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
 
-<h3>Capacity and Reserve</h3>
+## Capacity and Reserve
 The expected behavior of reserve also needs further guidance. There are several options to take:
 1.  The reserve( const size_type& cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.
     - After the call, the capacity is greater than or equal to cap if reallocation happens, and equal to the previous capacity otherwise.
@@ -449,12 +449,12 @@ The expected behavior of reserve also needs further guidance. There are several 
     Disadvantages:
     - Introduces another template parameter; however, this can be marginalized through appropriate aliasing.
 
-<h3>Dynamic Only Extents</h3>
+## Dynamic Only Extents
 Should tensor require extents_type::dynamic_rank() != 0?
 
 If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
 
-<h3>[[[nodiscard]]] Clarification</h3>
+## [[[nodiscard]]] Clarification
 The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
 
 P0600 is the proposal which motivated the addition of [[nodiscard]] to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [[[nodiscard]]] on future additions to the proposal:
@@ -481,7 +481,7 @@ In the authors' experience - much in high performance computing, at( OtherIndexT
 The authors do not wish to engage in evolving a better approach to memory safe access. The authors merely seek guidance on whether at( OtherIndexTypes ... indices ) is a desired function.
 The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices ).
 
-<h3>Resize mapping_type</h3>
+## Resize mapping_type
 
 The layout policy and mapping concepts established by P0900 are insufficient for handling resizing of containers - likely because there was no need to address it. The current approach for the implementation is to isolate pieces of code where this is needed such that users may implement custom overloads.
 
@@ -492,12 +492,12 @@ The mapping_type needs to provide a mechanism allowing for the container to resi
 <pre class="highlight"> <code class="language-c++"> void mapping_type( const mapping_type& map, const extents_type& new_e ); </code> </pre>
     However, this approach may be less efficient owing to an additional assignment required.
 
-<h3>[[ assume( restrict( [[maybe_unused]] p ) ) ]]</h3>
+## [[ assume( restrict( p ) ) ]]
 C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function
 
 <pre class="highlight">
 <code class="language-c++">
-[[nodiscard]] constexpr bool restrict( void* p ) noexcept { return true; }
+[[nodiscard]] constexpr bool restrict( [[maybe_unused]] void* p ) noexcept { return true; }
 </code>
 </pre>
 In the context of an [[ assume( ) ]],
@@ -508,7 +508,7 @@ The authors are aware there has been significant work over the years to introduc
 
 Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.
 
-<h3>Vector and Matrix Aliases</h3>
+## Vector and Matrix Aliases
 
 The authors would like to add additonal aliases to the standard as well for both convenience and clarity:
 
@@ -575,13 +575,13 @@ There are some glaring issues with adding these:
 - tensor_view is just a renaming of mdspan. This could be confusing. It is also worth noting mdspan does not provide some member functions which tensor does, but does not require data ownership to perform.
     - Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?
 
-<h3>Limitations without Iterators</h3>
+## Limitations without Iterators
 Some constructors/functions don't work well
 
-<h3>mdslice or subtensor</h3>
+## mdslice or subtensor
 How should non-owning views be created. Relevant: P2630
 
-<h3>Rank One Extents Implicit Conversions</h3>
+## Rank One Extents Implicit Conversions
 alleviates verbosity of rank one tensors
 
 Considered. Not Pursued.
@@ -589,20 +589,20 @@ Considered. Not Pursued.
 
 Below are additional topics which may merit additional discussion.
 
-<h3>Additional Vector-like functions</h3>
+## Additional Vector-like functions
 Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ...
 
 The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.
 
 Additionally, single elements cannot simply be pushed; rather, entire subrank tensors would be added and removed. Considerable thought must given to the form those tensors would taken and how they would interact with existing mapping constructs.
 
-<h3>Comparison Operators</h3>
+## Comparison Operators
 Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal.
 
-<h3>Element-wise Functions</h3>
+## Element-wise Functions
 Element-wise (or Hadamard) multiply and divide was additionally considered. The authors want to gauge interest before persuing.
 
-<h3>tensor<bool,...></h3>
+## tensor<bool,...>
 A specialization of tensor analogous to vector<bool> was considered. (Very briefly)
 
 Acknowledgements {#acknowledge}

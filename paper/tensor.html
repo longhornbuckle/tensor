@@ -2007,7 +2007,7 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#nodiscard-clarification"><span class="secno">4.4</span> <span class="content">[<span>[nodiscard]</span>] Clarification</span></a>
       <li><a href="#safe-memory-access"><span class="secno">4.5</span> <span class="content">Safe Memory Access</span></a>
       <li><a href="#resize-mapping_type"><span class="secno">4.6</span> <span class="content">Resize mapping_type</span></a>
-      <li><a href="#-assume-restrict-maybe_unused-p"><span class="secno">4.7</span> <span class="content">[[ assume( restrict( <span>[maybe_unused]</span> p ) ) ]]</span></a>
+      <li><a href="#-assume-restrict-p"><span class="secno">4.7</span> <span class="content">[[ assume( restrict( p ) ) ]]</span></a>
       <li><a href="#vector-and-matrix-aliases"><span class="secno">4.8</span> <span class="content">Vector and Matrix Aliases</span></a>
       <li><a href="#limitations-without-iterators"><span class="secno">4.9</span> <span class="content">Limitations without Iterators</span></a>
       <li><a href="#mdslice-or-subtensor"><span class="secno">4.10</span> <span class="content">mdslice or subtensor</span></a>
@@ -2063,7 +2063,7 @@ The authors have the following concerns in regards to the current iteration of P
       <li data-md>
        <p>The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.</p>
       <li data-md>
-       <p>The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt the mdspan paradigms wholesale.</p>
+       <p>The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.</p>
       <li data-md>
        <p>The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.</p>
      </ul>
@@ -2537,9 +2537,9 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
 <pre class="highlight"><code class="language-c++ highlight"> <c- b>void</c-> <c- nf>mapping_type</c-><c- p>(</c-> <c- k>const</c-> <c- n>mapping_type</c-><c- o>&amp;</c-> <c- n>map</c-><c- p>,</c-> <c- k>const</c-> <c- n>extents_type</c-><c- o>&amp;</c-> <c- n>new_e</c-> <c- p>);</c-> </code> </pre>
      <p>However, this approach may be less efficient owing to an additional assignment required.</p>
    </ul>
-   <h3 class="heading settled" data-level="4.7" id="-assume-restrict-maybe_unused-p"><span class="secno">4.7. </span><span class="content">[[ assume( restrict( <span>[maybe_unused]</span> p ) ) ]]</span><a class="self-link" href="#-assume-restrict-maybe_unused-p"></a></h3>
+   <h3 class="heading settled" data-level="4.7" id="-assume-restrict-p"><span class="secno">4.7. </span><span class="content">[[ assume( restrict( p ) ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
     C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function 
-<pre class="highlight"><code class="language-c++ highlight"><c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- kr>restrict</c-><c- p>(</c-> <c- b>void</c-><c- o>*</c-> <c- n>p</c-> <c- p>)</c-> <c- n>noexcept</c-> <c- p>{</c-> <c- k>return</c-> true<c- p>;</c-> <c- p>}</c->
+<pre class="highlight"><code class="language-c++ highlight"><c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- b>bool</c-> <c- kr>restrict</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- b>void</c-><c- o>*</c-> <c- n>p</c-> <c- p>)</c-> <c- n>noexcept</c-> <c- p>{</c-> <c- k>return</c-> true<c- p>;</c-> <c- p>}</c->
 </code></pre>
    <p>In the context of an [[ assume( ) ]],</p>
    <ul>
