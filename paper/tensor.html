@@ -1958,7 +1958,7 @@ dfn > a.self-link::before      { content: "#"; }
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">The Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-03">3 May 2023</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-04">4 May 2023</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2129,10 +2129,6 @@ The authors have the following concerns in regards to the current iteration of P
   <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_strided</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
   <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_exhaustive</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
   <c- n>bool_constant</c-><c- o>&lt;</c-> <c- n>T</c-><c- o>::</c-><c- n>is_always_unique</c-><c- p>()</c-> <c- o>>::</c-><c- n>value</c-><c- p>;</c->
-<c- p>}</c-> <c- o>&amp;&amp;</c->
-<c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
-<c- p>{</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- o>&lt;</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>reference</c-> <c- o>></c-><c- p>;</c->
 <c- p>};</c->
 <c- p>}</c->
 </code></pre>
@@ -2141,9 +2137,9 @@ The authors have the following concerns in regards to the current iteration of P
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>writable_tensor</c-> <c- o>=</c->
 <c- n>readable_tensor</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
-<c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>typename</c-> <c- n>T</c-><c- o>::</c-><c- n>value_type</c-> <c- n>v</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
+<c- n>requires</c-><c- p>(</c-> <c- n>T</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>auto</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>)</c->
 <c- p>{</c->
-  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- o>=</c-> <c- n>v</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- p>;</c-><typename tU0003AU0003Areference>
+  <c- p>{</c-> <c- n>t</c-><c- p>.</c-><c- n>operator</c-><c- p>[](</c-> <c- n>indices</c-> <c- p>...</c-> <c- p>)</c-> <c- p>}</c-> <c- o>-></c-> <c- n>same_as</c-><c- p>;</c-><typename tU0003AU0003Areference_type>
 <c- p>};</c->
 <c- p>}</c->
 </typename></code></pre>
@@ -2368,7 +2364,7 @@ The authors have the following concerns in regards to the current iteration of P
    <p>These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.</p>
    <h3 class="heading settled" data-level="4.1" id="fixed-size-tensor"><span class="secno">4.1. </span><span class="content">Fixed Size Tensor</span><a class="self-link" href="#fixed-size-tensor"></a></h3>
     On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
-There are several ways this could be addressed: 
+There are a couple paths which could be taken: 
    <ol>
     <li data-md>
      <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
@@ -2377,25 +2373,21 @@ dr_tensor would adopt the existing tensor interface wholesale.
 This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
 The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.</p>
     <li data-md>
-     <p>Another partial solution would be to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:</p>
+     <p>Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:</p>
      <ul>
       <li data-md>
        <p>The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.</p>
       <li data-md>
-       <p>This also fails to achieve full memory optimization - still requiring a pointer to a local buffer.
+       <p>This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.</p>
+      <li data-md>
+       <p>Many existing applications already make use of fixed size optimization to improvement performance.</p>
+      <li data-md>
+       <p>Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.</p>
+      <li data-md>
+       <p>Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
 A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.</p>
       <li data-md>
        <p>This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.</p>
-     </ul>
-    <li data-md>
-     <p>Not addressing fixed size tensors would allow more focus on the existing tensor class; however, there are drawbacks:</p>
-     <ul>
-      <li data-md>
-       <p>Many existing applications already make use of these optimization to improvement performance.</p>
-      <li data-md>
-       <p>Many existing c++ libraries such as Boost and Eigen already provide such optimizations. Not providing it would discourage standard adoption.</p>
-      <li data-md>
-       <p>Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.</p>
      </ul>
    </ol>
    <h3 class="heading settled" data-level="4.2" id="capacity-and-reserve"><span class="secno">4.2. </span><span class="content">Capacity and Reserve</span><a class="self-link" href="#capacity-and-reserve"></a></h3>
@@ -2476,7 +2468,7 @@ It encourages implementations of ordered strided layouts which still allow effic
       <li data-md>
        <p>This requires the additional mandate that for all r in the range [0,rank()), ( CapExtents::static_extent(r) == Extents::static_extent(r) || ( CapExtents::static_extent(r) != std::dynamic_extent &amp;&amp; Extents::static_extent(r) == dynamic_extent ).</p>
       <li data-md>
-       <p>This allows for some parallels to the Boost static_vector and subsequent P0843 fixed_capacity_vector / static_vector; however, unlike those proposes - it does not guarantee local memory access. (An allocator is still used even if none of the capacity extents are dynamic.)</p>
+       <p>This allows for some parallels to the Boost static_vector and subsequent proposal P0843 fixed_capacity_vector / static_vector; however, unlike those proposals - it does not guarantee local memory access. (An allocator is still used even if none of the capacity extents are dynamic.)</p>
      </ul>
      <p>Advantages:</p>
      <ul>
@@ -2494,6 +2486,7 @@ It encourages implementations of ordered strided layouts which still allow effic
    <h3 class="heading settled" data-level="4.3" id="dynamic-only-extents"><span class="secno">4.3. </span><span class="content">Dynamic Only Extents</span><a class="self-link" href="#dynamic-only-extents"></a></h3>
     Should tensor require extents_type::dynamic_rank() != 0? 
    <p>If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type&amp; alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.</p>
+   <p>Alternatively, tensor could impose the requirement only on the impacted constructors.</p>
    <h3 class="heading settled" data-level="4.4" id="nodiscard-clarification"><span class="secno">4.4. </span><span class="content">[<span>[nodiscard]</span>] Clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
     The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [<span>[nodiscard]</span>] to the empty() function consistent with the specification of a number of STL containers. 
    <p>P0600 is the proposal which motivated the addition of <span>[nodiscard]</span> to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [<span>[nodiscard]</span>] on future additions to the proposal:</p>
@@ -2566,13 +2559,13 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028nU00029U0002Cstatic_castU0003Csize_t><c- n>N</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Extents</c-><c- p>,</c->
@@ -2584,12 +2577,12 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- k>auto</c->  <c- n>C</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>matrix_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028rU00029U0002CrU0002Cc> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>matrix_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>vector_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><decltypeU00028nU00029U0002Cn> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>vector_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028nU00029U0002Cstatic_castU0003Csize_t><c- n>N</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 
 <c- n>namespace</c-> <c- n>pmr</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
@@ -2610,7 +2603,7 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
 <c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>N</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>pmr</c-><c- o>::</c-><c- n>polymorphic_allocator</c-><c- p>,</c-><t> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- p>}</c->
 <c- p>}</c->
-</t></t></t></t></t></t></decltypeU00028nU00029U0002Cn></t></decltypeU00028rU00029U0002CrU0002Cc></t></t></decltypeU00028nU00029U0002Cn></decltypeU00028nU00029U0002Cn></t></t></decltypeU00028rU00029U0002CrU0002Cc></decltypeU00028rU00029U0002CrU0002Cc></t></t></code></pre>
+</t></t></t></t></t></t></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></t></t></decltypeU00028nU00029U0002Cn></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></t></t></code></pre>
    <p>There are some glaring issues with adding these:</p>
    <ul>
     <li data-md>
@@ -2641,6 +2634,8 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
      <p>Constructors and assignmment operators on disparate tensor types.</p>
     <li data-md>
      <p>Resize functions.</p>
+    <li data-md>
+     <p>Most algebraic functions</p>
    </ul>
    <p>If mapping_type::is_always_exhaustive() is true, then these functions may rely on iterating over the one dimensional span bounded by the required_span_size().
 If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.</p>
@@ -2649,7 +2644,7 @@ Without such concepts, the current implementation is to isolate these functions 
    <h3 class="heading settled" data-level="4.10" id="mdslice-submdspan-or-subtensor"><span class="secno">4.10. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
     Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of P0009 have proposed a reasonable implementation to achieve this in proposal P2630. 
    <p>If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.</p>
-   <p>The authors of this proposal are preferential to the implementation of P2630; however, are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
+   <p>The authors of this proposal are preferential to the implementation of P2630; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
    <h3 class="heading settled" data-level="4.11" id="rank-one-extents-implicit-conversions"><span class="secno">4.11. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
     One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose: 
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- k>auto</c-> <c- n>N</c-><c- p>,</c-> … <c- o>></c->
@@ -2705,6 +2700,12 @@ If the standard was to adopt a specialization which allowed extents
      was considered. (Very briefly) 
     <h2 class="heading settled" data-level="6" id="acknowledge"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledge"></a></h2>
     <h2 class="heading settled" data-level="7" id="related"><span class="secno">7. </span><span class="content">Related Work</span><a class="self-link" href="#related"></a></h2>
+     In work.
+P0009
+P1385
+P1673
+P2670
+D1684 
    </bool>
   </main>
 <script>

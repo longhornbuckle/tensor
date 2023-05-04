@@ -115,10 +115,6 @@ requires( const T& t, typename T::rank_type n )
   bool_constant< T::is_always_strided() >::value;
   bool_constant< T::is_always_exhaustive() >::value;
   bool_constant< T::is_always_unique() >::value;
-} &&
-requires( T& t, auto ... indices )
-{
-  { t.operator[]( indices ... ) } -> same_as< typename T::reference >;
 };
 }
 </code>
@@ -131,9 +127,9 @@ namespace std {
 template < class T >
 concept writable_tensor =
 readable_tensor< T > &&
-requires( T& t, typename T::value_type v, auto ... indices )
+requires( T& t, auto ... indices )
 {
-  { t.operator[]( indices ... ) = v } -> same_as<typename T::reference>;
+  { t.operator[]( indices ... ) } -> same_as<typename T::reference_type>;
 };
 }
 </code>
@@ -376,21 +372,20 @@ These are issues for which different approaches may be taken. Many have pros and
 
 ## Fixed Size Tensor
 On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
-There are several ways this could be addressed:
+There are a couple paths which could be taken:
 1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
     fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
     dr_tensor would adopt the existing tensor interface wholesale.
     This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
     The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.
-2.  Another partial solution would be to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
+2.  Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
     - The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.
-    - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer.
+    - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.
+    - Many existing applications already make use of fixed size optimization to improvement performance.
+    - Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.
+    - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
     A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.
     - This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.
-3.  Not addressing fixed size tensors would allow more focus on the existing tensor class; however, there are drawbacks:
-    - Many existing applications already make use of these optimization to improvement performance.
-    - Many existing c++ libraries such as Boost and Eigen already provide such optimizations. Not providing it would discourage standard adoption.
-    - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
 
 ## Capacity and Reserve
 The expected behavior of reserve also needs further guidance. There are several options to take:
@@ -440,7 +435,7 @@ The expected behavior of reserve also needs further guidance. There are several 
     </code>
     </pre>
     - This requires the additional mandate that for all r in the range [0,rank()), ( CapExtents::static_extent(r) == Extents::static_extent(r) || ( CapExtents::static_extent(r) != std::dynamic_extent && Extents::static_extent(r) == dynamic_extent ).
-    - This allows for some parallels to the Boost static_vector and subsequent P0843 fixed_capacity_vector / static_vector; however, unlike those proposes - it does not guarantee local memory access. (An allocator is still used even if none of the capacity extents are dynamic.)
+    - This allows for some parallels to the Boost static_vector and subsequent proposal P0843 fixed_capacity_vector / static_vector; however, unlike those proposals - it does not guarantee local memory access. (An allocator is still used even if none of the capacity extents are dynamic.)
     
     Advantages:
     - Same advantages as 2.
@@ -453,6 +448,8 @@ The expected behavior of reserve also needs further guidance. There are several 
 Should tensor require extents_type::dynamic_rank() != 0?
 
 If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
+
+Alternatively, tensor could impose the requirement only on the impacted constructors.
 
 ## [[[nodiscard]]] Clarification
 The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
@@ -527,13 +524,13 @@ template < class T,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using matrix = tensor< T, extents<decltype(R),R,C>, LayoutPolicy, extents<decltype(R),R,C>, Allocator, AccessorPolicy >;
+using matrix = tensor< T, extents<decltype(R),static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, extents<decltype(R),static_cast<size_t>(R),static_cast<size_t>(C)>, Allocator, AccessorPolicy >;
 template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using vector = tensor< T, extents<decltype(N),N>, LayoutPolicy, extents<decltype(N),N>, Allocator, AccessorPolicy >;
+using vector = tensor< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, extents<decltype(N),N>, Allocator, AccessorPolicy >;
 
 template < class T,
            class Extents,
@@ -545,12 +542,12 @@ template < class T,
            auto  C,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using matrix_view = mdspan< T, extents<decltype(R),R,C>, LayoutPolicy, AccessorPolicy >;
+using matrix_view = mdspan< T, extents<decltype(R),static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, AccessorPolicy >;
 template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using vector_view = mdspan< T, extents<decltype(N),N>, LayoutPolicy, AccessorPolicy >;
+using vector_view = mdspan< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, AccessorPolicy >;
 
 namespace pmr {
 template < class T,
@@ -593,6 +590,7 @@ These functions include:
 - Constructors and assignmment operators on what amounts to one dimensional spans.
 - Constructors and assignmment operators on disparate tensor types.
 - Resize functions.
+- Most algebraic functions
 
 If mapping_type::is_always_exhaustive() is true, then these functions may rely on iterating over the one dimensional span bounded by the required_span_size().
 If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.
@@ -605,7 +603,7 @@ Accessing non-owning (potentially) sub-dimensional views of tensors is an import
 
 If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.
 
-The authors of this proposal are preferential to the implementation of P2630; however, are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.
+The authors of this proposal are preferential to the implementation of P2630; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.
 
 ## Rank One Extents Implicit Conversions
 One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose:
@@ -673,3 +671,9 @@ Acknowledgements {#acknowledge}
 
 Related Work {#related}
 =======================
+In work.
+P0009
+P1385
+P1673
+P2670
+D1684

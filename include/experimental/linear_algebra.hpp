@@ -27,6 +27,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
+#include <valarray>
 
 //- mdspan include
 #include <experimental/mdspan>

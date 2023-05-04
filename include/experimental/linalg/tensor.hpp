@@ -346,18 +346,18 @@ class tensor
     /// @param indices set indices representing a node in the tensor
     /// @returns value at row i, column j, depth k, etc.
     #if LINALG_USE_BRACKET_OPERATOR
-    template < class ... IndexType >
-    [[nodiscard]] constexpr const_reference operator[]( IndexType ... indices ) const noexcept
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr const_reference operator[]( OtherIndexType ... indices ) const noexcept
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,index_type> && ... )
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       ;
     #endif
     #if LINALG_USE_PAREN_OPERATOR
-    template < class ... IndexType >
-    [[nodiscard]] constexpr const_reference operator()( IndexType ... indices ) const noexcept
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr const_reference operator()( OtherIndexType ... indices ) const noexcept
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,index_type> && ... )
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       ;
     #endif
@@ -368,18 +368,18 @@ class tensor
     /// @param indices set indices representing a node in the tensor
     /// @returns mutable value at row i, column j, depth k, etc.
     #if LINALG_USE_BRACKET_OPERATOR
-    template < class ... IndexType >
-    [[nodiscard]] constexpr reference operator[]( IndexType ... indices ) noexcept
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr reference operator[]( OtherIndexType ... indices ) noexcept
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,index_type> && ... )
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       ;
     #endif
     #if LINALG_USE_PAREN_OPERATOR
-    template < class ... IndexType >
-    [[nodiscard]] constexpr reference operator()( IndexType ... indices ) noexcept
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr reference operator()( OtherIndexType ... indices ) noexcept
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,index_type> && ... )
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       ;
     #endif
@@ -1018,12 +1018,12 @@ constexpr void tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
 
 #if LINALG_USE_BRACKET_OPERATOR
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class ... IndexType >
+template < class ... OtherIndexType >
 [[nodiscard]] constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::const_reference
-tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( IndexType ... indices ) const noexcept
+tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( OtherIndexType ... indices ) const noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( sizeof...(IndexType) == rank() ) &&
-           ( ::std::is_convertible_v<IndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
+  requires ( sizeof...(OtherIndexType) == rank() ) &&
+           ( ::std::is_convertible_v<OtherIndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
   return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
@@ -1032,11 +1032,11 @@ tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( 
 
 #if LINALG_USE_PAREN_OPERATOR
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class ... IndexType >
+template < class ... OtherIndexType >
 [[nodiscard]] constexpr typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::const_reference
-tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator()( IndexType ... indices ) const noexcept
+tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator()( OtherIndexType ... indices ) const noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
+  requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
   return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
@@ -1047,11 +1047,11 @@ tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator()( 
 
 #if LINALG_USE_BRACKET_OPERATOR
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class ... IndexType >
+template < class ... OtherIndexType >
 [[nodiscard]] constexpr typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::reference
-tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( IndexType ... indices ) noexcept
+tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( OtherIndexType ... indices ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
+  requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
   return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
@@ -1060,11 +1060,11 @@ tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[]( 
 
 #if LINALG_USE_PAREN_OPERATOR
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class ... IndexType >
+template < class ... OtherIndexType >
 [[nodiscard]] constexpr typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::reference
-tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator()( IndexType ... indices ) noexcept
+tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator()( OtherIndexType ... indices ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( sizeof...(IndexType) == rank() ) && ( ::std::is_convertible_v<IndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
+  requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
   return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
