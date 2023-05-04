@@ -504,7 +504,8 @@ template < class T >
 </code>
 </pre>
 In the context of an [[ assume( ) ]],
-- The assume statement would be considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.
+- The assume statement is considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.
+- The lifetime of the assume statement is unique to the calling thread and inaccesible from other threads.
 - This function would allow the compiler to treat the pointer, p, or reference, ref, as a restrict pointer or reference in the same context as the C99 restrict keyword for the duration of the assume statement's lifetime.
 
 The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.

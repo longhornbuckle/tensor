@@ -2548,7 +2548,9 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
    <p>In the context of an [[ assume( ) ]],</p>
    <ul>
     <li data-md>
-     <p>The assume statement would be considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.</p>
+     <p>The assume statement is considered to have a lifetime equivalent to that of any real variable declaration; however, the compiler is not required to construct any object.</p>
+    <li data-md>
+     <p>The lifetime of the assume statement is unique to the calling thread and inaccesible from other threads.</p>
     <li data-md>
      <p>This function would allow the compiler to treat the pointer, p, or reference, ref, as a restrict pointer or reference in the same context as the C99 restrict keyword for the duration of the assume statement’s lifetime.</p>
    </ul>
