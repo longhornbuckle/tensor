@@ -2264,7 +2264,7 @@ The authors have the following concerns in regards to the current iteration of P
     <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- p>[[</c-><c- n>maybe_unused</c-><c- p>]]</c-> <c- n>from_range_t</c-><c- p>,</c-> <c- n>R</c-><c- o>&amp;&amp;</c-> <c- n>rg</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
     
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
-    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
+    <c- n>explicit</c-> <c- n>constexpr</c-> <c- n>tensor</c-><c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- o>=</c-> <c- n>allocator_type</c-><c- p>()</c-> <c- p>);</c->
 
     <c- n>constexpr</c-> <c- nf>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- nf>tensor</c-><c- p>(</c-> <c- k>const</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-><c- p>,</c-> <c- k>const</c-> <c- n>allocator_type</c-><c- o>&amp;</c-> <c- n>alloc</c-> <c- p>);</c->
@@ -2279,7 +2279,7 @@ The authors have the following concerns in regards to the current iteration of P
                                                             <c- n>allocator_traits</c-><c- o>&lt;</c-> <c- n>allocator_type</c-> <c- o>>::</c-><c- n>is_always_equal</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>rhs</c-> <c- p>);</c->
     <c- c1>// NOTE: This assignment operator requires the same requirements as the constructors</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-> <c- o>=</c-> <c- p>(</c-> <c- k>const</c-> <c- n>initializer_list</c-><c- o>&lt;</c-> <c- n>value_type</c-> <c- o>></c-> <c- n>il</c-> <c- p>);</c->
 
@@ -2405,7 +2405,7 @@ A similar and full solution would be to package the pointer and allocator requir
     The expected behavior of reserve also needs further guidance. There are several options to take: 
    <ol>
     <li data-md>
-     <p>The reserve( const size_type&amp; cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.</p>
+     <p>The reserve( size_type cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.</p>
      <ul>
       <li data-md>
        <p>After the call, the capacity is greater than or equal to cap if reallocation happens, and equal to the previous capacity otherwise.</p>

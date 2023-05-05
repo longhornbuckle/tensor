@@ -269,7 +269,7 @@ class tensor
     constexpr tensor( [[maybe_unused]] from_range_t, R&& rg, const allocator_type& alloc = allocator_type() );
     
     template < tensor_expression Tensor >
-    explicit constexpr tensor( const Tensor& t, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( Tensor&& t, const allocator_type& alloc = allocator_type() );
 
     constexpr tensor( const tensor& rhs );
     constexpr tensor( const tensor& rhs, const allocator_type& alloc );
@@ -284,7 +284,7 @@ class tensor
                                                             allocator_traits< allocator_type >::is_always_equal );
     constexpr tensor& operator = ( const tensor& rhs );
     template < tensor_expression Tensor >
-    constexpr tensor& operator = ( const Tensor& rhs );
+    constexpr tensor& operator = ( Tensor&& rhs );
     // NOTE: This assignment operator requires the same requirements as the constructors
     constexpr tensor& operator = ( const initializer_list< value_type > il );
 
@@ -396,7 +396,7 @@ There are a couple paths which could be taken:
 
 ## Capacity and Reserve
 The expected behavior of reserve also needs further guidance. There are several options to take:
-1.  The reserve( const size_type& cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.
+1.  The reserve( size_type cap ) member function is a directive that informs a tensor object of a planned change in size so that it can manage the storage allocation accordingly.
     - After the call, the capacity is greater than or equal to cap if reallocation happens, and equal to the previous capacity otherwise.
     - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
     - Pointers and references into the tensor may not be valid after calling reserve.
