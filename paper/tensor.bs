@@ -524,13 +524,13 @@ template < class T,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using matrix = tensor< T, extents<common_type_t<decltype(R),decltype(C)>,static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, extents<decltype(R),static_cast<size_t>(R),static_cast<size_t>(C)>, Allocator, AccessorPolicy >;
+using matrix = tensor< T, extents<common_type_t<decltype(R),decltype(C)>,static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, Allocator, AccessorPolicy >;
 template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using vector = tensor< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, extents<decltype(N),N>, Allocator, AccessorPolicy >;
+using vector = tensor< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, Allocator, AccessorPolicy >;
 
 template < class T,
            class Extents,
