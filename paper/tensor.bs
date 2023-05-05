@@ -412,13 +412,10 @@ The expected behavior of reserve also needs further guidance. There are several 
     - While implementers could choose to implement capacity as an extents_type (discussed in the next alternative), there is insufficient directive in how resize will be performed to make meaningful use of it. (As just discussed, {M,N} and {MxN,1} are very different tensors.)
 
 2.  The reserve( const extents_type& e ) member function is a directive that informs a tensor object of a planned change in size, so that it can manage the storage allocation accordingly.
-    - After the call, the capacity is greater than or equal to the mapping_type(e).required_span_size() if reallocation happens, and equal to the previous capacity otherwise.
-    - After the call, the capacity is at least sufficient to contain the required elements in each dimension of e. If the existing capacity is insufficient, then reallocation may be attempted. If no reallocation occurs, then the capacity remains the same.
-    - Failure to reserve capacity shall result in no other side effects. (The tensor remains in a valid and usable state.)
-    - Pointers and references into the tensor may not be valid after calling reserve.
-    - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) <= e.extent(r) for all r in the range[0,rank()) shall incur no re-allocation.
-    - After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) > e.extent(r) for all r in the range[0,rank()) or mapping_type(s).required_span_size() > currrent mapping_type's required_span_size() re-allocation shall be attempted.
-    - After successfully calling reserve, if neither of the above two conditions are true, then re-allocation behavior is implementation defined.
+    After the call, the capacity is greater than or equal to the mapping_type(e).requested_span_size() if reallocation happens, and equal to the previous capacity otherwise. Reallocation happens at this point if and only if the current capacity is less than the mapping_type(e).requested_span_size().
+    If an exception is thrown other than by the move constructor of a Cpp17NonCopyInsertable type, there are no effects.
+    It throws length_error if max_size() < mapping_type(e).required_span_size().
+    After successfully calling reserve, any resize( const extents_type& s ) for which the resultant s.extent(r) <= e.extent(r) for all r in the range[0,rank()) shall incur no re-allocation.
     
     Advantages:
     - This allows for implementations to provide similar guarantees to std::vector in so far as the efficiency of resizing.
