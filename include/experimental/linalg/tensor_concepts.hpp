@@ -141,33 +141,37 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   { T( s, alloc ) };
 };
 
-// Unary tensor expression concept
+// Unevaluated tensor expression
 template < class T >
-concept unary_tensor_expression =
+concept unevaluated_tensor_expression =
 tensor_expression< T > &&
-requires ( T t )
+requires( T t )
 {
-  { t.underlying() } -> tensor_expression;
   { t.operator auto() };
 } &&
 tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
 ( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
   dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+
+// Unary tensor expression concept
+template < class T >
+concept unary_tensor_expression =
+unevaluated_tensor_expression< T > &&
+requires ( T t )
+{
+  { t.underlying() } -> tensor_expression;
+};
 
 // Binary tensor expression concept
 
 template < class T >
 concept binary_tensor_expression =
-tensor_expression< T > &&
+unevaluated_tensor_expression< T > &&
 requires ( T t )
 {
   { t.first() } -> tensor_expression;
   { t.second() } -> tensor_expression;
-  { t.operator auto() };
-} &&
-tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
-( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
-  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+};
 
 
 #else

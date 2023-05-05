@@ -1958,7 +1958,7 @@ dfn > a.self-link::before      { content: "#"; }
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">The Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-04">4 May 2023</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Working Draft, <time class="dt-updated" datetime="2023-05-05">5 May 2023</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -1996,7 +1996,12 @@ dfn > a.self-link::before      { content: "#"; }
         <li><a href="#binary-tensor-expression"><span class="secno">3.1.7</span> <span class="content">Binary Tensor Expression</span></a>
        </ol>
       <li><a href="#tensor"><span class="secno">3.2</span> <span class="content">Tensor</span></a>
-      <li><a href="#tensor-expressions"><span class="secno">3.3</span> <span class="content">Tensor Expressions</span></a>
+      <li>
+       <a href="#tensor-expressions"><span class="secno">3.3</span> <span class="content">Tensor Expressions</span></a>
+       <ol class="toc">
+        <li><a href="#why-template-expressions"><span class="secno">3.3.1</span> <span class="content">Why Template Expressions</span></a>
+        <li><a href="#general-approach"><span class="secno">3.3.2</span> <span class="content">General Approach</span></a>
+       </ol>
      </ol>
     <li>
      <a href="#questions"><span class="secno">4</span> <span class="content">Design Questions</span></a>
@@ -2359,7 +2364,9 @@ The authors have the following concerns in regards to the current iteration of P
      <p>AccessorPolicy shall meet the accessor policy requirements.</p>
    </ul>
    <h3 class="heading settled" data-level="3.3" id="tensor-expressions"><span class="secno">3.3. </span><span class="content">Tensor Expressions</span><a class="self-link" href="#tensor-expressions"></a></h3>
-    This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts. 
+   <h4 class="heading settled" data-level="3.3.1" id="why-template-expressions"><span class="secno">3.3.1. </span><span class="content">Why Template Expressions</span><a class="self-link" href="#why-template-expressions"></a></h4>
+   <h4 class="heading settled" data-level="3.3.2" id="general-approach"><span class="secno">3.3.2. </span><span class="content">General Approach</span><a class="self-link" href="#general-approach"></a></h4>
+   <p>This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.</p>
    <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Design Questions</span><a class="self-link" href="#questions"></a></h2>
    <p>These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.</p>
    <h3 class="heading settled" data-level="4.1" id="fixed-size-tensor"><span class="secno">4.1. </span><span class="content">Fixed Size Tensor</span><a class="self-link" href="#fixed-size-tensor"></a></h3>
@@ -2380,7 +2387,11 @@ The issue of optimizing memory access is also not new. This approach would follo
       <li data-md>
        <p>This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.</p>
       <li data-md>
-       <p>Many existing applications already make use of fixed size optimization to improvement performance.</p>
+       <p>Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious.</p>
+      <li data-md>
+       <p>The memory access through pointer limits compiler optimizations and limits what can be performed at compile time.</p>
+      <li data-md>
+       <p>Many existing applications already make use of fixed size optimization to improvement performance and ease of use.</p>
       <li data-md>
        <p>Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.</p>
       <li data-md>

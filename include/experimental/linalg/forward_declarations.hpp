@@ -36,15 +36,6 @@ template < class ElementType,
            class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
 using tensor_view = ::std::experimental::mdspan< ElementType, Extents, LayoutPolicy, AccessorPolicy >;
 
-// Alias tensor
-template < class T,
-           class Extents,
-           class LayoutPolicy   = default_layout,
-           class CapExtents     = Extents,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using tensor = ::std::experimental::tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>;
-
 // Alias matrix view
 template < class ElementType,
            auto  R,
@@ -59,6 +50,15 @@ template < class ElementType,
            class LayoutPolicy   = default_layout,
            class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
 using vector_view = tensor_view< ElementType, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
+
+// Alias tensor
+template < class T,
+           class Extents,
+           class LayoutPolicy   = default_layout,
+           class CapExtents     = Extents,
+           class Allocator      = ::std::allocator<T>,
+           class AccessorPolicy = ::std::experimental::default_accessor<T> >
+using tensor = ::std::experimental::tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>;
 
 // Alias for matrix
 template < class T,

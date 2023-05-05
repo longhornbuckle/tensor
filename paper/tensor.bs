@@ -363,6 +363,11 @@ Mandates:
 - AccessorPolicy shall meet the accessor policy requirements.
 
 ## Tensor Expressions
+
+### Why Template Expressions
+
+### General Approach
+
 This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
 
 Design Questions {#questions}
@@ -381,7 +386,9 @@ There are a couple paths which could be taken:
 2.  Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
     - The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.
     - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.
-    - Many existing applications already make use of fixed size optimization to improvement performance.
+    - Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious.
+    - The memory access through pointer limits compiler optimizations and limits what can be performed at compile time.
+    - Many existing applications already make use of fixed size optimization to improvement performance and ease of use.
     - Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.
     - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
     A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.
