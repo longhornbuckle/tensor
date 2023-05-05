@@ -49,6 +49,18 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
   #endif
 };
 
+// Matrix expression concept
+template < class T >
+concept matrix_expression =
+tensor_expression< T > &&
+( T::rank() == 2 );
+
+// Vector expression concept
+template < class T >
+concept vector_expression =
+tensor_expression< T > &&
+( T::rank() == 1 );
+
 // Readable tensor concept
 template < class T >
 concept readable_tensor =
@@ -417,6 +429,18 @@ template < class T > struct tensor_expression : public ::std::conditional_t<
   has_extents_func_v<T> &&
   has_extent_func_v<T>, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool tensor_expression_v = tensor_expression<T>::value;
+
+// Matrix expression
+template < class T > struct matrix_expression : public ::std::conditional_t<
+  tensor_expression_v<T> &&
+  ( T::rank() == 2 ), ::std::true_type, ::std::false_type > { };
+template < class T > inline constexpr bool matrix_expression_v = matrix_expression<T>::value;
+
+// Vector expression
+template < class T > struct vector_expression : public ::std::conditional_t<
+  tensor_expression_v<T> &&
+  ( T::rank() == 1 ), ::std::true_type, ::std::false_type > { };
+template < class T > inline constexpr bool vector_expression_v = vector_expression<T>::value;
 
 // Readable tensor
 template < class T > struct readable_tensor : public ::std::condition_t<

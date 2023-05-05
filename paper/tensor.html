@@ -1988,12 +1988,14 @@ dfn > a.self-link::before      { content: "#"; }
        <a href="#concepts"><span class="secno">3.1</span> <span class="content">Concepts</span></a>
        <ol class="toc">
         <li><a href="#tensor-expression"><span class="secno">3.1.1</span> <span class="content">Tensor Expression</span></a>
-        <li><a href="#readable-tensor"><span class="secno">3.1.2</span> <span class="content">Readable Tensor</span></a>
-        <li><a href="#writable-tensor"><span class="secno">3.1.3</span> <span class="content">Writable Tensor</span></a>
-        <li><a href="#static-tensor"><span class="secno">3.1.4</span> <span class="content">Static Tensor</span></a>
-        <li><a href="#dynamic-tensor"><span class="secno">3.1.5</span> <span class="content">Dynamic Tensor</span></a>
-        <li><a href="#unary-tensor-expression"><span class="secno">3.1.6</span> <span class="content">Unary Tensor Expression</span></a>
-        <li><a href="#binary-tensor-expression"><span class="secno">3.1.7</span> <span class="content">Binary Tensor Expression</span></a>
+        <li><a href="#matrix-expression"><span class="secno">3.1.2</span> <span class="content">Matrix Expression</span></a>
+        <li><a href="#vector-expression"><span class="secno">3.1.3</span> <span class="content">Vector Expression</span></a>
+        <li><a href="#readable-tensor"><span class="secno">3.1.4</span> <span class="content">Readable Tensor</span></a>
+        <li><a href="#writable-tensor"><span class="secno">3.1.5</span> <span class="content">Writable Tensor</span></a>
+        <li><a href="#static-tensor"><span class="secno">3.1.6</span> <span class="content">Static Tensor</span></a>
+        <li><a href="#dynamic-tensor"><span class="secno">3.1.7</span> <span class="content">Dynamic Tensor</span></a>
+        <li><a href="#unary-tensor-expression"><span class="secno">3.1.8</span> <span class="content">Unary Tensor Expression</span></a>
+        <li><a href="#binary-tensor-expression"><span class="secno">3.1.9</span> <span class="content">Binary Tensor Expression</span></a>
        </ol>
       <li><a href="#tensor"><span class="secno">3.2</span> <span class="content">Tensor</span></a>
       <li>
@@ -2101,7 +2103,23 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>}</c->
 <c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.2" id="readable-tensor"><span class="secno">3.1.2. </span><span class="content">Readable Tensor</span><a class="self-link" href="#readable-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.2" id="matrix-expression"><span class="secno">3.1.2. </span><span class="content">Matrix Expression</span><a class="self-link" href="#matrix-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>concept</c-> <c- n>matrix_expression</c-> <c- o>=</c->
+<c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- o>==</c-> <c- mi>2</c-> <c- p>);</c->
+<c- p>}</c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.3" id="vector-expression"><span class="secno">3.1.3. </span><span class="content">Vector Expression</span><a class="self-link" href="#vector-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
+<c- n>concept</c-> <c- n>vector_expression</c-> <c- o>=</c->
+<c- n>tensor_expression</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-> <c- o>&amp;&amp;</c->
+<c- p>(</c-> <c- n>T</c-><c- o>::</c-><c- n>rank</c-><c- p>()</c-> <c- o>==</c-> <c- mi>1</c-> <c- p>);</c->
+<c- p>}</c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.4" id="readable-tensor"><span class="secno">3.1.4. </span><span class="content">Readable Tensor</span><a class="self-link" href="#readable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>readable_tensor</c-> <c- o>=</c->
@@ -2137,7 +2155,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>};</c->
 <c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.3" id="writable-tensor"><span class="secno">3.1.3. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.5" id="writable-tensor"><span class="secno">3.1.5. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>writable_tensor</c-> <c- o>=</c->
@@ -2148,7 +2166,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>};</c->
 <c- p>}</c->
 </typename></code></pre>
-   <h4 class="heading settled" data-level="3.1.4" id="static-tensor"><span class="secno">3.1.4. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.6" id="static-tensor"><span class="secno">3.1.6. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>static_tensor</c-> <c- o>=</c->
@@ -2160,7 +2178,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p>};</c->
 <c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.5" id="dynamic-tensor"><span class="secno">3.1.5. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.1.7" id="dynamic-tensor"><span class="secno">3.1.7. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>concept</c-> <c- n>dynamic_tensor</c-> <c- o>=</c->
@@ -2183,7 +2201,7 @@ The authors have the following concerns in regards to the current iteration of P
 
 <c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.6" id="unary-tensor-expression"><span class="secno">3.1.6. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
+   <h4 class="heading settled" data-level="3.1.8" id="unary-tensor-expression"><span class="secno">3.1.8. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>unary_tensor_expression</c-> <c- o>=</c->
@@ -2197,7 +2215,7 @@ The authors have the following concerns in regards to the current iteration of P
   <c- n>dynamic_tensor</c-><c- o>&lt;</c-> <c- n>decltype</c-><c- p>(</c-> <c- n>declval</c-><c- o>&lt;</c-> <c- n>T</c-> <c- o>></c-><c- p>().</c-><c- n>operator</c-> <c- k>auto</c-><c- p>()</c-> <c- p>)</c-> <c- o>></c-> <c- p>);</c->
 <c- p>}</c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.1.7" id="binary-tensor-expression"><span class="secno">3.1.7. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
+   <h4 class="heading settled" data-level="3.1.9" id="binary-tensor-expression"><span class="secno">3.1.9. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- n>namespace</c-> <c- n>std</c-> <c- p>{</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-> <c- o>></c->
 <c- n>concept</c-> <c- n>binary_tensor_expression</c-> <c- o>=</c->
@@ -2318,9 +2336,9 @@ The authors have the following concerns in regards to the current iteration of P
     <c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- n>reference</c-> <c- n>operator</c-><c- p>[](</c-> <c- n>OtherIndexType</c-> <c- p>...</c-> <c- n>indices</c-> <c- p>);</c->
 
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>+=</c-><c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>t</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>+=</c-><c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>);</c->
     <c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
-    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>-=</c-><c- p>(</c-> <c- k>const</c-> <c- n>Tensor</c-><c- o>&amp;</c-> <c- n>t</c-> <c- p>);</c->
+    <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>-=</c-><c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>*=</c-><c- p>(</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>/=</c-><c- p>(</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
     <c- n>constexpr</c-> <c- n>tensor</c-><c- o>&amp;</c-> <c- n>operator</c-><c- o>%=</c-><c- p>(</c-> <c- k>const</c-> <c- n>value_type</c-><c- o>&amp;</c-> <c- n>value</c-> <c- p>);</c->
@@ -2333,17 +2351,45 @@ The authors have the following concerns in regards to the current iteration of P
 
 <c- c1>// IN WORK: Non-member functions</c->
 <c- c1>// Addition</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>FirstTensor</c-><c- p>,</c-> <c- n>tensor_expression</c-> <c- n>SecondTensor</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>+</c-> <c- p>(</c-> <c- n>FirstTensor</c-><c- o>&amp;&amp;</c-> <c- n>tensor_a</c-><c- p>,</c-> <c- n>SecondTensor</c-><c- o>&amp;&amp;</c-> <c- n>tensor_b</c-> <c- p>);</c->
 <c- c1>// Substraction</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>FirstTensor</c-><c- p>,</c-> <c- n>tensor_expression</c-> <c- n>SecondTensor</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>-</c-> <c- p>(</c-> <c- n>FirstTensor</c-><c- o>&amp;&amp;</c-> <c- n>tensor_a</c-><c- p>,</c-> <c- n>SecondTensor</c-><c- o>&amp;&amp;</c-> <c- n>tensor_b</c-> <c- p>);</c->
 <c- c1>// Negation</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>-</c-> <c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>);</c->
 <c- c1>// Scalar Multiplication</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-><c- p>,</c-> <c- n>class</c-> <c- n>ValueType</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>*</c-> <c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>ValueType</c-> <c- n>v</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-><c- p>,</c-> <c- n>class</c-> <c- n>ValueType</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>*</c-> <c- p>(</c-> <c- n>ValueType</c-> <c- n>v</c-><c- p>,</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Scalar Division</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-><c- p>,</c-> <c- n>class</c-> <c- n>ValueType</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>/</c-> <c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>ValueType</c-> <c- n>v</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Matrix Multiplication</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>matrix_expression</c-> <c- n>FirstMatrix</c-><c- p>,</c-> <c- n>matrix_expression</c-> <c- n>SecondMatrix</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>*</c-> <c- p>(</c-> <c- n>FirstMatrix</c-><c- o>&amp;&amp;</c-> <c- n>matrix_a</c-><c- p>,</c-> <c- n>SecondMatrix</c-><c- o>&amp;&amp;</c-> <c- n>matrix_b</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Vector-Matrix Multiplication</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>vector_expression</c-> <c- n>Vector</c-><c- p>,</c-> <c- n>matrix_expression</c-> <c- n>Matrix</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>*</c-> <c- p>(</c-> <c- n>Vector</c-><c- o>&amp;&amp;</c-> <c- n>v</c-><c- p>,</c-> <c- n>Matrix</c-><c- o>&amp;&amp;</c-> <c- n>m</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>matrix_expression</c-> <c- n>Matrix</c-><c- p>,</c-> <c- n>vector_expression</c-> <c- n>Vector</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>*</c-> <c- p>(</c-> <c- n>Matrix</c-><c- o>&amp;&amp;</c-> <c- n>m</c-><c- p>,</c-> <c- n>Vector</c-><c- o>&amp;&amp;</c-> <c- n>v</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Vector Inner Product</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>vector_expression</c-> <c- n>FirstVector</c-><c- p>,</c-> <c- n>vector_expression</c-> <c- n>SecondVector</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>inner_prod</c-><c- p>(</c-> <c- n>FirstVector</c-><c- o>&amp;&amp;</c-> <c- n>vector_a</c-><c- p>,</c-> <c- n>SecondVector</c-><c- o>&amp;&amp;</c-> <c- n>vector_b</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Vector Outer Product</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>vector_expression</c-> <c- n>FirstVector</c-><c- p>,</c-> <c- n>vector_expression</c-> <c- n>SecondVector</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>outer_prod</c-><c- p>(</c-> <c- n>FirstVector</c-><c- o>&amp;&amp;</c-> <c- n>vector_a</c-><c- p>,</c-> <c- n>SecondVector</c-><c- o>&amp;&amp;</c-> <c- n>vector_b</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- c1>// Transpose</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>transpose</c-><c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>);</c->
 <c- c1>// Conjugate</c->
-<c- c1>// Modulo</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>conjugate</c-><c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-> <c- p>);</c->
+<c- c1>// Scalar Modulo</c->
+<c- n>template</c-> <c- o>&lt;</c-> <c- n>tensor_expression</c-> <c- n>Tensor</c-><c- p>,</c-> <c- n>class</c-> <c- n>ValueType</c-> <c- o>></c->
+<c- p>[[</c-><c- n>nodiscard</c-><c- p>]]</c-> <c- n>constexpr</c-> <c- d>/* implementation defined */</c-> <c- n>operator</c-> <c- o>%</c-> <c- p>(</c-> <c- n>Tensor</c-><c- o>&amp;&amp;</c-> <c- n>t</c-><c- p>,</c-> <c- n>ValueType</c-> <c- n>v</c-> <c- p>)</c-> <c- n>requires</c-> <c- p>(</c->  <c- p>);</c->
 <c- p>}</c->
 </extents></typename></t></t></code></pre>
    <p>Mandates:</p>

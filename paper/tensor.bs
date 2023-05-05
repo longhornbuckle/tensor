@@ -80,6 +80,30 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
+### Matrix Expression
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept matrix_expression =
+tensor_expression< T > &&
+( T::rank() == 2 );
+}
+</code>
+</pre>
+
+### Vector Expression
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept vector_expression =
+tensor_expression< T > &&
+( T::rank() == 1 );
+}
+</code>
+</pre>
+
 ### Readable Tensor
 <pre class="highlight">
 <code class="language-c++">
@@ -323,9 +347,9 @@ class tensor
     [[nodiscard]] constexpr reference operator[]( OtherIndexType ... indices );
 
     template < tensor_expression Tensor >
-    constexpr tensor& operator+=( const Tensor& t );
+    constexpr tensor& operator+=( Tensor&& t );
     template < tensor_expression Tensor >
-    constexpr tensor& operator-=( const Tensor& t );
+    constexpr tensor& operator-=( Tensor&& t );
     constexpr tensor& operator*=( const value_type& value );
     constexpr tensor& operator/=( const value_type& value );
     constexpr tensor& operator%=( const value_type& value );
@@ -338,17 +362,45 @@ class tensor
 
 // IN WORK: Non-member functions
 // Addition
+template < tensor_expression FirstTensor, tensor_expression SecondTensor >
+[[nodiscard]] constexpr /* implementation defined */ operator + ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
 // Substraction
+template < tensor_expression FirstTensor, tensor_expression SecondTensor >
+[[nodiscard]] constexpr /* implementation defined */ operator - ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
 // Negation
+template < tensor_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ operator - ( Tensor&& t );
 // Scalar Multiplication
+template < tensor_expression Tensor, class ValueType >
+[[nodiscard]] constexpr /* implementation defined */ operator * ( Tensor&& t, ValueType v ) requires (  );
+template < tensor_expression Tensor, class ValueType >
+[[nodiscard]] constexpr /* implementation defined */ operator * ( ValueType v, Tensor&& t ) requires (  );
 // Scalar Division
+template < tensor_expression Tensor, class ValueType >
+[[nodiscard]] constexpr /* implementation defined */ operator / ( Tensor&& t, ValueType v ) requires (  );
 // Matrix Multiplication
+template < matrix_expression FirstMatrix, matrix_expression SecondMatrix >
+[[nodiscard]] constexpr /* implementation defined */ operator * ( FirstMatrix&& matrix_a, SecondMatrix&& matrix_b ) requires (  );
 // Vector-Matrix Multiplication
+template < vector_expression Vector, matrix_expression Matrix >
+[[nodiscard]] constexpr /* implementation defined */ operator * ( Vector&& v, Matrix&& m ) requires (  );
+template < matrix_expression Matrix, vector_expression Vector >
+[[nodiscard]] constexpr /* implementation defined */ operator * ( Matrix&& m, Vector&& v ) requires (  );
 // Vector Inner Product
+template < vector_expression FirstVector, vector_expression SecondVector >
+[[nodiscard]] constexpr /* implementation defined */ inner_prod( FirstVector&& vector_a, SecondVector&& vector_b ) requires (  );
 // Vector Outer Product
+template < vector_expression FirstVector, vector_expression SecondVector >
+[[nodiscard]] constexpr /* implementation defined */ outer_prod( FirstVector&& vector_a, SecondVector&& vector_b ) requires (  );
 // Transpose
+template < tensor_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ transpose( Tensor&& t );
 // Conjugate
-// Modulo
+template < tensor_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ conjugate( Tensor&& t );
+// Scalar Modulo
+template < tensor_expression Tensor, class ValueType >
+[[nodiscard]] constexpr /* implementation defined */ operator % ( Tensor&& t, ValueType v ) requires (  );
 }
 </code>
 </pre>
