@@ -51,14 +51,14 @@ template < class ElementType,
            auto  C,
            class LayoutPolicy   = default_layout,
            class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
-using matrix_view = tensor_view< ElementType, ::std::experimental::extents<decltype(R),R,C>, LayoutPolicy, AccessorPolicy >;
+using matrix_view = tensor_view< ElementType, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, AccessorPolicy >;
 
 // Alias matrix view
 template < class ElementType,
            auto  N,
            class LayoutPolicy   = default_layout,
            class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
-using vector_view = tensor_view< ElementType, ::std::experimental::extents<decltype(N),N>, LayoutPolicy, AccessorPolicy >;
+using vector_view = tensor_view< ElementType, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
 
 // Alias for matrix
 template < class T,
@@ -67,7 +67,7 @@ template < class T,
            class LayoutPolicy   = default_layout,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using matrix = tensor< T, ::std::experimental::extents<decltype(R),R,C>, LayoutPolicy, ::std::experimental::extents<decltype(R),R,C>, Allocator, AccessorPolicy >;
+using matrix = tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, Allocator, AccessorPolicy >;
 
 // Alias for vector
 template < class T,
@@ -75,7 +75,7 @@ template < class T,
            class LayoutPolicy   = default_layout,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using vector = tensor< T, ::std::experimental::extents<decltype(N),N>, LayoutPolicy, ::std::experimental::extents<decltype(N),N>, Allocator, AccessorPolicy >;
+using vector = tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, Allocator, AccessorPolicy >;
 
 // namespace detail
 // {

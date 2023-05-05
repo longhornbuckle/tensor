@@ -19,7 +19,7 @@ class negate_tensor_expression
 {
   public:
     // Special member functions
-    constexpr negate_tensor_expression( const Tensor& t ) noexcept : t_t(t) { }
+    constexpr negate_tensor_expression( const Tensor t ) noexcept : t_t(t) { }
     constexpr negate_tensor_expression& operator = ( const negate_tensor_expression& t ) noexcept { this->t_ = t.t_; }
     constexpr negate_tensor_expression& operator = ( negate_tensor_expression&& t ) noexcept { this->t_ = t.t_; }
     // Aliases
@@ -32,6 +32,9 @@ class negate_tensor_expression
     [[nodiscard]] static constexpr rank_type rank() noexcept { return Tensor::rank(); }
     [[nodiscard]] constexpr extents_type extents() noexcept { return t_.extents(); }
     [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { return t_.extent(n); }
+    // Unary tensor expression function
+    [[nodiscard]] constexpr const Tensor& underlying() const noexcept { return this->t_; }
+    [[nodiscard]] constexpr Tensor& underlying() noexcept { return this->t_; }
     // Negate
     #if LINALG_USE_BRACKET_OPERATOR
     template < class ... OtherIndexType >
@@ -49,10 +52,12 @@ class negate_tensor_expression
     #endif
       { return - LINALG_DETAIL::access( *this, indices ... ); }
     #endif
+    // Implicit conversion
+
 
   private:
     // Data
-    const Tensor& t_;
+    Tensor t_;
 };
 
 template < tensor_expression TensorA, tensor_expression TensorB >

@@ -2559,7 +2559,7 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>Allocator</c->      <c- o>=</c-> <c- n>allocator</c-><c- p>,</c-><t>
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>matrix</c-> <c- o>=</c-> <c- n>tensor</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>Allocator</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
@@ -2577,7 +2577,7 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- k>auto</c->  <c- n>C</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
            <c- n>class</c-> <c- n>AccessorPolicy</c-> <c- o>=</c-> <c- n>default_accessor</c-> <t><c- o>></c->
-<c- n>using</c-> <c- n>matrix_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>(</c-><decltypeU00028rU00029U0002Cstatic_castU0003Csize_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
+<c- n>using</c-> <c- n>matrix_view</c-> <c- o>=</c-> <c- n>mdspan</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>extents</c-><c- p>,</c-><common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>R</c-><c- p>),</c-><c- n>static_cast</c-><c- p>(</c-><size_t><c- n>C</c-><c- p>)</c-><c- o>></c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- n>template</c-> <c- o>&lt;</c-> <c- n>class</c-> <c- n>T</c-><c- p>,</c->
            <c- k>auto</c->  <c- n>N</c-><c- p>,</c->
            <c- n>class</c-> <c- n>LayoutPolicy</c->   <c- o>=</c-> <c- n>layout_right</c-><c- p>,</c->
@@ -2603,7 +2603,7 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
 <c- n>using</c-> <c- n>vector</c-> <c- o>=</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>vector</c-><c- o>&lt;</c-> <c- n>T</c-><c- p>,</c-> <c- n>N</c-><c- p>,</c-> <c- n>LayoutPolicy</c-><c- p>,</c-> <c- o>::</c-><c- n>std</c-><c- o>::</c-><c- n>pmr</c-><c- o>::</c-><c- n>polymorphic_allocator</c-><c- p>,</c-><t> <c- n>AccessorPolicy</c-> <c- o>></c-><c- p>;</c->
 <c- p>}</c->
 <c- p>}</c->
-</t></t></t></t></t></t></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></t></t></decltypeU00028nU00029U0002Cn></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></t></t></code></pre>
+</t></t></t></t></t></t></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></size_t></size_t></common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029></t></t></decltypeU00028nU00029U0002Cn></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></t></size_t></decltypeU00028rU00029U0002Cstatic_castU0003Csize_t></size_t></size_t></common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029></t></t></code></pre>
    <p>There are some glaring issues with adding these:</p>
    <ul>
     <li data-md>
