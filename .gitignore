@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Apple stuff
+.DS_Store
+
+# Directories
+build/
+CMakeFiles/
+
+# Develop environment
+.devcontainer/
+
+CMakeCache.txt
