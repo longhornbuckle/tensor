@@ -66,6 +66,8 @@
         "iterator": "cpp",
         "random": "cpp",
         "utility": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "__memory": "cpp"
     }
 }

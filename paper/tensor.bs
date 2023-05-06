@@ -1,8 +1,8 @@
 <pre class='metadata'>
 Title: The Tensor
-Shortname: the-tensor
-Status: iso/WD
-Group: iso
+Shortname: PXXXX
+Status: wg21/WD
+Group: wg21
 Level: 0
 URL: https://github.com/longhornbuckle/tensor
 Editor: Richard Warren Hornbuckle, longhornbuckle@utexas.edu
@@ -42,7 +42,7 @@ While such an adaptor may be useful, it both significant obscurs behavior and co
 - P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
 The authors have the following concerns in regards to the current iteration of P1385:
     - The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.
-    - The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.
+    - The proposal does not address unifying the relationship between its proposed engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.
     - The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.
 
 The scope of this proposal is contained to the definition of this new container as well as related class and concepts.
@@ -50,9 +50,12 @@ The scope of this proposal is contained to the definition of this new container 
 Description {#descript}
 =======================
 
-## Concepts
+## Tensor Expressions
 
-### Tensor Expression
+The tensor expression defines the minimum requirement for a **tensor object** . A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this sense, a concrete tensor object is an object which owns the underlying memory and is conformant to the **writable tensor** interface.
+
+The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations.
+
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -79,6 +82,17 @@ requires( T& t, auto ... indices )
 }
 </code>
 </pre>
+
+The authors additional propose two **unevaluated tensor expression** concepts*: the **unary tensor expression** and **binary tensor expression**.
+
+### General Approach
+
+This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
+
+
+## Concepts
+
+### Tensor Expression
 
 ### Matrix Expression
 <pre class="highlight">
@@ -167,10 +181,7 @@ template < class T >
 concept static_tensor =
 writable_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
-requires
-{
-  { T {} };
-};
+default_initializable< T>;
 }
 </code>
 </pre>
@@ -194,9 +205,10 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   // TBD on capacity_extents()
   // TBD on reserve( ... )
   { t.get_allocator() } -> same_as< typename T::allocator_type >;
-  { T( alloc ) };
-  { T( s, alloc ) };
-};
+} &&
+constructible_from< T, typename T::allocator_type > &&
+constructible_from< T, const typename T::extents_type&, typename T::allocator_type >;
+
 
 }
 </code>
@@ -394,10 +406,10 @@ template < vector_expression FirstVector, vector_expression SecondVector >
 [[nodiscard]] constexpr /* implementation defined */ outer_prod( FirstVector&& vector_a, SecondVector&& vector_b ) requires (  );
 // Transpose
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ transpose( Tensor&& t );
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t );
 // Conjugate
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ conjugate( Tensor&& t );
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t );
 // Scalar Modulo
 template < tensor_expression Tensor, class ValueType >
 [[nodiscard]] constexpr /* implementation defined */ operator % ( Tensor&& t, ValueType v ) requires (  );
@@ -413,14 +425,6 @@ Mandates:
 - Allocator shall meet the allocator requirements.
 - LayoutPolicy shall meet the layout mapping policy requirements.
 - AccessorPolicy shall meet the accessor policy requirements.
-
-## Tensor Expressions
-
-### Why Template Expressions
-
-### General Approach
-
-This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
 
 Design Questions {#questions}
 =============================
@@ -506,6 +510,75 @@ Should tensor require extents_type::dynamic_rank() != 0?
 If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
 
 Alternatively, tensor could impose the requirement only on the impacted constructors.
+
+## Implementation Freedoms in Compound Expressions
+
+Linear algebra conforms to a set of axiomatic identities. The authors believe implementations which conform to this proposal should be free to apply them liberally, but think it is important to bring the implications into consideration.
+
+Consider - given tensors a, b, c:
+<pre class="highlight">
+<code class="language-c++">
+auto d = a + b + c;
+auto d = a + c + b;
+auto d = b + a + c;
+auto d = b + c + a;
+auto d = c + a + b;
+auto d = c + b + a;
+</code>
+</pre>
+
+Because the addition operator under the set of tensors is both commutative and associative, each of the above expressions are equivalent. Baring numerical overflow and instability - evaluation of each of these expressions in the order specified should result in the same result.
+This example is relatively trivial. Without an unduly expensive analysis of the tensors, there is no reason to believe any one order is better than the other and thus an implementation which evaluates the additions in the order specified is the most reasonable.
+
+Though the authors do not propose an inverse operation in this proposal, its use here illustrates the point better. The inverse operation is an operation on a square matrix which resuls in a matrix when either pre- or post-multiplied with the original matrix results in an identity matrix.
+
+Consider - given square matrices a, b:
+<pre class="highlight">
+<code class="language-c++">
+auto c = inverse( inverse(a) + inverse(b) );
+auto c = a - a * inverse( a + b ) * a;
+auto c = b - b * inverse( a + b ) * b;
+auto c = a * inverse( a + b ) * b;
+auto c = b * inverse( a + b ) * a;
+</code>
+</pre>
+
+These expressions are sometimes referred to as rank-k updates. By virtue of the Woodbury matrix identity and a little algebraic manipulation - each of these evaluate to the same result.
+The concern of the authors is more clear - the first expression is both the most expensive and the only which requires both a and b to be invertible. Each of the remaining expressions only require the sum of the matrices to be invertible. This leads to the natural question: If the client code calls for the inverse of the matrix, must the matrix actually be invertible or is the implementation free to evaluate the compound expression in such a way that the inverse may never be computed?
+
+## Simplification and Simultaneous Evaluation
+
+In this section, the authors present limitations in the compiler's ability to optimize code. At this time, no solutions are presented.
+
+For this illustration, the authors introduce a state, X, and its associated uncertainty, XX. X is a vector (rank 1 tensor), XX is a positive semi-definite symmetric matrix.
+
+Consider the linear transform, A*X, and the associated transformation of the uncertainty, A*XX*trans(A).
+<pre class="highlight">
+<code class="language-c++">
+auto Y  = A*X;
+auto YY = A*XX*trans(A);
+</code>
+</pre>
+
+The first question is how can optimize the second function? Breaking down the second function into the intermediate expression templates used, it looks something like:
+<pre class="highlight">
+<code class="language-c++">
+auto YY = product_matrix_expression( A, product_matrix_expression( XX, transpose_matrix_expression(A) );
+</code>
+</pre>
+
+The types used and their order essentially constitute a pattern. The additional piece of information needed to cue the compiler that this is indeed a linear transform operation is the knowledge the first argument of the outermost product is the same as the argument in the transpose. How can we allow the compiler the introspection to confirm this and perform the appropriate optimization?
+
+The second is how can the compiler optimize computing both simultaneously? This example was chosen as it is not trivial to simply concatenate the two equations to allow for simultaneous evaluation as the first is an operation on a vector and the second an operation on a matrix. Nonetheless, it is desirable to limit the iterations over A.
+
+The following structured binding syntax might be preferential to cue the compiler to evaluate the two simultaneously:
+<pre class="highlight">
+<code class="language-c++">
+auto [ Y, YY ] = { A*X, A*XX*trans(A) };
+</code>
+</pre>
+
+However, this requires someway to overload the way assignment is performed on the structured binding to evaluate Y and YY simultaneously as well as verify the first parameter in the matrix-vector product is the same parameter used in the second expression.
 
 ## [[[nodiscard]]] Clarification
 The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
@@ -721,6 +794,8 @@ Element-wise (or Hadamard) multiply and divide was additionally considered. The 
 
 ## tensor< bool, ... >
 A specialization of tensor analogous to vector<bool> was considered. (Very briefly)
+
+## Non-contiguous buffers
 
 Acknowledgements {#acknowledge}
 ===============================

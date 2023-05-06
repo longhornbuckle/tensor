@@ -108,10 +108,10 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
 {
   // Index access
   #if LINALG_USE_BRACKET_OPERATOR
-  { t.operator[]( indices ... ) } -> ::std::same_as<typename T::reference_type>;
+  { t.operator[]( indices ... ) } -> ::std::same_as<typename T::reference>;
   #endif
   #if LINALG_USE_PAREN_OPERATOR
-  { t.operator()( indices ... ) } -> ::std::same_as<typename T::reference_type>;
+  { t.operator()( indices ... ) } -> ::std::same_as<typename T::reference>;
   #endif
 };
 
@@ -120,13 +120,12 @@ template < class T >
 concept static_tensor =
 writable_tensor<T> &&
 ( T::rank_dynamic() == 0 ) &&
+::std::default_initializable< T > &&
 requires ( const T& t )
 {
-  // Default constructor
-  { T {} };
   // Constexpr functions
   LINALG_DETAIL::is_constexpr( []{ [[maybe_unused]] T { }; } ) &&
-  integral_constant< typename T::size_type, t.size() >::value();
+  integral_constant< typename T::size_type, t.size() >::value;
 };
 
 // Dynamic tensor concept
@@ -148,10 +147,9 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
   // TBD on reserve( ... )
   // Allocator access
   { t.get_allocator() } -> ::std::same_as<typename T::allocator_type> ;
-  // Constructors
-  { T( alloc ) };
-  { T( s, alloc ) };
-};
+} &&
+constructible_from< T, typename T::allocator_type > &&
+constructible_from< T, const typename T::extents_type&, typename T::allocator_type >;
 
 // Unevaluated tensor expression
 template < class T >
