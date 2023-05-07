@@ -2951,15 +2951,15 @@ Without such concepts, the current implementation is to isolate these functions 
    <p>The authors of this proposal are preferential to the implementation of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a>; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
    <h3 class="heading settled" data-level="4.14" id="rank-one-extents-implicit-conversions"><span class="secno">4.14. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
     One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose: 
-<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>,</c-></c-><tU0002CextentsU0003Csize_tU0002Cn>…<c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
-<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>dyn_vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>dynamic_extent</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>N</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>dyn_vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>dynamic_extent</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 
-<c- b><c- b>size_t</c-></c-> <c- n><c- n>n</c-></c-> <c- o><c- o>=</c-></c-> …<c- p><c- p>;</c-></c->
-<c- n><c- n>dyn_vector</c-></c-> <tU0002C...><c- nf><c- nf>vec</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>extents</c-></c-><c- p><c- p>(</c-></c-><size_tU0002Cdynamic_extent> <c- n><c- n>n</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+<c- b><c- b>size_t</c-></c-> <c- n><c- n>n</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>...;</c-></c->
+<c- n><c- n>dyn_vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>vec</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>dynamic_extent</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>n</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
 <c- b><c- b>size_t</c-></c-> <c- n><c- n>m</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vec</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>extents</c-></c-><c- p><c- p>().</c-></c-><c- n><c- n>extent</c-></c-><c- p><c- p>(</c-></c-><c- mi><c- mi>0</c-></c-><c- p><c- p>);</c-></c->
-</size_tU0002Cdynamic_extent></tU0002C...></tU0002CextentsU0003Csize_tU0002Cn></code></pre>
+</code></pre>
    <p>
     The code is clearly uglier than it need be.
 If the standard was to adopt a specialization which allowed extents
@@ -2968,15 +2968,15 @@ If the standard was to adopt a specialization which allowed extents
      <tU0002Cn> to be implicitly convertible to the related integer type, then such code becomes significantly less verboseand feels more natural:</tU0002Cn>
     </tU0002Cdyn_extent>
    </p>
-<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>,</c-></c-><tU0002CextentsU0003Csize_tU0002Cn>…<c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
-<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>dyn_vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>dynamic_extent</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>N</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>dyn_vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>dynamic_extent</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 
-<c- b><c- b>size_t</c-></c-> <c- n><c- n>n</c-></c-> <c- o><c- o>=</c-></c-> …<c- p><c- p>;</c-></c->
-<c- n><c- n>dyn_vector</c-></c-> <tU0002C...><c- nf><c- nf>vec</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>n</c-></c-> <c- p><c- p>);</c-></c->
+<c- b><c- b>size_t</c-></c-> <c- n><c- n>n</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>...;</c-></c->
+<c- n><c- n>dyn_vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>vec</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>n</c-></c-> <c- p><c- p>);</c-></c->
 <c- b><c- b>size_t</c-></c-> <c- n><c- n>m</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>vec</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>extents</c-></c-><c- p><c- p>();</c-></c->
-</tU0002C...></tU0002CextentsU0003Csize_tU0002Cn></code></pre>
+</code></pre>
    <p>The authors would like to gauge interest in allowing such specializations.</p>
    <h2 class="heading settled" data-level="5" id="considered-not-pursued"><span class="secno">5. </span><span class="content">Considered. Not Pursued.</span><a class="self-link" href="#considered-not-pursued"></a></h2>
    <p>Below are additional topics which may merit additional discussion.</p>

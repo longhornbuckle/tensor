@@ -877,13 +877,13 @@ One naturally expects to deal with less verbose syntax when dealing with rank on
 
 <pre class="highlight">
 <code class="language-c++">
-template < T, auto N, … >
-using vector = tensor<T,extents<size_t,N>,…>;
-template < T, … >
-using dyn_vector = vector< T, dynamic_extent, … >;
+template < T, auto N, ... >
+using vector = tensor< T, extents< size_t, N >, ... >;
+template < T, ... >
+using dyn_vector = vector< T, dynamic_extent, ... >;
 
-size_t n = …;
-dyn_vector<T,...> vec( extents<size_t,dynamic_extent>( n ) );
+size_t n = ...;
+dyn_vector< T, ... > vec( extents< size_t, dynamic_extent >( n ) );
 size_t m = vec.extents().extent(0);
 </code>
 </pre>
@@ -893,13 +893,13 @@ If the standard was to adopt a specialization which allowed extents<T,dyn_extent
 
 <pre class="highlight">
 <code class="language-c++">
-template < T, auto N, … >
-using vector = tensor<T,extents<size_t,N>,…>;
-template < T, … >
-using dyn_vector = vector< T, dynamic_extent, … >;
+template < T, auto N, ... >
+using vector = tensor< T, extents< size_t, N >, ... >;
+template < T, ... >
+using dyn_vector = vector< T, dynamic_extent, ... >;
 
-size_t n = …;
-dyn_vector<T,...> vec( n );
+size_t n = ...;
+dyn_vector< T, ... > vec( n );
 size_t m = vec.extents();
 </code>
 </pre>
