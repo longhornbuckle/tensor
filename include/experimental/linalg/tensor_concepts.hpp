@@ -167,7 +167,7 @@ tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
 template < class T >
 concept unary_tensor_expression =
 unevaluated_tensor_expression< T > &&
-requires ( T t )
+requires ( const T& t )
 {
   { t.underlying() } -> tensor_expression;
 };
@@ -177,7 +177,7 @@ requires ( T t )
 template < class T >
 concept binary_tensor_expression =
 unevaluated_tensor_expression< T > &&
-requires ( T t )
+requires ( const T& t )
 {
   { t.first() } -> tensor_expression;
   { t.second() } -> tensor_expression;

@@ -1843,6 +1843,65 @@ a.self-link::before            { content: "¶"; }
 .heading > a.self-link::before { content: "§"; }
 dfn > a.self-link::before      { content: "#"; }
 </style>
+<style>/* style-syntax-highlighting */
+
+code.highlight { padding: .1em; border-radius: .3em; }
+pre.highlight, pre > code.highlight { display: block; padding: 1em; margin: .5em 0; overflow: auto; border-radius: 0; }
+
+.highlight:not(.idl) { background: rgba(0, 0, 0, .03); }
+c-[a] { color: #990055 } /* Keyword.Declaration */
+c-[b] { color: #990055 } /* Keyword.Type */
+c-[c] { color: #708090 } /* Comment */
+c-[d] { color: #708090 } /* Comment.Multiline */
+c-[e] { color: #0077aa } /* Name.Attribute */
+c-[f] { color: #669900 } /* Name.Tag */
+c-[g] { color: #222222 } /* Name.Variable */
+c-[k] { color: #990055 } /* Keyword */
+c-[l] { color: #000000 } /* Literal */
+c-[m] { color: #000000 } /* Literal.Number */
+c-[n] { color: #0077aa } /* Name */
+c-[o] { color: #999999 } /* Operator */
+c-[p] { color: #999999 } /* Punctuation */
+c-[s] { color: #a67f59 } /* Literal.String */
+c-[t] { color: #a67f59 } /* Literal.String.Single */
+c-[u] { color: #a67f59 } /* Literal.String.Double */
+c-[cp] { color: #708090 } /* Comment.Preproc */
+c-[c1] { color: #708090 } /* Comment.Single */
+c-[cs] { color: #708090 } /* Comment.Special */
+c-[kc] { color: #990055 } /* Keyword.Constant */
+c-[kn] { color: #990055 } /* Keyword.Namespace */
+c-[kp] { color: #990055 } /* Keyword.Pseudo */
+c-[kr] { color: #990055 } /* Keyword.Reserved */
+c-[ld] { color: #000000 } /* Literal.Date */
+c-[nc] { color: #0077aa } /* Name.Class */
+c-[no] { color: #0077aa } /* Name.Constant */
+c-[nd] { color: #0077aa } /* Name.Decorator */
+c-[ni] { color: #0077aa } /* Name.Entity */
+c-[ne] { color: #0077aa } /* Name.Exception */
+c-[nf] { color: #0077aa } /* Name.Function */
+c-[nl] { color: #0077aa } /* Name.Label */
+c-[nn] { color: #0077aa } /* Name.Namespace */
+c-[py] { color: #0077aa } /* Name.Property */
+c-[ow] { color: #999999 } /* Operator.Word */
+c-[mb] { color: #000000 } /* Literal.Number.Bin */
+c-[mf] { color: #000000 } /* Literal.Number.Float */
+c-[mh] { color: #000000 } /* Literal.Number.Hex */
+c-[mi] { color: #000000 } /* Literal.Number.Integer */
+c-[mo] { color: #000000 } /* Literal.Number.Oct */
+c-[sb] { color: #a67f59 } /* Literal.String.Backtick */
+c-[sc] { color: #a67f59 } /* Literal.String.Char */
+c-[sd] { color: #a67f59 } /* Literal.String.Doc */
+c-[se] { color: #a67f59 } /* Literal.String.Escape */
+c-[sh] { color: #a67f59 } /* Literal.String.Heredoc */
+c-[si] { color: #a67f59 } /* Literal.String.Interpol */
+c-[sx] { color: #a67f59 } /* Literal.String.Other */
+c-[sr] { color: #a67f59 } /* Literal.String.Regex */
+c-[ss] { color: #a67f59 } /* Literal.String.Symbol */
+c-[vc] { color: #0077aa } /* Name.Variable.Class */
+c-[vg] { color: #0077aa } /* Name.Variable.Global */
+c-[vi] { color: #0077aa } /* Name.Variable.Instance */
+c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
+</style>
 <style>/* style-darkmode */
 
 @media (prefers-color-scheme: dark) {
@@ -2032,7 +2091,7 @@ dfn > a.self-link::before      { content: "#"; }
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PXXXXR0<br>The Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-06">2023-05-06</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-07">2023-05-07</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2062,22 +2121,29 @@ dfn > a.self-link::before      { content: "#"; }
       <li>
        <a href="#tensor-expressions"><span class="secno">3.1</span> <span class="content">Tensor Expressions</span></a>
        <ol class="toc">
-        <li><a href="#general-approach"><span class="secno">3.1.1</span> <span class="content">General Approach</span></a>
+        <li><a href="#tensor-expression"><span class="secno">3.1.1</span> <span class="content">Tensor Expression</span></a>
+        <li><a href="#unary-tensor-expression"><span class="secno">3.1.2</span> <span class="content">Unary Tensor Expression</span></a>
+        <li><a href="#binary-tensor-expression"><span class="secno">3.1.3</span> <span class="content">Binary Tensor Expression</span></a>
+        <li>
+         <a href="#tensor-expression-traits"><span class="secno">3.1.4</span> <span class="content">Tensor Expression Traits</span></a>
+         <ol class="toc">
+          <li><a href="#commutative"><span class="secno">3.1.4.1</span> <span class="content">Commutative</span></a>
+          <li><a href="#associative"><span class="secno">3.1.4.2</span> <span class="content">Associative</span></a>
+          <li><a href="#distributive"><span class="secno">3.1.4.3</span> <span class="content">Distributive</span></a>
+         </ol>
        </ol>
       <li>
-       <a href="#concepts"><span class="secno">3.2</span> <span class="content">Concepts</span></a>
+       <a href="#additional-concepts"><span class="secno">3.2</span> <span class="content">Additional Concepts</span></a>
        <ol class="toc">
-        <li><a href="#tensor-expression"><span class="secno">3.2.1</span> <span class="content">Tensor Expression</span></a>
-        <li><a href="#matrix-expression"><span class="secno">3.2.2</span> <span class="content">Matrix Expression</span></a>
-        <li><a href="#vector-expression"><span class="secno">3.2.3</span> <span class="content">Vector Expression</span></a>
-        <li><a href="#readable-tensor"><span class="secno">3.2.4</span> <span class="content">Readable Tensor</span></a>
-        <li><a href="#writable-tensor"><span class="secno">3.2.5</span> <span class="content">Writable Tensor</span></a>
-        <li><a href="#static-tensor"><span class="secno">3.2.6</span> <span class="content">Static Tensor</span></a>
-        <li><a href="#dynamic-tensor"><span class="secno">3.2.7</span> <span class="content">Dynamic Tensor</span></a>
-        <li><a href="#unary-tensor-expression"><span class="secno">3.2.8</span> <span class="content">Unary Tensor Expression</span></a>
-        <li><a href="#binary-tensor-expression"><span class="secno">3.2.9</span> <span class="content">Binary Tensor Expression</span></a>
+        <li><a href="#matrix-expression"><span class="secno">3.2.1</span> <span class="content">Matrix Expression</span></a>
+        <li><a href="#vector-expression"><span class="secno">3.2.2</span> <span class="content">Vector Expression</span></a>
+        <li><a href="#readable-tensor"><span class="secno">3.2.3</span> <span class="content">Readable Tensor</span></a>
+        <li><a href="#writable-tensor"><span class="secno">3.2.4</span> <span class="content">Writable Tensor</span></a>
+        <li><a href="#static-tensor"><span class="secno">3.2.5</span> <span class="content">Static Tensor</span></a>
+        <li><a href="#dynamic-tensor"><span class="secno">3.2.6</span> <span class="content">Dynamic Tensor</span></a>
        </ol>
       <li><a href="#tensor"><span class="secno">3.3</span> <span class="content">Tensor</span></a>
+      <li><a href="#helpers"><span class="secno">3.4</span> <span class="content">Helpers</span></a>
      </ol>
     <li>
      <a href="#questions"><span class="secno">4</span> <span class="content">Design Questions</span></a>
@@ -2085,16 +2151,17 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#fixed-size-tensor"><span class="secno">4.1</span> <span class="content">Fixed Size Tensor</span></a>
       <li><a href="#capacity-and-reserve"><span class="secno">4.2</span> <span class="content">Capacity and Reserve</span></a>
       <li><a href="#dynamic-only-extents"><span class="secno">4.3</span> <span class="content">Dynamic Only Extents</span></a>
-      <li><a href="#implementation-freedoms-in-compound-expressions"><span class="secno">4.4</span> <span class="content">Implementation Freedoms in Compound Expressions</span></a>
-      <li><a href="#simplification-and-simultaneous-evaluation"><span class="secno">4.5</span> <span class="content">Simplification and Simultaneous Evaluation</span></a>
-      <li><a href="#nodiscard-clarification"><span class="secno">4.6</span> <span class="content">[<span>[nodiscard]</span>] Clarification</span></a>
-      <li><a href="#safe-memory-access"><span class="secno">4.7</span> <span class="content">Safe Memory Access</span></a>
-      <li><a href="#resize-mapping_type"><span class="secno">4.8</span> <span class="content">Resize mapping_type</span></a>
-      <li><a href="#-assume-restrict-p"><span class="secno">4.9</span> <span class="content">[[ assume( restrict( p ) ) ]]</span></a>
-      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.10</span> <span class="content">Vector and Matrix Aliases</span></a>
-      <li><a href="#limitations-without-iterators"><span class="secno">4.11</span> <span class="content">Limitations without Iterators</span></a>
-      <li><a href="#mdslice-submdspan-or-subtensor"><span class="secno">4.12</span> <span class="content">mdslice, submdspan, or subtensor</span></a>
-      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.13</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
+      <li><a href="#tensor-expressions-contain-by-value"><span class="secno">4.4</span> <span class="content">Tensor Expressions Contain by Value</span></a>
+      <li><a href="#implementation-freedoms-in-compound-expressions"><span class="secno">4.5</span> <span class="content">Implementation Freedoms in Compound Expressions</span></a>
+      <li><a href="#simplification-and-simultaneous-evaluation"><span class="secno">4.6</span> <span class="content">Simplification and Simultaneous Evaluation</span></a>
+      <li><a href="#nodiscard-clarification"><span class="secno">4.7</span> <span class="content">[<span>[nodiscard]</span>] Clarification</span></a>
+      <li><a href="#safe-memory-access"><span class="secno">4.8</span> <span class="content">Safe Memory Access</span></a>
+      <li><a href="#resize-mapping_type"><span class="secno">4.9</span> <span class="content">Resize mapping_type</span></a>
+      <li><a href="#-assume-restrict-p"><span class="secno">4.10</span> <span class="content">[[ assume( restrict( p ) ) ]]</span></a>
+      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.11</span> <span class="content">Vector and Matrix Aliases</span></a>
+      <li><a href="#limitations-without-iterators"><span class="secno">4.12</span> <span class="content">Limitations without Iterators</span></a>
+      <li><a href="#mdslice-submdspan-or-subtensor"><span class="secno">4.13</span> <span class="content">mdslice, submdspan, or subtensor</span></a>
+      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.14</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
      </ol>
     <li>
      <a href="#considered-not-pursued"><span class="secno">5</span> <span class="content">Considered. Not Pursued.</span></a>
@@ -2102,7 +2169,7 @@ dfn > a.self-link::before      { content: "#"; }
       <li><a href="#multi-dimensional-iterators"><span class="secno">5.1</span> <span class="content">Multi-dimensional Iterators</span></a>
       <li><a href="#additional-vector-like-functions"><span class="secno">5.2</span> <span class="content">Additional Vector-like functions</span></a>
       <li><a href="#comparison-operators"><span class="secno">5.3</span> <span class="content">Comparison Operators</span></a>
-      <li><a href="#element-wise-functions"><span class="secno">5.4</span> <span class="content">Element-wise Functions</span></a>
+      <li><a href="#element-wise-multiply-and-divide"><span class="secno">5.4</span> <span class="content">Element-wise Multiply and Divide</span></a>
       <li><a href="#tensor-bool"><span class="secno">5.5</span> <span class="content">tensor&lt; bool, ... ></span></a>
       <li><a href="#non-contiguous-buffers"><span class="secno">5.6</span> <span class="content">Non-contiguous buffers</span></a>
      </ol>
@@ -2138,12 +2205,12 @@ Furthermore, it introduces an interface that allows the user to perform operatio
    <p>This proposal differs from a couple similar existing works:</p>
    <ul>
     <li data-md>
-     <p>D1684 mdarray: The authors do not believe this work is incompatable with this proposal.
+     <p><a href="https://isocpp.org/files/papers/D1684R0.html">D1684</a> mdarray: The authors do not believe this work is incompatable with this proposal.
 However, the authors of this work take a different approach of essentially defining an adaptor which reinterpret’s an owned container with single dimensional access into a multidimensional framework.
 While such an adaptor may be useful, it both significant obscurs behavior and constrains the implementation to the frameworks of existing containers.</p>
     <li data-md>
-     <p>P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
-The authors have the following concerns in regards to the current iteration of P1385:</p>
+     <p><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a> also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
+The authors have the following concerns in regards to the current iteration of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a>:</p>
      <ul>
       <li data-md>
        <p>The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.</p>
@@ -2153,11 +2220,12 @@ The authors have the following concerns in regards to the current iteration of P
        <p>The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.</p>
      </ul>
    </ul>
-   <p>The scope of this proposal is contained to the definition of this new container as well as related class and concepts.</p>
+   <p>The scope of this proposal is contained to the definition of this new container, relatively simple linear algebra functions, and related concepts.</p>
    <h2 class="heading settled" data-level="3" id="descript"><span class="secno">3. </span><span class="content">Description</span><a class="self-link" href="#descript"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="tensor-expressions"><span class="secno">3.1. </span><span class="content">Tensor Expressions</span><a class="self-link" href="#tensor-expressions"></a></h3>
-   <p>The tensor expression defines the minimum requirement for a **tensor object** . A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this sense, a concrete tensor object is an object which owns the underlying memory and is conformant to the **writable tensor** interface.</p>
+   <p>The tensor expression defines the minimum requirement for a <em>tensor object</em>. A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this context, a concrete tensor object is an object which owns the underlying memory and is conformant to the <em>writable tensor</em> concept.</p>
    <p>The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations.</p>
+   <h4 class="heading settled" data-level="3.1.1" id="tensor-expression"><span class="secno">3.1.1. </span><span class="content">Tensor Expression</span><a class="self-link" href="#tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>tensor_expression</c-></c-> <c- o><c- o>=</c-></c-> <c- k><c- n>requires</c-></c->
@@ -2181,12 +2249,115 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>}</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <p>The authors additional propose two **unevaluated tensor expression** concepts*: the **unary tensor expression** and **binary tensor expression**.</p>
-   <h4 class="heading settled" data-level="3.1.1" id="general-approach"><span class="secno">3.1.1. </span><span class="content">General Approach</span><a class="self-link" href="#general-approach"></a></h4>
-   <p>This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.</p>
-   <h3 class="heading settled" data-level="3.2" id="concepts"><span class="secno">3.2. </span><span class="content">Concepts</span><a class="self-link" href="#concepts"></a></h3>
-   <h4 class="heading settled" data-level="3.2.1" id="tensor-expression"><span class="secno">3.2.1. </span><span class="content">Tensor Expression</span><a class="self-link" href="#tensor-expression"></a></h4>
-   <h4 class="heading settled" data-level="3.2.2" id="matrix-expression"><span class="secno">3.2.2. </span><span class="content">Matrix Expression</span><a class="self-link" href="#matrix-expression"></a></h4>
+   <p>The authors additionally propose two <em>unevaluated tensor expression</em> concepts: the <em>unary tensor expression</em> and <em>binary tensor expression</em>.</p>
+   <h4 class="heading settled" data-level="3.1.2" id="unary-tensor-expression"><span class="secno">3.1.2. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>concept</c-></c-> <c- nc><c- n>unary_tensor_expression</c-></c-> <c- o><c- o>=</c-></c->
+<c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
+<c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
+<c- p><c- p>{</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>underlying</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
+<c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
+<c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
+  <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>Additionally, the unary tensor expression must be constructible from any object conformant to the tensor_expression concept:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>unary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.3" id="binary-tensor-expression"><span class="secno">3.1.3. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>concept</c-></c-> <c- nc><c- n>binary_tensor_expression</c-></c-> <c- o><c- o>=</c-></c->
+<c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
+<c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
+<c- p><c- p>{</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>first</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>second</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
+<c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
+<c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
+  <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>Additionally, the binary tensor expression must be constructible from any pair of objects conformant to the tensor_expression concept:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>binary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <h4 class="heading settled" data-level="3.1.4" id="tensor-expression-traits"><span class="secno">3.1.4. </span><span class="content">Tensor Expression Traits</span><a class="self-link" href="#tensor-expression-traits"></a></h4>
+   <p>The authors also propose several traits related to the <em>unevaluated tensor expressions</em>. The intent is to provide additional information on custom <code class="highlight"><c- n>unary_tensor_expression</c-></code>s and <code class="highlight"><c- n>binary_tensor_expression</c-></code>s which may be taken advantage of without further inspection of the types. In this section, consider <code class="highlight"><c- n>t1</c-></code>, <code class="highlight"><c- n>t2</c-></code>, and <code class="highlight"><c- n>t3</c-></code> to be objects which satisfy the <em>tensor_expression</em> concept.</p>
+   <p><strong class="advisement"> If the below traits evaluate <code class="highlight">true</code>, should the compiler be free to take advantage of them liberally or should the traits be purely informative?</strong></p>
+   <h5 class="heading settled" data-level="3.1.4.1" id="commutative"><span class="secno">3.1.4.1. </span><span class="content">Commutative</span><a class="self-link" href="#commutative"></a></h5>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_commutative</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_commutative_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_commutative</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>The <code class="highlight"><c- n>is_commutative</c-></code> class may be specialized for any binary tensor expression. If <code class="highlight"><c- n>is_commutative_v</c-><c- o>&lt;</c-> <c- n>TE</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then the following expressions are to be considered equivalent:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t2</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t1</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <h5 class="heading settled" data-level="3.1.4.2" id="associative"><span class="secno">3.1.4.2. </span><span class="content">Associative</span><a class="self-link" href="#associative"></a></h5>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_associative</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_associative_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_associative</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>The <code class="highlight"><c- n>is_associative</c-></code> class may be specialized for any pair of binary tensor expressions. If <code class="highlight"><c- n>is_associative_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then the following expressions are to be considered equivalent:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t2</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <h5 class="heading settled" data-level="3.1.4.3" id="distributive"><span class="secno">3.1.4.3. </span><span class="content">Distributive</span><a class="self-link" href="#distributive"></a></h5>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_distributive_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_commutative</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>is_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_left_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_left_distributive_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_distributive_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c-> <c- n><c- n>is_left_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_right_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_right_distributive_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_distributive_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c-> <c- n><c- n>is_right_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>The <code class="highlight"><c- n>is_distributive</c-></code> class may be specialized for any pair of binary tensor expressions. Note, for <code class="highlight"><c- n>is_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> to be <code class="highlight">true</code>, then <code class="highlight"><c- n>is_commutative_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> must also be <code class="highlight">true</code>.</p>
+   <p>The <code class="highlight"><c- n>is_left_distributive</c-></code> class may be specialized for any pair of binary tensor expressions. Note, if <code class="highlight"><c- n>is_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then <code class="highlight"><c- n>is_left_distributive</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> need not be specialized. If <code class="highlight"><c- n>is_left_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then for the pair of binary tensor expression the following expressions are considered equivalent:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t2</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <p>The <code class="highlight"><c- n>is_right_distributive</c-></code> class may be specialized for any pair of binary tensor expressions. Note, if <code class="highlight"><c- n>is_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then <code class="highlight"><c- n>is_right_distributive</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> need not be specialized. If <code class="highlight"><c- n>is_right_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then for the pair of binary tensor expression the following expressions are considered equivalent:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <p>If <code class="highlight"><c- n>is_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then for the pair of binary tensor expression the compiler is free to treat both sets of expressions as equivalent. This illustrates why <code class="highlight"><c- n>is_commutative</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> must be <code class="highlight">true</code>.</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t2</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>t3</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <p>For the unary and binary tensor expression combination, there is no need to specify left- and right-ness.</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>unary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c->
+<c- k><c- k>struct</c-></c-> <c- nc><c- nc>is_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>:</c-></c-> <c- k><c- n>public</c-></c-> <c- n><c- n>false_type</c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>unary_tensor_expression</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>></c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- kr><c- kr>inline</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- n><c- n>is_distributive_v</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>is_distributive</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>TE2</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>value</c-></c-><c- p><c- p>;</c-></c->
+<c- p><c- p>}</c-></c->
+</code></pre>
+   <p>If <code class="highlight"><c- n>is_distributive_v</c-><c- o>&lt;</c-> <c- n>TE1</c-><c- p>,</c-> <c- n>TE2</c-> <c- o>></c-></code> is <code class="highlight">true</code>, then the following expressions are considered equivalent:</p>
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+<c- k><c- k>auto</c-></c-> <c- n><c- n>t</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>TE2</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t1</c-></c-> <c- p><c- p>),</c-></c-> <c- n><c- n>TE1</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>t2</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
+</code></pre>
+   <h3 class="heading settled" data-level="3.2" id="additional-concepts"><span class="secno">3.2. </span><span class="content">Additional Concepts</span><a class="self-link" href="#additional-concepts"></a></h3>
+   <h4 class="heading settled" data-level="3.2.1" id="matrix-expression"><span class="secno">3.2.1. </span><span class="content">Matrix Expression</span><a class="self-link" href="#matrix-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>matrix_expression</c-></c-> <c- o><c- o>=</c-></c->
@@ -2194,7 +2365,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>rank</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>==</c-></c-> <c- mi><c- mi>2</c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.2.3" id="vector-expression"><span class="secno">3.2.3. </span><span class="content">Vector Expression</span><a class="self-link" href="#vector-expression"></a></h4>
+   <h4 class="heading settled" data-level="3.2.2" id="vector-expression"><span class="secno">3.2.2. </span><span class="content">Vector Expression</span><a class="self-link" href="#vector-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>vector_expression</c-></c-> <c- o><c- o>=</c-></c->
@@ -2202,7 +2373,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>rank</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>==</c-></c-> <c- mi><c- mi>1</c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.2.4" id="readable-tensor"><span class="secno">3.2.4. </span><span class="content">Readable Tensor</span><a class="self-link" href="#readable-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.2.3" id="readable-tensor"><span class="secno">3.2.3. </span><span class="content">Readable Tensor</span><a class="self-link" href="#readable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>readable_tensor</c-></c-> <c- o><c- o>=</c-></c->
@@ -2238,7 +2409,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>};</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.2.5" id="writable-tensor"><span class="secno">3.2.5. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.2.4" id="writable-tensor"><span class="secno">3.2.4. </span><span class="content">Writable Tensor</span><a class="self-link" href="#writable-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>writable_tensor</c-></c-> <c- o><c- o>=</c-></c->
@@ -2249,7 +2420,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>};</c-></c->
 <c- p><c- p>}</c-></c->
 </typename></code></pre>
-   <h4 class="heading settled" data-level="3.2.6" id="static-tensor"><span class="secno">3.2.6. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.2.5" id="static-tensor"><span class="secno">3.2.5. </span><span class="content">Static Tensor</span><a class="self-link" href="#static-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>static_tensor</c-></c-> <c- o><c- o>=</c-></c->
@@ -2258,7 +2429,7 @@ The authors have the following concerns in regards to the current iteration of P
 <c- n><c- n>default_initializable</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <h4 class="heading settled" data-level="3.2.7" id="dynamic-tensor"><span class="secno">3.2.7. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
+   <h4 class="heading settled" data-level="3.2.6" id="dynamic-tensor"><span class="secno">3.2.6. </span><span class="content">Dynamic Tensor</span><a class="self-link" href="#dynamic-tensor"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>concept</c-></c-> <c- nc><c- n>dynamic_tensor</c-></c-> <c- o><c- o>=</c-></c->
@@ -2267,48 +2438,17 @@ The authors have the following concerns in regards to the current iteration of P
 <c- p><c- p>{</c-></c->
   <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c->
 <c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- k><c- n>requires</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>extents_type</c-></c-> <c- n><c- n>s</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-> <c- n><c- n>alloc</c-></c-> <c- p><c- p>)</c-></c->
+<c- k><c- n>requires</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>tc</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>s</c-></c-> <c- p><c- p>)</c-></c->
 <c- p><c- p>{</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>max_size</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>size_type</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>};</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>capacity</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>size_type</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>};</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>tc</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>max_size</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>size_type</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>};</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>tc</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>capacity</c-></c-><c- p><c- p>()</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>size_type</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>};</c-></c->
   <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>resize</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>s</c-></c-> <c- p><c- p>)</c-></c-> <c- p><c- p>};</c-></c->
   <c- c1><c- c1>// TBD on capacity_extents()</c-></c->
   <c- c1><c- c1>// TBD on reserve( ... )</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>get_allocator</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>tc</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>get_allocator</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>same_as</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
-
-
-<c- p><c- p>}</c-></c->
-</code></pre>
-   <h4 class="heading settled" data-level="3.2.8" id="unary-tensor-expression"><span class="secno">3.2.8. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
-<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
-<c- k><c- n>concept</c-></c-> <c- nc><c- n>unary_tensor_expression</c-></c-> <c- o><c- o>=</c-></c->
-<c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
-<c- p><c- p>{</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>underlying</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
-<c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
-  <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
-<c- p><c- p>}</c-></c->
-</code></pre>
-   <h4 class="heading settled" data-level="3.2.9" id="binary-tensor-expression"><span class="secno">3.2.9. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
-<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
-<c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
-<c- k><c- n>concept</c-></c-> <c- nc><c- n>binary_tensor_expression</c-></c-> <c- o><c- o>=</c-></c->
-<c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
-<c- p><c- p>{</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>first</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>second</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
-<c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
-<c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
-  <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
+<c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
+<c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- k><c- n>typename</c-></c-> <c- nc><c- n>T</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
    <h3 class="heading settled" data-level="3.3" id="tensor"><span class="secno">3.3. </span><span class="content">Tensor</span><a class="self-link" href="#tensor"></a></h3>
@@ -2340,8 +2480,8 @@ The authors have the following concerns in regards to the current iteration of P
     <c- k><c- n>explicit</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>s</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
     <c- k><c- n>explicit</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>mapping_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
 
-    <c- k><c- n>constexpr</c-></c-> <c- n><c- nf>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>>&amp;</c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>s</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
-    <c- k><c- n>constexpr</c-></c-> <c- n><c- nf>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>>&amp;</c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>mapping_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
+    <c- k><c- n>constexpr</c-></c-> <c- n><c- nf>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>s</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
+    <c- k><c- n>constexpr</c-></c-> <c- n><c- nf>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>mapping_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>m</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
     
     <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>InputIt</c-></c-> <c- o><c- o>></c-></c->
     <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>InputIt</c-></c-> <c- n><c- n>first</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>InputIt</c-></c-> <c- n><c- n>last</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>s</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
@@ -2356,7 +2496,7 @@ The authors have the following concerns in regards to the current iteration of P
     <c- c1><c- c1>// NOTE: These constructors require one of:</c-></c->
     <c- c1><c- c1>//    A: ( extents_type::rank_dynamic() == 0 ) &amp;&amp; ( mapping_type().required_span_size() == size of initializer_list, iterator pair, or range )</c-></c->
     <c- c1><c- c1>//    B: ( extents_type::rank_dynamic() == 1 ) &amp;&amp; ( mapping_type( extents_type(N) ).required_span_size() == size of initializer_list, iterator pair, or range ) (for some integer value N)</c-></c->
-    <c- k><c- n>explicit</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>>&amp;</c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
+    <c- k><c- n>explicit</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>il</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
     <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>InputIt</c-></c-> <c- o><c- o>></c-></c->
     <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>InputIt</c-></c-> <c- n><c- n>first</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>InputIt</c-></c-> <c- n><c- n>last</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>alloc</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>allocator_type</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>);</c-></c->
     <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>R</c-></c-> <c- o><c- o>></c-></c->
@@ -2380,7 +2520,7 @@ The authors have the following concerns in regards to the current iteration of P
     <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c->
     <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>rhs</c-></c-> <c- p><c- p>);</c-></c->
     <c- c1><c- c1>// NOTE: This assignment operator requires the same requirements as the constructors</c-></c->
-    <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>il</c-></c-> <c- p><c- p>);</c-></c->
+    <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>initializer_list</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>value_type</c-></c-> <c- o><c- o>></c-></c-> <c- n><c- n>il</c-></c-> <c- p><c- p>);</c-></c->
 
     <c- c1><c- c1>// Members</c-></c->
     <c- k><c- n>constexpr</c-></c-> <c- n><c- nf>swap</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>rhs</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>noexcept</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>allocator_traits</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>allocator_type</c-></c-> <c- o><c- o>>::</c-></c-><c- n><c- n>propagate_on_container_swap</c-></c-> <c- o><c- o>||</c-></c->
@@ -2490,6 +2630,8 @@ The authors have the following concerns in regards to the current iteration of P
     <li data-md>
      <p>AccessorPolicy shall meet the accessor policy requirements.</p>
    </ul>
+   <h3 class="heading settled" data-level="3.4" id="helpers"><span class="secno">3.4. </span><span class="content">Helpers</span><a class="self-link" href="#helpers"></a></h3>
+   <p>IN WORK: How to define resultant layout and accessor types?</p>
    <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Design Questions</span><a class="self-link" href="#questions"></a></h2>
    <p>These are issues for which different approaches may be taken. Many have pros and cons. The authors seek guidance on the best direction to take.</p>
    <h3 class="heading settled" data-level="4.1" id="fixed-size-tensor"><span class="secno">4.1. </span><span class="content">Fixed Size Tensor</span><a class="self-link" href="#fixed-size-tensor"></a></h3>
@@ -2497,7 +2639,7 @@ The authors have the following concerns in regards to the current iteration of P
 There are a couple paths which could be taken: 
    <ol>
     <li data-md>
-     <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
+     <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a>.
 fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
 dr_tensor would adopt the existing tensor interface wholesale.
 This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
@@ -2609,7 +2751,9 @@ It encourages implementations of ordered strided layouts which still allow effic
     Should tensor require extents_type::dynamic_rank() != 0? 
    <p>If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type&amp; alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.</p>
    <p>Alternatively, tensor could impose the requirement only on the impacted constructors.</p>
-   <h3 class="heading settled" data-level="4.4" id="implementation-freedoms-in-compound-expressions"><span class="secno">4.4. </span><span class="content">Implementation Freedoms in Compound Expressions</span><a class="self-link" href="#implementation-freedoms-in-compound-expressions"></a></h3>
+   <h3 class="heading settled" data-level="4.4" id="tensor-expressions-contain-by-value"><span class="secno">4.4. </span><span class="content">Tensor Expressions Contain by Value</span><a class="self-link" href="#tensor-expressions-contain-by-value"></a></h3>
+    Is it useful to be able to constuct expressions which contain the operands by value? If so, what syntax is desired to indicate contain-by-value? 
+   <h3 class="heading settled" data-level="4.5" id="implementation-freedoms-in-compound-expressions"><span class="secno">4.5. </span><span class="content">Implementation Freedoms in Compound Expressions</span><a class="self-link" href="#implementation-freedoms-in-compound-expressions"></a></h3>
    <p>Linear algebra conforms to a set of axiomatic identities. The authors believe implementations which conform to this proposal should be free to apply them liberally, but think it is important to bring the implications into consideration.</p>
    <p>Consider - given tensors a, b, c:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>d</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>a</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>b</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>c</c-></c-><c- p><c- p>;</c-></c->
@@ -2631,10 +2775,10 @@ This example is relatively trivial. Without an unduly expensive analysis of the 
 </code></pre>
    <p>These expressions are sometimes referred to as rank-k updates. By virtue of the Woodbury matrix identity and a little algebraic manipulation - each of these evaluate to the same result.
 The concern of the authors is more clear - the first expression is both the most expensive and the only which requires both a and b to be invertible. Each of the remaining expressions only require the sum of the matrices to be invertible. This leads to the natural question: If the client code calls for the inverse of the matrix, must the matrix actually be invertible or is the implementation free to evaluate the compound expression in such a way that the inverse may never be computed?</p>
-   <h3 class="heading settled" data-level="4.5" id="simplification-and-simultaneous-evaluation"><span class="secno">4.5. </span><span class="content">Simplification and Simultaneous Evaluation</span><a class="self-link" href="#simplification-and-simultaneous-evaluation"></a></h3>
+   <h3 class="heading settled" data-level="4.6" id="simplification-and-simultaneous-evaluation"><span class="secno">4.6. </span><span class="content">Simplification and Simultaneous Evaluation</span><a class="self-link" href="#simplification-and-simultaneous-evaluation"></a></h3>
    <p>In this section, the authors present limitations in the compiler’s ability to optimize code. At this time, no solutions are presented.</p>
    <p>For this illustration, the authors introduce a state, X, and its associated uncertainty, XX. X is a vector (rank 1 tensor), XX is a positive semi-definite symmetric matrix.</p>
-   <p>Consider the linear transform, A*X, and the associated transformation of the uncertainty, A*XX*trans(A).</p>
+   <p>Consider the linear transform, A<em>X, and the associated transformation of the uncertainty, A</em>XX*trans(A).</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>Y</c-></c->  <c- o><c- o>=</c-></c-> <c- n><c- n>A</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>X</c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- k>auto</c-></c-> <c- n><c- n>YY</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>A</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>XX</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>trans</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>A</c-></c-><c- p><c- p>);</c-></c->
 </code></pre>
@@ -2647,9 +2791,9 @@ The concern of the authors is more clear - the first expression is both the most
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- p><c- p>[</c-></c-> <c- n><c- n>Y</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>YY</c-></c-> <c- p><c- p>]</c-></c-> <c- o><c- o>=</c-></c-> <c- p><c- p>{</c-></c-> <c- n><c- n>A</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>X</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>A</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>XX</c-></c-><c- o><c- o>*</c-></c-><c- n><c- n>trans</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>A</c-></c-><c- p><c- p>)</c-></c-> <c- p><c- p>};</c-></c->
 </code></pre>
    <p>However, this requires someway to overload the way assignment is performed on the structured binding to evaluate Y and YY simultaneously as well as verify the first parameter in the matrix-vector product is the same parameter used in the second expression.</p>
-   <h3 class="heading settled" data-level="4.6" id="nodiscard-clarification"><span class="secno">4.6. </span><span class="content">[<span>[nodiscard]</span>] Clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
-    The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [<span>[nodiscard]</span>] to the empty() function consistent with the specification of a number of STL containers. 
-   <p>P0600 is the proposal which motivated the addition of <span>[nodiscard]</span> to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [<span>[nodiscard]</span>] on future additions to the proposal:</p>
+   <h3 class="heading settled" data-level="4.7" id="nodiscard-clarification"><span class="secno">4.7. </span><span class="content">[<span>[nodiscard]</span>] Clarification</span><a class="self-link" href="#nodiscard-clarification"></a></h3>
+    The <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> only introduced [<span>[nodiscard]</span>] to the empty() function consistent with the specification of a number of STL containers. 
+   <p><a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf">P0600</a> is the proposal which motivated the addition of <span>[nodiscard]</span> to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [<span>[nodiscard]</span>] on future additions to the proposal:</p>
    <blockquote>
     <p>It should be added where:</p>
     <ul>
@@ -2667,8 +2811,8 @@ The concern of the authors is more clear - the first expression is both the most
       </ul>
     </ul>
    </blockquote>
-   <p>In the authors' opinions, P0009 did not adhere to this guidance. The authors have marked which functions could be marked no [<span>[nodiscard]</span>] in accordance to the guidance provided by P0600; however, the authors seek clarity on the appropriate direction to take.</p>
-   <h3 class="heading settled" data-level="4.7" id="safe-memory-access"><span class="secno">4.7. </span><span class="content">Safe Memory Access</span><a class="self-link" href="#safe-memory-access"></a></h3>
+   <p>In the authors' opinions, <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> did not adhere to this guidance. The authors have marked which functions could be marked no [<span>[nodiscard]</span>] in accordance to the guidance provided by <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf">P0600</a>; however, the authors seek clarity on the appropriate direction to take.</p>
+   <h3 class="heading settled" data-level="4.8" id="safe-memory-access"><span class="secno">4.8. </span><span class="content">Safe Memory Access</span><a class="self-link" href="#safe-memory-access"></a></h3>
     Safe memory access is important to avoid undefined behaviors if the user tries to access an invalid location. This is further highlighted in the recent paper P2759. 
    <p>
     Tensor could provide an additional function similar to several existing containers which guards against out-of-bounds access.
@@ -2678,8 +2822,8 @@ The effects are the same as the operator[]( OtherIndexTypes... indices ) member 
    </p>
    <p>In the authors' experience - much in high performance computing, at( OtherIndexTypes ... indices  ) receives very little use and other paradigms and tools are needed to ensure memory safe access.
 The authors do not wish to engage in evolving a better approach to memory safe access. The authors merely seek guidance on whether at( OtherIndexTypes ... indices ) is a desired function.
-The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices ).</p>
-   <h3 class="heading settled" data-level="4.8" id="resize-mapping_type"><span class="secno">4.8. </span><span class="content">Resize mapping_type</span><a class="self-link" href="#resize-mapping_type"></a></h3>
+The authors note std::mdspan <em>did not include</em> at( OtherIndexTypes ... indices ).</p>
+   <h3 class="heading settled" data-level="4.9" id="resize-mapping_type"><span class="secno">4.9. </span><span class="content">Resize mapping_type</span><a class="self-link" href="#resize-mapping_type"></a></h3>
    <p>The layout policy and mapping concepts established by P0900 are insufficient for handling resizing of containers - likely because there was no need to address it. The current approach for the implementation is to isolate pieces of code where this is needed such that users may implement custom overloads.</p>
    <p>The mapping_type needs to provide a mechanism allowing for the container to resize. There are several possible approaches:</p>
    <ul>
@@ -2691,12 +2835,12 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
 <pre class="highlight"><code class="language-c++ highlight"> <c- b><c- b>void</c-></c-> <c- nf><c- nf>mapping_type</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>mapping_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>map</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>extents_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>new_e</c-></c-> <c- p><c- p>);</c-></c-> </code> </pre>
      <p>However, this approach may be less efficient owing to an additional assignment required.</p>
    </ul>
-   <h3 class="heading settled" data-level="4.9" id="-assume-restrict-p"><span class="secno">4.9. </span><span class="content">[[ assume( restrict( p ) ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
-    C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function 
+   <h3 class="heading settled" data-level="4.10" id="-assume-restrict-p"><span class="secno">4.10. </span><span class="content">[[ assume( restrict( p ) ) ]]</span><a class="self-link" href="#-assume-restrict-p"></a></h3>
+    C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function: 
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- k><c- kr>restrict</c-></c-><c- p><c- p>(</c-></c-> <c- p><c- p>[[</c-></c-><c- n><c- n>maybe_unused</c-></c-><c- p><c- p>]]</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>*</c-></c-> <c- n><c- n>p</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>noexcept</c-></c-> <c- k><c- n>requires</c-></c-> <c- n><c- n>is_same_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>remove_reference_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>{</c-></c-> <c- k><c- k>return</c-></c-> true<c- p><c- p>;</c-></c-> <c- p><c- p>}</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>consteval</c-></c-> <c- b><c- b>bool</c-></c-> <c- k><c- kr>restrict</c-></c-><c- p><c- p>(</c-></c-> <c- p><c- p>[[</c-></c-><c- n><c- n>maybe_unused</c-></c-><c- p><c- p>]]</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>*</c-></c-> <c- n><c- n>p</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>noexcept</c-></c-> <c- k><c- n>requires</c-></c-> <c- n><c- n>is_same_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>remove_reference_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>{</c-></c-> <c- k><c- k>return</c-></c-> true<c- p><c- p>;</c-></c-> <c- p><c- p>}</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- b><c- b>bool</c-></c-> <c- k><c- kr>restrict</c-></c-><c- p><c- p>(</c-></c-> <c- p><c- p>[[</c-></c-><c- n><c- n>maybe_unused</c-></c-><c- p><c- p>]]</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>ref</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>noexcept</c-></c-> <c- k><c- n>requires</c-></c-> <c- n><c- n>is_same_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>remove_reference_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>{</c-></c-> <c- k><c- k>return</c-></c-> true<c- p><c- p>;</c-></c-> <c- p><c- p>}</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>consteval</c-></c-> <c- b><c- b>bool</c-></c-> <c- k><c- kr>restrict</c-></c-><c- p><c- p>(</c-></c-> <c- p><c- p>[[</c-></c-><c- n><c- n>maybe_unused</c-></c-><c- p><c- p>]]</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>ref</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>noexcept</c-></c-> <c- k><c- n>requires</c-></c-> <c- n><c- n>is_same_v</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>remove_reference_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>{</c-></c-> <c- k><c- k>return</c-></c-> true<c- p><c- p>;</c-></c-> <c- p><c- p>}</c-></c->
 </code></pre>
    <p>In the context of an [[ assume( ) ]],</p>
    <ul>
@@ -2708,9 +2852,9 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
      <p>This function would allow the compiler to treat the pointer, p, or reference, ref, as a restrict pointer or reference in the same context as the C99 restrict keyword for the duration of the assume statement’s lifetime.</p>
    </ul>
    <p>The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.</p>
-   <p>A shorter syntax may be to remove the assume() altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume().</p>
+   <p>A shorter syntax may be to remove the assume altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume.</p>
    <p>Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.</p>
-   <h3 class="heading settled" data-level="4.10" id="vector-and-matrix-aliases"><span class="secno">4.10. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
+   <h3 class="heading settled" data-level="4.11" id="vector-and-matrix-aliases"><span class="secno">4.11. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
    <p>The authors would like to add additonal aliases to the standard as well for both convenience and clarity:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
@@ -2719,13 +2863,13 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>Allocator</c-></c->      <c- o><c- o>=</c-></c-> <c- n><c- n>allocator</c-></c-><c- p><c- p>,</c-></c-><t>
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>matrix</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- p><c- p>,</c-></c-><common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029><c- k><c- n>static_cast</c-></c-><c- p><c- p>(</c-></c-><size_t><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-><c- k><c- n>static_cast</c-></c-><c- p><c- p>(</c-></c-><size_t><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-><c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Allocator</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>matrix</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>common_type_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Allocator</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- k>auto</c-></c->  <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>Allocator</c-></c->      <c- o><c- o>=</c-></c-> <c- n><c- n>allocator</c-></c-><c- p><c- p>,</c-></c-><t>
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- p><c- p>(</c-></c-><decltypeU00028nU00029U0002Cstatic_castU0003Csize_t><c- n><c- n>N</c-></c-><c- p><c- p>)</c-></c-><c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Allocator</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>N</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>N</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Allocator</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>Extents</c-></c-><c- p><c- p>,</c-></c->
@@ -2737,19 +2881,19 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- k><c- k>auto</c-></c->  <c- n><c- n>C</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>matrix_view</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>mdspan</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- p><c- p>,</c-></c-><common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029><c- k><c- n>static_cast</c-></c-><c- p><c- p>(</c-></c-><size_t><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-><c- k><c- n>static_cast</c-></c-><c- p><c- p>(</c-></c-><size_t><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-><c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>matrix_view</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>mdspan</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>common_type_t</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>R</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>C</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- k>auto</c-></c->  <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>vector_view</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>mdspan</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- p><c- p>(</c-></c-><decltypeU00028nU00029U0002Cstatic_castU0003Csize_t><c- n><c- n>N</c-></c-><c- p><c- p>)</c-></c-><c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>vector_view</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>mdspan</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>N</c-></c-><c- p><c- p>),</c-></c-> <c- k><c- n>static_cast</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>N</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 
 <c- k><c- n>namespace</c-></c-> <c- nn><c- n>pmr</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>Extents</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>tensor</c-></c-> <c- o><c- o>=</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Extents</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>pmr</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>polymorphic_allocator</c-></c-><c- p><c- p>,</c-></c-><t> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>tensor</c-></c-> <c- o><c- o>=</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Extents</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>pmr</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>polymorphic_allocator</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- k>auto</c-></c->  <c- n><c- n>R</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- k>auto</c-></c->  <c- n><c- n>C</c-></c-><c- p><c- p>,</c-></c->
@@ -2760,10 +2904,10 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
            <c- k><c- k>auto</c-></c->  <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>LayoutPolicy</c-></c->   <c- o><c- o>=</c-></c-> <c- n><c- n>layout_right</c-></c-><c- p><c- p>,</c-></c->
            <c- k><c- n>class</c-></c-> <c- nc><c- n>AccessorPolicy</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>default_accessor</c-></c-> <t><c- o><c- o>></c-></c->
-<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>pmr</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>polymorphic_allocator</c-></c-><c- p><c- p>,</c-></c-><t> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
+<c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>vector</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>LayoutPolicy</c-></c-><c- p><c- p>,</c-></c-> <c- o><c- o>::</c-></c-><c- n><c- n>std</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>pmr</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>polymorphic_allocator</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>AccessorPolicy</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- p><c- p>}</c-></c->
 <c- p><c- p>}</c-></c->
-</t></t></t></t></t></t></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></size_t></size_t></common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029></t></t></decltypeU00028nU00029U0002Cstatic_castU0003Csize_t></t></t></size_t></size_t></common_type_tU0003CdecltypeU00028rU00029U0002CdecltypeU00028cU00029></t></t></code></pre>
+</t></t></t></t></t></t></t></t></t></t></t></code></pre>
    <p>There are some glaring issues with adding these:</p>
    <ul>
     <li data-md>
@@ -2781,7 +2925,7 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
        <p>Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?</p>
      </ul>
    </ul>
-   <h3 class="heading settled" data-level="4.11" id="limitations-without-iterators"><span class="secno">4.11. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
+   <h3 class="heading settled" data-level="4.12" id="limitations-without-iterators"><span class="secno">4.12. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
     Several functions have no reasonable general solution when neither of the following are true: 
 <pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>mapping_type</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>is_always_exhaustive</c-></c-><c- p><c- p>()</c-></c->
 <c- n><c- n>mapping_type</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>is_always_unique</c-></c-><c- p><c- p>()</c-></c->
@@ -2801,11 +2945,11 @@ The authors note std::mdspan *did not include* at( OtherIndexTypes ... indices )
 If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.</p>
    <p>If neither are true, then the authors believe a more definition of iterators within the context of multidimensional containers is needed.
 Without such concepts, the current implementation is to isolate these functions in a way the user may provide custom overloads.</p>
-   <h3 class="heading settled" data-level="4.12" id="mdslice-submdspan-or-subtensor"><span class="secno">4.12. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
-    Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of P0009 have proposed a reasonable implementation to achieve this in proposal P2630. 
+   <h3 class="heading settled" data-level="4.13" id="mdslice-submdspan-or-subtensor"><span class="secno">4.13. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
+    Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> have proposed a reasonable implementation to achieve this in proposal <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a>. 
    <p>If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.</p>
-   <p>The authors of this proposal are preferential to the implementation of P2630; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
-   <h3 class="heading settled" data-level="4.13" id="rank-one-extents-implicit-conversions"><span class="secno">4.13. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
+   <p>The authors of this proposal are preferential to the implementation of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a>; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
+   <h3 class="heading settled" data-level="4.14" id="rank-one-extents-implicit-conversions"><span class="secno">4.14. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
     One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose: 
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> … <c- o><c- o>></c-></c->
 <c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- p><c- p>,</c-></c-><tU0002CextentsU0003Csize_tU0002Cn>…<c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
@@ -2842,7 +2986,7 @@ If the standard was to adopt a specialization which allowed extents
     <li data-md>
      <p>The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan.</p>
     <li data-md>
-     <p>Previous versions of P0009 mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.</p>
+     <p>Previous versions of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.</p>
     <li data-md>
      <p>Multi-dimensional iterators is a complex concept likely requiring its own proposal.</p>
    </ul>
@@ -2851,8 +2995,8 @@ If the standard was to adopt a specialization which allowed extents
    <p>The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.</p>
    <p>Additionally, single elements cannot simply be pushed; rather, entire subrank tensors would be added and removed. Considerable thought must given to the form those tensors would taken and how they would interact with existing mapping constructs.</p>
    <h3 class="heading settled" data-level="5.3" id="comparison-operators"><span class="secno">5.3. </span><span class="content">Comparison Operators</span><a class="self-link" href="#comparison-operators"></a></h3>
-    Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal. 
-   <h3 class="heading settled" data-level="5.4" id="element-wise-functions"><span class="secno">5.4. </span><span class="content">Element-wise Functions</span><a class="self-link" href="#element-wise-functions"></a></h3>
+    Comparison operators do have value to higher level math objects; however, such comparisons are defined using a <em>norm</em>. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal. 
+   <h3 class="heading settled" data-level="5.4" id="element-wise-multiply-and-divide"><span class="secno">5.4. </span><span class="content">Element-wise Multiply and Divide</span><a class="self-link" href="#element-wise-multiply-and-divide"></a></h3>
     Element-wise (or Hadamard) multiply and divide was additionally considered. The authors note other langauges like MATLAB and Python provide operator like syntax for achieving this. The authors want to gauge interest before pursuing. 
    <h3 class="heading settled" data-level="5.5" id="tensor-bool"><span class="secno">5.5. </span><span class="content">tensor&lt; bool, ... ></span><a class="self-link" href="#tensor-bool"></a></h3>
     A specialization of tensor analogous to vector
@@ -2861,12 +3005,7 @@ If the standard was to adopt a specialization which allowed extents
     <h3 class="heading settled" data-level="5.6" id="non-contiguous-buffers"><span class="secno">5.6. </span><span class="content">Non-contiguous buffers</span><a class="self-link" href="#non-contiguous-buffers"></a></h3>
     <h2 class="heading settled" data-level="6" id="acknowledge"><span class="secno">6. </span><span class="content">Acknowledgements</span><a class="self-link" href="#acknowledge"></a></h2>
     <h2 class="heading settled" data-level="7" id="related"><span class="secno">7. </span><span class="content">Related Work</span><a class="self-link" href="#related"></a></h2>
-     In work.
-P0009
-P1385
-P1673
-P2670
-D1684 
+     In work. <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a> <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a> <a href="https://isocpp.org/files/papers/D1684R0.html">D1684</a> 
    </bool>
   </main>
 <script>
