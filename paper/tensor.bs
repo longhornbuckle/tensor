@@ -54,7 +54,7 @@ Description {#descript}
 
 The tensor expression defines the minimum requirement for a *tensor object*. A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this context, a concrete tensor object is an object which owns the underlying memory and is conformant to the *writable tensor* concept.
 
-The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations.
+The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations. In short, the tensor expression must specify the size (in the generic sense of the word) and provide the ability access the representative value given a valid set of indices.
 
 ### Tensor Expression
 
@@ -85,7 +85,7 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
-The authors additionally propose two *unevaluated tensor expression* concepts: the *unary tensor expression* and *binary tensor expression*.
+The authors additionally propose two *unevaluated tensor expression* concepts: the `unary_tensor_expression` and `binary_tensor_expression`.
 
 ### Unary Tensor Expression
 <pre class="highlight">
@@ -105,7 +105,7 @@ requires ( T& t )
 </code>
 </pre>
 
-Additionally, the unary tensor expression must be constructible from any object conformant to the tensor_expression concept:
+Additionally, the unary tensor expression must be constructible from any object which is at a minimum conformant to the `tensor_expression` concept:
 <pre class="highlight">
 <code class="language-c++">
 unary_tensor_expression( tensor_expression&& );
@@ -132,7 +132,7 @@ requires ( T& t )
 </code>
 </pre>
 
-Additionally, the binary tensor expression must be constructible from any pair of objects conformant to the tensor_expression concept:
+Additionally, the binary tensor expression must be constructible from any pair of objects which are at a minimum conformant to the `tensor_expression` concept:
 <pre class="highlight">
 <code class="language-c++">
 binary_tensor_expression( tensor_expression&&, tensor_expression&& );
@@ -141,7 +141,7 @@ binary_tensor_expression( tensor_expression&&, tensor_expression&& );
 
 ### Tensor Expression Traits
 
-The authors also propose several traits related to the *unevaluated tensor expressions*. The intent is to provide additional information on custom `unary_tensor_expression`s and `binary_tensor_expression`s which may be taken advantage of without further inspection of the types. In this section, consider `t1`, `t2`, and `t3` to be objects which satisfy the *tensor_expression* concept.
+The authors also propose several traits related to the *unevaluated tensor expressions*. The intent is to provide additional information on custom `unary_tensor_expression`s and `binary_tensor_expression`s which may be taken advantage of without further inspection of the types. In this section, consider `t1`, `t2`, and `t3` to be objects which satisfy the `tensor_expression` concept.
 
 Advisement: If the below traits evaluate `true`, should the compiler be free to take advantage of them liberally or should the traits be purely informative?
 

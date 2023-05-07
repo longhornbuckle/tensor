@@ -2224,7 +2224,7 @@ The authors have the following concerns in regards to the current iteration of <
    <h2 class="heading settled" data-level="3" id="descript"><span class="secno">3. </span><span class="content">Description</span><a class="self-link" href="#descript"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="tensor-expressions"><span class="secno">3.1. </span><span class="content">Tensor Expressions</span><a class="self-link" href="#tensor-expressions"></a></h3>
    <p>The tensor expression defines the minimum requirement for a <em>tensor object</em>. A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this context, a concrete tensor object is an object which owns the underlying memory and is conformant to the <em>writable tensor</em> concept.</p>
-   <p>The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations.</p>
+   <p>The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations. In short, the tensor expression must specify the size (in the generic sense of the word) and provide the ability access the representative value given a valid set of indices.</p>
    <h4 class="heading settled" data-level="3.1.1" id="tensor-expression"><span class="secno">3.1.1. </span><span class="content">Tensor Expression</span><a class="self-link" href="#tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
@@ -2249,7 +2249,7 @@ The authors have the following concerns in regards to the current iteration of <
 <c- p><c- p>}</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <p>The authors additionally propose two <em>unevaluated tensor expression</em> concepts: the <em>unary tensor expression</em> and <em>binary tensor expression</em>.</p>
+   <p>The authors additionally propose two <em>unevaluated tensor expression</em> concepts: the <code class="highlight"><c- n>unary_tensor_expression</c-></code> and <code class="highlight"><c- n>binary_tensor_expression</c-></code>.</p>
    <h4 class="heading settled" data-level="3.1.2" id="unary-tensor-expression"><span class="secno">3.1.2. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
@@ -2264,7 +2264,7 @@ The authors have the following concerns in regards to the current iteration of <
   <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <p>Additionally, the unary tensor expression must be constructible from any object conformant to the tensor_expression concept:</p>
+   <p>Additionally, the unary tensor expression must be constructible from any object which is at a minimum conformant to the <code class="highlight"><c- n>tensor_expression</c-></code> concept:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>unary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.3" id="binary-tensor-expression"><span class="secno">3.1.3. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
@@ -2282,11 +2282,11 @@ The authors have the following concerns in regards to the current iteration of <
   <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <p>Additionally, the binary tensor expression must be constructible from any pair of objects conformant to the tensor_expression concept:</p>
+   <p>Additionally, the binary tensor expression must be constructible from any pair of objects which are at a minimum conformant to the <code class="highlight"><c- n>tensor_expression</c-></code> concept:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>binary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.4" id="tensor-expression-traits"><span class="secno">3.1.4. </span><span class="content">Tensor Expression Traits</span><a class="self-link" href="#tensor-expression-traits"></a></h4>
-   <p>The authors also propose several traits related to the <em>unevaluated tensor expressions</em>. The intent is to provide additional information on custom <code class="highlight"><c- n>unary_tensor_expression</c-></code>s and <code class="highlight"><c- n>binary_tensor_expression</c-></code>s which may be taken advantage of without further inspection of the types. In this section, consider <code class="highlight"><c- n>t1</c-></code>, <code class="highlight"><c- n>t2</c-></code>, and <code class="highlight"><c- n>t3</c-></code> to be objects which satisfy the <em>tensor_expression</em> concept.</p>
+   <p>The authors also propose several traits related to the <em>unevaluated tensor expressions</em>. The intent is to provide additional information on custom <code class="highlight"><c- n>unary_tensor_expression</c-></code>s and <code class="highlight"><c- n>binary_tensor_expression</c-></code>s which may be taken advantage of without further inspection of the types. In this section, consider <code class="highlight"><c- n>t1</c-></code>, <code class="highlight"><c- n>t2</c-></code>, and <code class="highlight"><c- n>t3</c-></code> to be objects which satisfy the <code class="highlight"><c- n>tensor_expression</c-></code> concept.</p>
    <p><strong class="advisement"> If the below traits evaluate <code class="highlight">true</code>, should the compiler be free to take advantage of them liberally or should the traits be purely informative?</strong></p>
    <h5 class="heading settled" data-level="3.1.4.1" id="commutative"><span class="secno">3.1.4.1. </span><span class="content">Commutative</span><a class="self-link" href="#commutative"></a></h5>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>binary_tensor_expression</c-></c-> <c- n><c- n>TE</c-></c-> <c- o><c- o>></c-></c->
