@@ -1,5 +1,5 @@
 <pre class='metadata'>
-Title: The Tensor
+Title: Tensor
 Shortname: PXXXX
 Status: wg21/WD
 Group: wg21
