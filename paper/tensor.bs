@@ -72,9 +72,9 @@ concept tensor_expression = requires
 } &&
 requires( const T& t, typename T::rank_type n )
 {
-  { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
+  { t.extent( n ) }          -> same_as< typename T::size_type >;
   { T::rank() }     noexcept -> same_as< typename T::rank_type >;
-  { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
+  { t.extents() }            -> convertible_to< typename T::extents_type >;
   integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
 requires( T& t, auto ... indices )
@@ -105,7 +105,7 @@ requires ( T& t )
 </code>
 </pre>
 
-Additionally, the unary tensor expression must be constructible from any object which is at a minimum conformant to the `tensor_expression` concept:
+Additionally, the unary tensor expression must be constructible from any object which is *at a minimum* conformant to the `tensor_expression` concept:
 <pre class="highlight">
 <code class="language-c++">
 unary_tensor_expression( tensor_expression&& );
@@ -132,7 +132,7 @@ requires ( T& t )
 </code>
 </pre>
 
-Additionally, the binary tensor expression must be constructible from any pair of objects which are at a minimum conformant to the `tensor_expression` concept:
+Additionally, the binary tensor expression must be constructible from any pair of objects which are *at a minimum* conformant to the `tensor_expression` concept:
 <pre class="highlight">
 <code class="language-c++">
 binary_tensor_expression( tensor_expression&&, tensor_expression&& );
@@ -307,17 +307,17 @@ requires( const T& t, typename T::rank_type n )
 {
   { T::rank_dynamic() }         noexcept -> same_as< typename T::rank_type >;
   { T::static_extent( n ) }     noexcept -> same_as< typename T::size_type >;
-  { t.size() }                  noexcept -> same_as< typename T::size_type >;
+  { t.size() }                           -> same_as< typename T::size_type >;
   { T::is_always_strided() }    noexcept -> same_as< bool >;
   { T::is_always_exhaustive() } noexcept -> same_as< bool >;
   { T::is_always_unique() }     noexcept -> same_as< bool >;
-  { t.is_strided() }            noexcept -> same_as< bool >;
-  { t.is_exhaustive() }         noexcept -> same_as< bool >;
-  { t.is_unique() }             noexcept -> same_as< bool >;
-  { t.stride( n ) }             noexcept -> same_as< typename T::index_type >;
-  { t.accessor() }              noexcept -> convertible_to< typename T::accessor_type >;
-  { t.data_handle() }           noexcept -> convertible_to< typename T::data_handle_type >;
-  { t.mapping() }               noexcept -> convertible_to< typename T::mapping_type >;
+  { t.is_strided() }                     -> same_as< bool >;
+  { t.is_exhaustive() }                  -> same_as< bool >;
+  { t.is_unique() }                      -> same_as< bool >;
+  { t.stride( n ) }                      -> same_as< typename T::index_type >;
+  { t.accessor() }                       -> convertible_to< typename T::accessor_type >;
+  { t.data_handle() }                    -> convertible_to< typename T::data_handle_type >;
+  { t.mapping() }                        -> convertible_to< typename T::mapping_type >;
   integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
   integral_constant< typename T::size_type, T::static_extent( n ) >::value;
   bool_constant< T::is_always_strided() >::value;
@@ -917,7 +917,10 @@ Iterators which operate on multidimensional containers and views is a key concep
 - Previous versions of [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.
 - Multi-dimensional iterators is a complex concept likely requiring its own proposal.
 
-## Additional Vector-like functions
+## Inverse, Eigen Vectors, and Everything Else
+There are too many useful functions which operate on various kinds of tensors. It is not feasable to introduce them all in a single proposal. This proposal seeks to build a foundation for future work while providing some basic functions.
+
+## Additional STL Vector-like functions
 Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ...
 
 The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.
