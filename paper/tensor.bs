@@ -690,7 +690,7 @@ In this section, the authors present limitations in the compiler's ability to op
 
 For this illustration, the authors introduce a state, X, and its associated uncertainty, XX. X is a vector (rank 1 tensor), XX is a positive semi-definite symmetric matrix.
 
-Consider the linear transform, A*X, and the associated transformation of the uncertainty, A*XX*trans(A).
+Consider the linear transform, A\*X, and the associated transformation of the uncertainty, A\*XX\*trans(A).
 <pre class="highlight">
 <code class="language-c++">
 auto Y  = A*X;
@@ -701,7 +701,7 @@ auto YY = A*XX*trans(A);
 The first question is how can optimize the second function? Breaking down the second function into the intermediate expression templates used, it looks something like:
 <pre class="highlight">
 <code class="language-c++">
-auto YY = product_matrix_expression( A, product_matrix_expression( XX, transpose_matrix_expression(A) );
+auto YY = matrix_product_expression( A, matrix_product_expression( XX, matrix_transpose_expression(A) );
 </code>
 </pre>
 
