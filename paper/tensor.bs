@@ -537,9 +537,17 @@ template < vector_expression FirstVector, vector_expression SecondVector >
 [[nodiscard]] constexpr /* implementation defined */ outer_prod( FirstVector&& vector_a, SecondVector&& vector_b ) requires (  );
 // Transpose
 template < tensor_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t, typename Tensor::index_type dim1, typename Tensor::index_type dim2 );
+template < matrix_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t );
+template < vector_expression Tensor >
 [[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t );
 // Conjugate
 template < tensor_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t, typename Tensor::index_type dim1, typename Tensor::index_type dim2 );
+template < matrix_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t );
+template < vector_expression Tensor >
 [[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t );
 // Scalar Modulo
 template < tensor_expression Tensor, class ValueType >
@@ -559,7 +567,7 @@ Mandates:
 
 ## Helpers
 
-IN WORK: How to define resultant layout and accessor types?
+IN WORK: How to define resultant layout, accessor, and allocator types?
 
 Design Questions {#questions}
 =============================

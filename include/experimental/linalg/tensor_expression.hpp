@@ -14,55 +14,137 @@ namespace std
 namespace experimental
 {
 
+
 template < tensor_expression Tensor >
-class tensor_expression_helper
+class tensor_negate_expression;
+
+template < tensor_expression Tensor >
+class tensor_transpose_expression;
+
+template < tensor_expression Tensor >
+class tensor_conjugate_expression;
+
+
+template < class Tensor >
+struct layout_result;
+
+template < readable_tensor Tensor >
+struct layout_result< tensor_negate_expression< Tensor > >
 {
-  private:
-    template < class T >
-    struct layout requires ( !unevaluated_tensor_expression<T> )
-    {
-      using type = typename T::layout_type;
-    };
-    template < unevaluated_tensor_expression T >
-    struct layout
-    {
-      using type = typename decltype( ::std::declval<T>().operator auto() )::layout_type;
-    };
-    template < class T >
-    struct accessor requires ( !unevaluated_tensor_expression<T> )
-    {
-      using type = typename T::accessor_type;
-    };
-    template < unevaluated_tensor_expression T >
-    struct accessor
-    {
-      using type = typename decltype( ::std::declval<T>().operator auto() )::accessor_type;
-    };
-    template < class T >
-    struct allocator
-    {
-      using type = ::std::allocator< typename T::value_type >;
-    };
-    template < class T > requires ( dynamic_tensor< ::std::remove_cv_t< T > > )
-    {
-      using type = typename ::std::remove_cv_t< T >::allocator_type;
-    };
-    template < class T > requires ( unevaluated_tensor_expression<T> && dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > )
-    {
-      using type = typename decltype( ::std::declval<T>().operator auto() )::allocator_type;
-    };
-  public:
-    using layout_type = typename layout<Tensor>::type;
-    using accessor_type = typename accessor<Tensor>::type;
-    using allocator_type = typename allocator<Tensor>::type;
+  using type = typename Tensor::layout_type;
 };
 
+template < unevaluated_tensor_expression Tensor >
+struct layout_result< tensor_negate_expression< Tensor > >
+{
+  using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
+};
+
+template < readable_tensor Tensor >
+struct layout_result< tensor_transpose_expression< Tensor > >
+  requires ( ::std::is_same_v< typename Tensor::layout_type, layout_right > ||
+             ::std::is_same_v< typename Tensor::layout_type, layout_left > ||
+             ::std::is_same_v< typename Tensor::layout_type, layout_stride > )
+{
+  using type = default_layout;
+};
+
+template < unevaluated_tensor_expression Tensor >
+struct layout_result< tensor_transpose_expression< Tensor > >
+{
+  using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
+};
+
+template < readable_tensor Tensor >
+struct layout_result< tensor_conjugate_expression< Tensor > >
+  requires ( ::std::is_same_v< typename Tensor::layout_type, layout_right > ||
+             ::std::is_same_v< typename Tensor::layout_type, layout_left > ||
+             ::std::is_same_v< typename Tensor::layout_type, layout_stride > )
+{
+  using type = default_layout;
+};
+
+template < unevaluated_tensor_expression Tensor >
+struct layout_result< tensor_conjugate_expression< Tensor > >
+{
+  using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
+};
+
+template < tensor_expression Tensor >
+using layout_result_t = typename layout_result< Tensor >::type;
+
+
+template < class Tensor >
+struct accessor_result;
+
+template < readable_tensor Tensor >
+struct accessor_result< tensor_negate_expression< Tensor > >
+{
+  using type = typename Tensor::accessor_type;
+};
+
+template < unevaluated_tensor_expression Tensor >
+struct accessor_result< tensor_negate_expression< Tensor > >
+{
+  using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
+};
+
+template < readable_tensor Tensor >
+struct accessor_result< tensor_transpose_expression< Tensor > >
+{
+  using type = typename Tensor::accessor_type;
+};
+
+template < unevaluated_tensor_expression Tensor >
+struct accessor_result< tensor_conjugate_expression< Tensor > >
+{
+  using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
+};
+
+template < class Tensor >
+using accessor_result_t = typename accessor_result< Tensor >::type;
+
+
+template < class Tensor >
+struct allocator_result
+{
+  using type = ::std::allocator< typename Tensor::value_type >;
+};
+
+template < dynamic_tensor Tensor >
+struct allocator_result< Tensor >
+{
+  using type = typename Tensor::allocator_type;
+};
+
+template < dynamic_tensor Tensor >
+struct allocator_result< tensor_negate_expression< Tensor > >
+{
+  using type = typename Tensor::allocator_type;
+};
+
+template < dynamic_tensor Tensor >
+struct allocator_result< tensor_transpose_expression< Tensor > >
+{
+  using type = typename Tensor::allocator_type;
+};
+
+template < dynamic_tensor Tensor >
+struct allocator_result< tensor_conjugate_expression< Tensor > >
+{
+  using type = typename Tensor::allocator_type;
+};
+
+template < class Tensor >
+using allocator_result_t = typename allocator_result< Tensor >::type;
+
+// Negate tensor expression
 template < tensor_expression Tensor >
 class negate_tensor_expression
 {
   public:
     // Special member functions
-    constexpr negate_tensor_expression( const Tensor t ) noexcept : t_t(t) { }
+    constexpr negate_tensor_expression( Tensor& t ) noexcept : t_t(t) { }
     constexpr negate_tensor_expression& operator = ( const negate_tensor_expression& t ) noexcept { this->t_ = t.t_; }
     constexpr negate_tensor_expression& operator = ( negate_tensor_expression&& t ) noexcept { this->t_ = t.t_; }
     // Aliases
@@ -101,24 +183,25 @@ class negate_tensor_expression
       {
         return fs_tensor< value_type,
                           extents_type,
-                          typename tensor_expression_helper<Tensor>::layout_type,
-                          typename tensor_expression_helper<Tensor>::accessor_type >
+                          layout_result_t< Tensor >,
+                          accessor_result_t< Tensor > >
           ( *this );
       }
       else
       {
         return dr_tensor< value_type,
                           extents_type,
-                          typename tensor_expression_helper<Tensor>::layout_type,
-                          typename ::std::allocator_traits< tensor_expression_helper<Tensor>::allocator_type >::template rebind_t<value_type>,
-                          typename tensor_expression_helper<Tensor>::accessor_type >
+                          layout_result_t< Tensor >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< Tensor > >::template rebind_t<value_type>,
+                          accessor_result_t< Tensor > >
           ( *this );
       }
     };
 
   private:
     // Data
-    Tensor t_;
+    Tensor& t_;
 };
 
 template < tensor_expression TensorA, tensor_expression TensorB >

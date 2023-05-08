@@ -31,10 +31,10 @@ concept tensor_expression = requires
 requires( const T& t, typename T::rank_type n ) // Functions
 {
   // Size functions
-  { t.extent( n ) } noexcept -> ::std::same_as<typename T::size_type>;
+  { t.extent( n ) }          -> ::std::same_as<typename T::size_type>;
   { T::rank() }     noexcept -> ::std::same_as<typename T::rank_type>;
   // Member accessors
-  { t.extents() }   noexcept -> ::std::convertible_to<typename T::extents_type>;
+  { t.extents() }            -> ::std::convertible_to<typename T::extents_type>;
   // Constexpr functions
   ::std::integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
@@ -48,6 +48,24 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
   { t.operator()( indices ... ) } -> ::std::convertible_to<typename T::value_type>;
   #endif
 };
+
+// Unevaluated tensor expression
+template < class T >
+concept unevaluated_tensor_expression =
+tensor_expression< T > &&
+requires( T t )
+{
+  { t.operator auto() };
+} &&
+tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
+( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+
+// Evaluated tensor expression
+template < class T >
+concept evaluated_tensor_expression =
+tensor_expression< T > &&
+( !unevaluated_tensor_expression< T > );
 
 // Matrix expression concept
 template < class T >
@@ -79,19 +97,19 @@ requires( const T& t, typename T::rank_type n ) // Functions
   // Size functions
   { T::rank_dynamic() }         noexcept -> ::std::same_as<typename T::rank_type>;
   { T::static_extent( n ) }     noexcept -> ::std::same_as<typename T::size_type>;
-  { t.size() }                  noexcept -> ::std::same_as<typename T::size_type>;
+  { t.size() }                           -> ::std::same_as<typename T::size_type>;
   // Layout functions
   { T::is_always_strided() }    noexcept -> ::std::same_as<bool>;
   { T::is_always_exhaustive() } noexcept -> ::std::same_as<bool>;
   { T::is_always_unique() }     noexcept -> ::std::same_as<bool>;
-  { t.is_strided() }            noexcept -> ::std::same_as<bool>;
-  { t.is_exhaustive() }         noexcept -> ::std::same_as<bool>;
-  { t.is_unique() }             noexcept -> ::std::same_as<bool>;
-  { t.stride( n ) }             noexcept -> ::std::same_as<typename T::index_type>;
+  { t.is_strided() }                     -> ::std::same_as<bool>;
+  { t.is_exhaustive() }                  -> ::std::same_as<bool>;
+  { t.is_unique() }                      -> ::std::same_as<bool>;
+  { t.stride( n ) }                      -> ::std::same_as<typename T::index_type>;
   // Member accessors
-  { t.accessor() }              noexcept -> ::std::convertible_to<typename T::accessor_type>;
-  { t.data_handle() }           noexcept -> ::std::convertible_to<typename T::data_handle_type>;
-  { t.mapping() }               noexcept -> ::std::convertible_to<typename T::mapping_type>;
+  { t.accessor() }                       -> ::std::convertible_to<typename T::accessor_type>;
+  { t.data_handle() }                    -> ::std::convertible_to<typename T::data_handle_type>;
+  { t.mapping() }                        -> ::std::convertible_to<typename T::mapping_type>;
   // Constexpr functions
   integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
   integral_constant< typename T::size_type, T::static_extent( n ) >::value;
@@ -118,7 +136,8 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
 // Static tensor concept
 template < class T >
 concept static_tensor =
-writable_tensor<T> &&
+writable_tensor< T > &&
+evaluated_tensor_expression< T > &&
 ( T::rank_dynamic() == 0 ) &&
 ::std::default_initializable< T > &&
 requires ( const T& t )
@@ -131,7 +150,8 @@ requires ( const T& t )
 // Dynamic tensor concept
 template < class T >
 concept dynamic_tensor =
-writable_tensor<T> &&
+writable_tensor< T > &&
+evaluated_tensor_expresson< T > &&
 requires
 {
   // Types
@@ -150,18 +170,6 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
 } &&
 constructible_from< T, typename T::allocator_type > &&
 constructible_from< T, const typename T::extents_type&, typename T::allocator_type >;
-
-// Unevaluated tensor expression
-template < class T >
-concept unevaluated_tensor_expression =
-tensor_expression< T > &&
-requires( T t )
-{
-  { t.operator auto() };
-} &&
-tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
-( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
-  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
 
 // Unary tensor expression concept
 template < class T >
