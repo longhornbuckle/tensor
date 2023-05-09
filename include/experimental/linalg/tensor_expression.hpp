@@ -125,7 +125,17 @@ template < dynamic_tensor Tensor >
 struct allocator_result< Tensor >
 {
   using type = typename Tensor::allocator_type;
-  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept { return t.get_allocator(); }
+  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
+  {
+    if constexpr ( ! ::std::is_rvalue_reference_v<Tensor> )
+    {
+      return ::std::allocator_traits< typename Tensor::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
+    }
+    else
+    {
+      return t.get_allocator();
+    }
+  }
 };
 
 template < unary_tensor_expression Tensor >
