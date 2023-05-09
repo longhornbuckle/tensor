@@ -14,34 +14,39 @@ namespace std
 namespace experimental
 {
 
+// Unary Tensor Expressions
 
+// Negate
 template < tensor_expression Tensor >
-class tensor_negate_expression;
+class negate_tensor_expression;
 
+// Transpose
 template < tensor_expression Tensor >
-class tensor_transpose_expression;
+class transpose_tensor_expression;
 
+// Conjugate
 template < tensor_expression Tensor >
-class tensor_conjugate_expression;
+class conjugate_tensor_expression;
 
-
+// Layout result defines the resultant layout of an unevaluated tensor expression.
+// It must be defined for any given unevaluated tensor expression.
 template < class Tensor >
 struct layout_result;
 
 template < readable_tensor Tensor >
-struct layout_result< tensor_negate_expression< Tensor > >
+struct layout_result< negate_tensor_expression< Tensor > >
 {
   using type = typename Tensor::layout_type;
 };
 
 template < unevaluated_tensor_expression Tensor >
-struct layout_result< tensor_negate_expression< Tensor > >
+struct layout_result< negate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
 };
 
 template < readable_tensor Tensor >
-struct layout_result< tensor_transpose_expression< Tensor > >
+struct layout_result< transpose_tensor_expression< Tensor > >
   requires ( ::std::is_same_v< typename Tensor::layout_type, layout_right > ||
              ::std::is_same_v< typename Tensor::layout_type, layout_left > ||
              ::std::is_same_v< typename Tensor::layout_type, layout_stride > )
@@ -50,13 +55,13 @@ struct layout_result< tensor_transpose_expression< Tensor > >
 };
 
 template < unevaluated_tensor_expression Tensor >
-struct layout_result< tensor_transpose_expression< Tensor > >
+struct layout_result< transpose_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
 };
 
 template < readable_tensor Tensor >
-struct layout_result< tensor_conjugate_expression< Tensor > >
+struct layout_result< conjugate_tensor_expression< Tensor > >
   requires ( ::std::is_same_v< typename Tensor::layout_type, layout_right > ||
              ::std::is_same_v< typename Tensor::layout_type, layout_left > ||
              ::std::is_same_v< typename Tensor::layout_type, layout_stride > )
@@ -65,7 +70,7 @@ struct layout_result< tensor_conjugate_expression< Tensor > >
 };
 
 template < unevaluated_tensor_expression Tensor >
-struct layout_result< tensor_conjugate_expression< Tensor > >
+struct layout_result< conjugate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
 };
@@ -74,29 +79,31 @@ template < tensor_expression Tensor >
 using layout_result_t = typename layout_result< Tensor >::type;
 
 
+// Accessor result defines the resultant accessor of an unevaluated tensor expression.
+// It must be defined for any given unevaluated tensor expression.
 template < class Tensor >
 struct accessor_result;
 
 template < readable_tensor Tensor >
-struct accessor_result< tensor_negate_expression< Tensor > >
+struct accessor_result< negate_tensor_expression< Tensor > >
 {
   using type = typename Tensor::accessor_type;
 };
 
 template < unevaluated_tensor_expression Tensor >
-struct accessor_result< tensor_negate_expression< Tensor > >
+struct accessor_result< negate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
 };
 
 template < readable_tensor Tensor >
-struct accessor_result< tensor_transpose_expression< Tensor > >
+struct accessor_result< transpose_tensor_expression< Tensor > >
 {
   using type = typename Tensor::accessor_type;
 };
 
 template < unevaluated_tensor_expression Tensor >
-struct accessor_result< tensor_conjugate_expression< Tensor > >
+struct accessor_result< conjugate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
 };
@@ -105,34 +112,48 @@ template < class Tensor >
 using accessor_result_t = typename accessor_result< Tensor >::type;
 
 
+// Allocator result defines the resultant allocator of an unevaluated tensor expression.
+// It must be defined for any given unevaluated tensor expression.
 template < class Tensor >
 struct allocator_result
 {
   using type = ::std::allocator< typename Tensor::value_type >;
+  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& ) noexcept { return type(); }
 };
 
 template < dynamic_tensor Tensor >
 struct allocator_result< Tensor >
 {
   using type = typename Tensor::allocator_type;
+  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept { return t.get_allocator(); }
 };
 
-template < dynamic_tensor Tensor >
-struct allocator_result< tensor_negate_expression< Tensor > >
+template < unary_tensor_expression Tensor >
+struct allocator_result< Tensor >
 {
-  using type = typename Tensor::allocator_type;
+  using type = typename allocator_result< decltype( ::std::declval<Tensor>.underlying() ) >::allocator_type;
+  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept { return allocator_result< decltype( ::std::declval<Tensor>.underlying() ) >::get_allocator( t.underlying(); ) }
 };
 
-template < dynamic_tensor Tensor >
-struct allocator_result< tensor_transpose_expression< Tensor > >
+template < binary_tensor_expression Tensor >
+struct allocator_result< Tensor >
 {
-  using type = typename Tensor::allocator_type;
-};
-
-template < dynamic_tensor Tensor >
-struct allocator_result< tensor_conjugate_expression< Tensor > >
-{
-  using type = typename Tensor::allocator_type;
+  using type = typename allocator_result< ::std::conditional_t< dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.first() ) > > ||
+                                                                  !dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.second() ) > >,
+                                                                decltype( ::std::declval<Tensor>.first() ),
+                                                                decltype( ::std::declval<Tensor>.second() ) >::allocator_type;
+  [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
+  {
+    if constexpr ( dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.first() ) > > ||
+                   !dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.second() ) > )
+    {
+      return allocator_result< decltype( ::std::declval<Tensor>.first() ) >::get_allocator( t.first() );
+    }
+    else
+    {
+      return allocator_result< decltype( ::std::declval<Tensor>.second() ) >::get_allocator( t.second() );
+    }
+  }
 };
 
 template < class Tensor >
@@ -181,32 +202,22 @@ class negate_tensor_expression
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        return fs_tensor< value_type,
-                          extents_type,
-                          layout_result_t< Tensor >,
-                          accessor_result_t< Tensor > >
-          ( *this );
+        // TBD
       }
       else
       {
-        return dr_tensor< value_type,
-                          extents_type,
-                          layout_result_t< Tensor >,
-                          extents_type,
-                          typename ::std::allocator_traits< allocator_result_t< Tensor > >::template rebind_t<value_type>,
-                          accessor_result_t< Tensor > >
-          ( *this );
+        return tensor< value_type,
+                       extents_type,
+                       layout_result_t< Tensor >,
+                       typename ::std::allocator_traits< allocator_result_t< Tensor > >::template rebind_t< value_type >,
+                       accessor_result_t< Tensor > >
+          ( *this, allocator_result< Tensor >::get_allocator( *this ) );
       }
     };
 
   private:
     // Data
     Tensor& t_;
-};
-
-template < tensor_expression TensorA, tensor_expression TensorB >
-class binary_tensor_expression
-{
 };
 
 }       //- experimental namespace

@@ -68,6 +68,9 @@
         "utility": "cpp",
         "*.tcc": "cpp",
         "deque": "cpp",
-        "__memory": "cpp"
+        "__memory": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "fstream": "cpp"
     }
 }
