@@ -61,12 +61,6 @@ tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
 ( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
   dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
 
-// Evaluated tensor expression
-template < class T >
-concept evaluated_tensor_expression =
-tensor_expression< T > &&
-( !unevaluated_tensor_expression< T > );
-
 // Matrix expression concept
 template < class T >
 concept matrix_expression =
@@ -82,7 +76,6 @@ tensor_expression< T > &&
 // Readable tensor concept
 template < class T >
 concept readable_tensor =
-tensor_expression<T> &&
 requires
 {
   // Types
@@ -137,7 +130,6 @@ requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce inde
 template < class T >
 concept static_tensor =
 writable_tensor< T > &&
-evaluated_tensor_expression< T > &&
 ( T::rank_dynamic() == 0 ) &&
 ::std::default_initializable< T > &&
 requires ( const T& t )
@@ -151,7 +143,6 @@ requires ( const T& t )
 template < class T >
 concept dynamic_tensor =
 writable_tensor< T > &&
-evaluated_tensor_expresson< T > &&
 requires
 {
   // Types
