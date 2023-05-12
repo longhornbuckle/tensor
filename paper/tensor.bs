@@ -578,20 +578,21 @@ These are issues for which different approaches may be taken. Many have pros and
 On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
 There are a couple paths which could be taken:
 1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf).
-    fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
-    dr_tensor would adopt the existing tensor interface wholesale.
-    This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
-    The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.
-2.  Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
+    - fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
+    - dr_tensor would adopt the existing tensor interface wholesale.
+    - This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
+    - The issue of optimizing memory access is also not new. This approach would follow existing paradigms already in the standard library addressing this issue.
+2.  The pointer to buffer and allocator behavior could be encapsulated into a single interface - replacing the allocator template parameter on the tensor class.
+    - This would be similar to the unbounded and bounded arrays used in Boost. This would also be somewhat similar to the engine class described in [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf); although, limited to memory ownership behavior.
+    - This would allow for dynamic size fixed capacity tensor operations on a local buffer (where as in the first option dynamic size fixed capacity operations could only be done on a remote buffer through an allocator).
+3.  Don't address the issue for now and encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
     - The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.
     - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.
-    - Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious.
+    - Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious and error prone. This leads to attempts to encapsulate the behavior (like Boost's static_vector).
     - The memory access through pointer limits compiler optimizations and limits what can be performed at compile time.
     - Many existing applications already make use of fixed size optimization to improvement performance and ease of use.
     - Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.
     - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
-    A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.
-    - This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.
 
 ## Capacity and Reserve
 The expected behavior of reserve also needs further guidance. There are several options to take:
