@@ -17,6 +17,41 @@ namespace experimental
 // Default layout
 using default_layout = ::std::experimental::layout_right;
 
+// Unary Tensor Expressions
+
+// Negate
+template < tensor_expression Tensor >
+class negate_tensor_expression;
+
+// Transpose
+template < tensor_expression Tensor >
+class transpose_tensor_expression;
+
+// Conjugate
+template < tensor_expression Tensor >
+class conjugate_tensor_expression;
+
+// Binary Tensor Expression
+
+// Addition
+template < tensor_expression FirstTensor, tensor_expression SecondTensor >
+class add_tensor_expression
+  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
+             LINALG_DETAIL::extents_maybe_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > );
+
+// Subtraction
+template < tensor_expression FirstTensor, tensor_expression SecondTensor >
+class subtraction_tensor_expression
+  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
+             LINALG_DETAIL::extents_maybe_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > );
+
+// Scalar Pre-Multiply
+template < class ValueType, tensor_expression Tensor >
+class scalar_preprod_tensor_expression
+  requires requires ( const ValueType& v1, const typename Tensor::value_type& v2 ) { { v1 * v2; } };
+
+
+
 // Tensor
 template < class T,
            class Extents,
