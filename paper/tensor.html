@@ -2091,7 +2091,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PXXXXR0<br>Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-07">2023-05-07</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-12">2023-05-12</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2258,15 +2258,12 @@ The authors have the following concerns in regards to the current iteration of <
 <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
 <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
 <c- p><c- p>{</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>underlying</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>underlying</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
   <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
 <c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
 <c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
   <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
-</code></pre>
-   <p>Additionally, the unary tensor expression must be constructible from any object which is <em>at a minimum</em> conformant to the <code class="highlight"><c- n>tensor_expression</c-></code> concept:</p>
-<pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>unary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.3" id="binary-tensor-expression"><span class="secno">3.1.3. </span><span class="content">Binary Tensor Expression</span><a class="self-link" href="#binary-tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
@@ -2275,16 +2272,13 @@ The authors have the following concerns in regards to the current iteration of <
 <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
 <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>T</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
 <c- p><c- p>{</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>first</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
-  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>second</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>}</c-></c-> <c- o><c- o>-></c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- p><c- p>;</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>first</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
+  <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- n><c- n>second</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
   <c- p><c- p>{</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>.</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>};</c-></c->
 <c- p><c- p>}</c-></c-> <c- o><c- o>&amp;&amp;</c-></c->
 <c- p><c- p>(</c-></c-> <c- n><c- n>static_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- o><c- o>||</c-></c->
   <c- n><c- n>dynamic_tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- k><c- n>decltype</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>declval</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>().</c-></c-><c- k><c- n>operator</c-></c-> <c- k><c- k>auto</c-></c-><c- p><c- p>()</c-></c-> <c- p><c- p>)</c-></c-> <c- o><c- o>></c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
-</code></pre>
-   <p>Additionally, the binary tensor expression must be constructible from any pair of objects which are <em>at a minimum</em> conformant to the <code class="highlight"><c- n>tensor_expression</c-></code> concept:</p>
-<pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>binary_tensor_expression</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>tensor_expression</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- p><c- p>);</c-></c->
 </code></pre>
    <h4 class="heading settled" data-level="3.1.4" id="tensor-expression-traits"><span class="secno">3.1.4. </span><span class="content">Tensor Expression Traits</span><a class="self-link" href="#tensor-expression-traits"></a></h4>
    <p>The authors also propose several traits related to the <em>unevaluated tensor expressions</em>. The intent is to provide additional information on custom <code class="highlight"><c- n>unary_tensor_expression</c-></code>s and <code class="highlight"><c- n>binary_tensor_expression</c-></code>s which may be taken advantage of without further inspection of the types. In this section, consider <code class="highlight"><c- n>t1</c-></code>, <code class="highlight"><c- n>t2</c-></code>, and <code class="highlight"><c- n>t3</c-></code> to be objects which satisfy the <code class="highlight"><c- n>tensor_expression</c-></code> concept.</p>
@@ -2648,20 +2642,34 @@ The authors have the following concerns in regards to the current iteration of <
 There are a couple paths which could be taken: 
    <ol>
     <li data-md>
-     <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a>.
-fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
-dr_tensor would adopt the existing tensor interface wholesale.
-This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
-The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.</p>
+     <p>Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a>.</p>
+     <ul>
+      <li data-md>
+       <p>fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).</p>
+      <li data-md>
+       <p>dr_tensor would adopt the existing tensor interface wholesale.</p>
+      <li data-md>
+       <p>This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.</p>
+      <li data-md>
+       <p>The issue of optimizing memory access is also not new. This approach would follow existing paradigms already in the standard library addressing this issue.</p>
+     </ul>
     <li data-md>
-     <p>Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:</p>
+     <p>The pointer to buffer and allocator behavior could be encapsulated into a single interface - replacing the allocator template parameter on the tensor class.</p>
+     <ul>
+      <li data-md>
+       <p>This would be similar to the unbounded and bounded arrays used in Boost. This would also be somewhat similar to the engine class described in <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf">P1385</a>; although, limited to memory ownership behavior.</p>
+      <li data-md>
+       <p>This would allow for dynamic size fixed capacity tensor operations on a local buffer (where as in the first option dynamic size fixed capacity operations could only be done on a remote buffer through an allocator).</p>
+     </ul>
+    <li data-md>
+     <p>Don’t address the issue for now and encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:</p>
      <ul>
       <li data-md>
        <p>The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.</p>
       <li data-md>
        <p>This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.</p>
       <li data-md>
-       <p>Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious.</p>
+       <p>Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious and error prone. This leads to attempts to encapsulate the behavior (like Boost’s static_vector).</p>
       <li data-md>
        <p>The memory access through pointer limits compiler optimizations and limits what can be performed at compile time.</p>
       <li data-md>
@@ -2669,10 +2677,7 @@ The issue of optimizing memory access is also not new. This approach would follo
       <li data-md>
        <p>Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.</p>
       <li data-md>
-       <p>Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
-A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.</p>
-      <li data-md>
-       <p>This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.</p>
+       <p>Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.</p>
      </ul>
    </ol>
    <h3 class="heading settled" data-level="4.2" id="capacity-and-reserve"><span class="secno">4.2. </span><span class="content">Capacity and Reserve</span><a class="self-link" href="#capacity-and-reserve"></a></h3>

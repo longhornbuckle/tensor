@@ -168,7 +168,7 @@ concept unary_tensor_expression =
 unevaluated_tensor_expression< T > &&
 requires ( const T& t )
 {
-  { t.underlying() } -> tensor_expression;
+  { t.underlying() };
 };
 
 // Binary tensor expression concept
@@ -178,8 +178,8 @@ concept binary_tensor_expression =
 unevaluated_tensor_expression< T > &&
 requires ( const T& t )
 {
-  { t.first() } -> tensor_expression;
-  { t.second() } -> tensor_expression;
+  { t.first() };
+  { t.second() };
 };
 
 

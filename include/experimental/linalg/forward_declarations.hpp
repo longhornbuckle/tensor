@@ -23,13 +23,26 @@ using default_layout = ::std::experimental::layout_right;
 template < tensor_expression Tensor >
 class negate_tensor_expression;
 
+// Transpose indices
+template < ::std::size_t index1 = 0, ::std::size_t index2 = 1 >
+struct transpose_indices_t;
+struct transpose_indices_v;
+
 // Transpose
+template < tensor_expression Tensor, class Transpose = transpose_indices_t >
+class transpose_tensor_expression
+  requires ( Tensor::rank() > 1 );
 template < tensor_expression Tensor >
-class transpose_tensor_expression;
+class transpose_tensor_expression
+  requires ( Tensor::rank() == 1 );
 
 // Conjugate
+template < tensor_expression Tensor, class Transpose = transpose_indices_t >
+class conjugate_tensor_expression
+  requires ( Tensor::rank() > 1 );
 template < tensor_expression Tensor >
-class conjugate_tensor_expression;
+class tconjugate_tensor_expression
+  requires ( Tensor::rank() == 1 );
 
 // Binary Tensor Expression
 
@@ -46,10 +59,14 @@ class subtraction_tensor_expression
              LINALG_DETAIL::extents_maybe_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > );
 
 // Scalar Pre-Multiply
-template < class ValueType, tensor_expression Tensor >
+template < class S, tensor_expression Tensor >
 class scalar_preprod_tensor_expression
-  requires requires ( const ValueType& v1, const typename Tensor::value_type& v2 ) { { v1 * v2; } };
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { { s * v; } }
 
+// Scalar Post-Multiply
+template < class S, tensor_expression Tensor >
+class scalar_postprod_tensor_expression
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v * s; } }
 
 
 // Tensor

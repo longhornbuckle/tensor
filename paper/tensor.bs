@@ -96,7 +96,7 @@ concept unary_tensor_expression =
 tensor_expression< T > &&
 requires ( T& t )
 {
-  { t.underlying() } -> tensor_expression;
+  { t.underlying() };
   { t.operator auto() };
 } &&
 ( static_tensor< decltype( declval< T >().operator auto() ) > ||
@@ -104,14 +104,6 @@ requires ( T& t )
 }
 </code>
 </pre>
-
-Additionally, the unary tensor expression must be constructible from any object which is *at a minimum* conformant to the `tensor_expression` concept:
-<pre class="highlight">
-<code class="language-c++">
-unary_tensor_expression( tensor_expression&& );
-</code>
-</pre>
-
 
 ### Binary Tensor Expression
 <pre class="highlight">
@@ -122,20 +114,13 @@ concept binary_tensor_expression =
 tensor_expression< T > &&
 requires ( T& t )
 {
-  { t.first() } -> tensor_expression;
-  { t.second() } -> tensor_expression;
+  { t.first() };
+  { t.second() };
   { t.operator auto() };
 } &&
 ( static_tensor< decltype( declval< T >().operator auto() ) > ||
   dynamic_tensor< decltype( declval< T >().operator auto() ) > );
 }
-</code>
-</pre>
-
-Additionally, the binary tensor expression must be constructible from any pair of objects which are *at a minimum* conformant to the `tensor_expression` concept:
-<pre class="highlight">
-<code class="language-c++">
-binary_tensor_expression( tensor_expression&&, tensor_expression&& );
 </code>
 </pre>
 
@@ -506,18 +491,18 @@ class tensor
 // IN WORK: Non-member functions
 // Addition
 template < tensor_expression FirstTensor, tensor_expression SecondTensor >
-[[nodiscard]] constexpr /* implementation defined */ operator + ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
+[[nodiscard]] constexpr addition_tensor_expression< FirstTensor, SecondTensor > operator + ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
 // Substraction
 template < tensor_expression FirstTensor, tensor_expression SecondTensor >
-[[nodiscard]] constexpr /* implementation defined */ operator - ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
+[[nodiscard]] constexpr subtraction_tensor_expression< FirstTensor, SecondTensor > operator - ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
 // Negation
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ operator - ( Tensor&& t );
+[[nodiscard]] constexpr negate_tensor_expression< Tensor > operator - ( Tensor&& t );
 // Scalar Multiplication
 template < tensor_expression Tensor, class ValueType >
-[[nodiscard]] constexpr /* implementation defined */ operator * ( Tensor&& t, ValueType v ) requires (  );
+[[nodiscard]] constexpr scalar_postprod_tensor_expression< ValueType, Tensor > operator * ( Tensor&& t, ValueType v ) requires (  );
 template < tensor_expression Tensor, class ValueType >
-[[nodiscard]] constexpr /* implementation defined */ operator * ( ValueType v, Tensor&& t ) requires (  );
+[[nodiscard]] constexpr scalar_preprod_tensor_expression< Value_Type, Tensor > operator * ( ValueType v, Tensor&& t ) requires (  );
 // Scalar Division
 template < tensor_expression Tensor, class ValueType >
 [[nodiscard]] constexpr /* implementation defined */ operator / ( Tensor&& t, ValueType v ) requires (  );
