@@ -22,9 +22,36 @@ namespace experimental
 
 // Is Commutative
 template < binary_tensor_expression TE >
-struct is_commutative< TE > : public false_type;
+struct is_commutative : public false_type;
 template < binary_tensor_expression TE >
 [[nodiscard]] inline constexpr bool is_commutative_v = is_commutative< TE >::value;
+
+// Is Associative
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_associative : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_associative_v = is_associative< TE >::value;
+
+// Is Distributive
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_distributive< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_distributive_v = is_commutative< TE1, TE2 > && is_distributive< TE1, TE2 >::value;
+
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_left_distributive< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_left_distributive_v = is_distributive_v< TE1, TE2 > || is_left_distributive< TE1, TE2 >::value;
+
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_right_distributive< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_right_distributive_v = is_distributive_v< TE1, TE2 > || is_right_distributive< TE1, TE2 >::value;
+
+template < unary_tensor_expression TE1, binary_tensor_expression TE2 >
+struct is_distributive< TE1, TE2 > : public false_type;
+template < unary_tensor_expression TE1, binary_tensor_expression TE2 >
+[[nodiscard]] inline constexpr bool is_distributive_v = is_distributive< TE1, TE2 >::value;
 
 // Layout result defines the resultant layout of an unevaluated tensor expression.
 // It must be defined for any given unevaluated tensor expression.
