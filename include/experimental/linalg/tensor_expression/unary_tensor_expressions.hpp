@@ -417,7 +417,11 @@ class conjugate_tensor_expression
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -481,7 +485,11 @@ class conjugate_tensor_expression
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {

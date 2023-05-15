@@ -2091,7 +2091,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PXXXXR0<br>Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-12">2023-05-12</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-14">2023-05-14</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2142,7 +2142,12 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
         <li><a href="#static-tensor"><span class="secno">3.2.5</span> <span class="content">Static Tensor</span></a>
         <li><a href="#dynamic-tensor"><span class="secno">3.2.6</span> <span class="content">Dynamic Tensor</span></a>
        </ol>
-      <li><a href="#tensor"><span class="secno">3.3</span> <span class="content">Tensor</span></a>
+      <li>
+       <a href="#tensor"><span class="secno">3.3</span> <span class="content">Tensor</span></a>
+       <ol class="toc">
+        <li><a href="#mandates"><span class="secno">3.3.1</span> <span class="content">Mandates</span></a>
+        <li><a href="#non-member-functions"><span class="secno">3.3.2</span> <span class="content">Non-Member Functions</span></a>
+       </ol>
       <li><a href="#helpers"><span class="secno">3.4</span> <span class="content">Helpers</span></a>
      </ol>
     <li>
@@ -2158,10 +2163,11 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
       <li><a href="#safe-memory-access"><span class="secno">4.8</span> <span class="content">Safe Memory Access</span></a>
       <li><a href="#resize-mapping_type"><span class="secno">4.9</span> <span class="content">Resize mapping_type</span></a>
       <li><a href="#-assume-restrict-p"><span class="secno">4.10</span> <span class="content">[[ assume( restrict( p ) ) ]]</span></a>
-      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.11</span> <span class="content">Vector and Matrix Aliases</span></a>
-      <li><a href="#limitations-without-iterators"><span class="secno">4.12</span> <span class="content">Limitations without Iterators</span></a>
-      <li><a href="#mdslice-submdspan-or-subtensor"><span class="secno">4.13</span> <span class="content">mdslice, submdspan, or subtensor</span></a>
-      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.14</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
+      <li><a href="#default-zero-initialization"><span class="secno">4.11</span> <span class="content">Default Zero initialization</span></a>
+      <li><a href="#vector-and-matrix-aliases"><span class="secno">4.12</span> <span class="content">Vector and Matrix Aliases</span></a>
+      <li><a href="#limitations-without-iterators"><span class="secno">4.13</span> <span class="content">Limitations without Iterators</span></a>
+      <li><a href="#mdslice-submdspan-or-subtensor"><span class="secno">4.14</span> <span class="content">mdslice, submdspan, or subtensor</span></a>
+      <li><a href="#rank-one-extents-implicit-conversions"><span class="secno">4.15</span> <span class="content">Rank One Extents Implicit Conversions</span></a>
      </ol>
     <li>
      <a href="#considered-not-pursued"><span class="secno">5</span> <span class="content">Considered. Not Pursued.</span></a>
@@ -2194,7 +2200,7 @@ Furthermore, it introduces an interface that allows the user to perform operatio
       <li data-md>
        <p>Provides valarray-like interfaces and efficiency.</p>
       <li data-md>
-       <p>Provides vector-like functionality in multiple dimensions.</p>
+       <p>Provides efficient vector-like functionality in multiple dimensions.</p>
       <li data-md>
        <p>Makes use of layout and accessor policy concepts established via mdspan.</p>
      </ul>
@@ -2250,7 +2256,8 @@ The authors have the following concerns in regards to the current iteration of <
 <c- p><c- p>}</c-></c->
 <c- p><c- p>}</c-></c->
 </code></pre>
-   <p>The authors additionally propose two <em>unevaluated tensor expression</em> concepts: the <code class="highlight"><c- n>unary_tensor_expression</c-></code> and <code class="highlight"><c- n>binary_tensor_expression</c-></code>.</p>
+   <p>The authors additionally propose two <em>unevaluated tensor expression</em> concepts: the <code class="highlight"><c- n>unary_tensor_expression</c-></code> and <code class="highlight"><c- n>binary_tensor_expression</c-></code>.
+An <em>unevaluated tensor expression</em> is conformant to a tensor expression; however, additionally provides an <code class="highlight"><c- k>operator</c-> <c- k>auto</c-><c- p>()</c-></code> which evaluates the function represented by the tensor expression.</p>
    <h4 class="heading settled" data-level="3.1.2" id="unary-tensor-expression"><span class="secno">3.1.2. </span><span class="content">Unary Tensor Expression</span><a class="self-link" href="#unary-tensor-expression"></a></h4>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-> <c- o><c- o>></c-></c->
@@ -2564,22 +2571,50 @@ The authors have the following concerns in regards to the current iteration of <
     <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- k><c- n>operator</c-></c-><c- o><c- o>>>=</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>value_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>value</c-></c-> <c- p><c- p>);</c-></c->
     <c- k><c- n>constexpr</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&amp;</c-></c-> <c- k><c- n>operator</c-></c-><c- o><c- o>&lt;&lt;=</c-></c-><c- p><c- p>(</c-></c-> <c- k><c- k>const</c-></c-> <c- n><c- n>value_type</c-></c-><c- o><c- o>&amp;</c-></c-> <c- n><c- n>value</c-></c-> <c- p><c- p>);</c-></c->
 <c- p><c- p>};</c-></c->
-
+<c- p><c- p>}</c-></c->
+</extents></typename></t></t></code></pre>
+   <h4 class="heading settled" data-level="3.3.1" id="mandates"><span class="secno">3.3.1. </span><span class="content">Mandates</span><a class="self-link" href="#mandates"></a></h4>
+   <ul>
+    <li data-md>
+     <p>T is a complete object type that is neither an abstract class type nor an array type.</p>
+    <li data-md>
+     <p>is_same_v&lt; Allocator::value_type, T > is true.</p>
+    <li data-md>
+     <p>is_same_v&lt; AccessorPolicy::element_type, T > is true.</p>
+    <li data-md>
+     <p>Extents is a specialization of extents.</p>
+    <li data-md>
+     <p>Allocator shall meet the allocator requirements.</p>
+    <li data-md>
+     <p>LayoutPolicy shall meet the layout mapping policy requirements.</p>
+    <li data-md>
+     <p>AccessorPolicy shall meet the accessor policy requirements.</p>
+   </ul>
+   <h4 class="heading settled" data-level="3.3.2" id="non-member-functions"><span class="secno">3.3.2. </span><span class="content">Non-Member Functions</span><a class="self-link" href="#non-member-functions"></a></h4>
+    A number of non-member arithmetic and bit manipulation functions are provided. Each makes use of tensor expressions to allow optimization.
+Note, these functions do not strictly operate on the tensor object, but any object conformant to the tensor expression template. This includes std::mdspan.
+The authors believe the use of the tensor expression constraint is sufficiently general to not overly constrain future additions to the STL and to allow for customization via overloading the inputs or via specialization of the returned tensor expression. 
+<pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- c1><c- c1>// IN WORK: Non-member functions</c-></c->
 <c- c1><c- c1>// Addition</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>+</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_a</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_b</c-></c-> <c- p><c- p>);</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>addition_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>+</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_a</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_b</c-></c-> <c- p><c- p>)</c-></c->
+  <c- k><c- n>requires</c-></c-> <c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>addition_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- c1><c- c1>// Substraction</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>-</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_a</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_b</c-></c-> <c- p><c- p>);</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>subtraction_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>-</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_a</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>tensor_b</c-></c-> <c- p><c- p>)</c-></c->
+  <c- k><c- n>requires</c-></c-> <c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>subtraction_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>FirstTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>SecondTensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- c1><c- c1>// Negation</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>-</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>);</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>negate_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>-</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
+  <c- k><c- n>requires</c-></c-> <c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>negate_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- c1><c- c1>// Scalar Multiplication</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>ValueType</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>*</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c->  <c- p><c- p>);</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>scalar_postprod_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>ValueType</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>*</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-> <c- p><c- p>)</c-></c->
+  <c- k><c- n>requires</c-></c-> <c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>scalar_postprod_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>ValueType</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>ValueType</c-></c-> <c- o><c- o>></c-></c->
-<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>*</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c->  <c- p><c- p>);</c-></c->
+<c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- n><c- n>scalar_preprod_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>Value_Type</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>*</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-> <c- p><c- p>)</c-></c->
+  <c- k><c- n>requires</c-></c-> <c- n><c- n>constructible_from</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>scalar_preprod_tensor_expression</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>Value_Type</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
 <c- c1><c- c1>// Scalar Division</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>ValueType</c-></c-> <c- o><c- o>></c-></c->
 <c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>/</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c->  <c- p><c- p>);</c-></c->
@@ -2615,24 +2650,7 @@ The authors have the following concerns in regards to the current iteration of <
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>tensor_expression</c-></c-> <c- n><c- n>Tensor</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>ValueType</c-></c-> <c- o><c- o>></c-></c->
 <c- p><c- p>[[</c-></c-><c- n><c- n>nodiscard</c-></c-><c- p><c- p>]]</c-></c-> <c- k><c- n>constexpr</c-></c-> <c- d><c- d>/* implementation defined */</c-></c-> <c- k><c- n>operator</c-></c-> <c- o><c- o>%</c-></c-> <c- p><c- p>(</c-></c-> <c- n><c- n>Tensor</c-></c-><c- o><c- o>&amp;&amp;</c-></c-> <c- n><c- n>t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>ValueType</c-></c-> <c- n><c- n>v</c-></c-> <c- p><c- p>)</c-></c-> <c- k><c- n>requires</c-></c-> <c- p><c- p>(</c-></c->  <c- p><c- p>);</c-></c->
 <c- p><c- p>}</c-></c->
-</extents></typename></t></t></code></pre>
-   <p>Mandates:</p>
-   <ul>
-    <li data-md>
-     <p>T is a complete object type that is neither an abstract class type nor an array type.</p>
-    <li data-md>
-     <p>is_same_v&lt; Allocator::value_type, T > is true.</p>
-    <li data-md>
-     <p>is_same_v&lt; AccessorPolicy::element_type, T > is true.</p>
-    <li data-md>
-     <p>Extents is a specialization of extents.</p>
-    <li data-md>
-     <p>Allocator shall meet the allocator requirements.</p>
-    <li data-md>
-     <p>LayoutPolicy shall meet the layout mapping policy requirements.</p>
-    <li data-md>
-     <p>AccessorPolicy shall meet the accessor policy requirements.</p>
-   </ul>
+</code></pre>
    <h3 class="heading settled" data-level="3.4" id="helpers"><span class="secno">3.4. </span><span class="content">Helpers</span><a class="self-link" href="#helpers"></a></h3>
    <p>IN WORK: How to define resultant layout, accessor, and allocator types?</p>
    <h2 class="heading settled" data-level="4" id="questions"><span class="secno">4. </span><span class="content">Design Questions</span><a class="self-link" href="#questions"></a></h2>
@@ -2777,8 +2795,10 @@ It encourages implementations of ordered strided layouts which still allow effic
 <c- k><c- k>auto</c-></c-> <c- n><c- n>d</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>c</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>a</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>b</c-></c-><c- p><c- p>;</c-></c->
 <c- k><c- k>auto</c-></c-> <c- n><c- n>d</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>c</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>b</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>a</c-></c-><c- p><c- p>;</c-></c->
 </code></pre>
-   <p>Because the addition operator under the set of tensors is both commutative and associative, each of the above expressions are equivalent. Baring numerical overflow and instability - evaluation of each of these expressions in the order specified should result in the same result.
-This example is relatively trivial. Without an unduly expensive analysis of the tensors, there is no reason to believe any one order is better than the other and thus an implementation which evaluates the additions in the order specified is the most reasonable.</p>
+   <p>Because the addition operator under the set of tensors is both commutative and associative, each of the above expressions are equivalent.
+Baring numerical overflow and instability - evaluation of each of these expressions in the order specified should result in the same result.
+This example is relatively trivial: Since each tensor is the same type, there is no reason to believe any one order is better than another.
+However, if considering each tensor may have a different layout_type, then some orders may be more efficient than others. Consider if <code class="highlight"><c- n>a</c-></code> and <code class="highlight"><c- n>b</c-></code> are diagonal, then their result is also guaranteed diagonal. Therefore, chosing an order which allows them to be evaulated together is more efficient.</p>
    <p>Though the authors do not propose an inverse operation in this proposal, its use here illustrates the point better. The inverse operation is an operation on a square matrix which resuls in a matrix when either pre- or post-multiplied with the original matrix results in an identity matrix.</p>
    <p>Consider - given square matrices a, b:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- k>auto</c-></c-> <c- n><c- n>c</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>inverse</c-></c-><c- p><c- p>(</c-></c-> <c- n><c- n>inverse</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>a</c-></c-><c- p><c- p>)</c-></c-> <c- o><c- o>+</c-></c-> <c- n><c- n>inverse</c-></c-><c- p><c- p>(</c-></c-><c- n><c- n>b</c-></c-><c- p><c- p>)</c-></c-> <c- p><c- p>);</c-></c->
@@ -2868,7 +2888,10 @@ The authors note std::mdspan <em>did not include</em> at( OtherIndexTypes ... in
    <p>The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.</p>
    <p>A shorter syntax may be to remove the assume altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume.</p>
    <p>Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.</p>
-   <h3 class="heading settled" data-level="4.11" id="vector-and-matrix-aliases"><span class="secno">4.11. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
+   <h3 class="heading settled" data-level="4.11" id="default-zero-initialization"><span class="secno">4.11. </span><span class="content">Default Zero initialization</span><a class="self-link" href="#default-zero-initialization"></a></h3>
+    The authors feel obliged to point out default zero initialization in tensors is less trivial than one dimensional contiguous containers.
+This is because a resize operation is likely to require multiple chunks of memory which must be set to zero. It is also highly likely any zero initialized memory will be immediately overwritten with more meaningful data. 
+   <h3 class="heading settled" data-level="4.12" id="vector-and-matrix-aliases"><span class="secno">4.12. </span><span class="content">Vector and Matrix Aliases</span><a class="self-link" href="#vector-and-matrix-aliases"></a></h3>
    <p>The authors would like to add additonal aliases to the standard as well for both convenience and clarity:</p>
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>namespace</c-></c-> <c- nn><c- n>std</c-></c-> <c- p><c- p>{</c-></c->
 <c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- k><c- n>class</c-></c-> <c- nc><c- n>T</c-></c-><c- p><c- p>,</c-></c->
@@ -2939,7 +2962,7 @@ The authors note std::mdspan <em>did not include</em> at( OtherIndexTypes ... in
        <p>Is a separate tensor_view class which combines the interfaces of mdspan and tensor desired?</p>
      </ul>
    </ul>
-   <h3 class="heading settled" data-level="4.12" id="limitations-without-iterators"><span class="secno">4.12. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
+   <h3 class="heading settled" data-level="4.13" id="limitations-without-iterators"><span class="secno">4.13. </span><span class="content">Limitations without Iterators</span><a class="self-link" href="#limitations-without-iterators"></a></h3>
     Several functions have no reasonable general solution when neither of the following are true: 
 <pre class="highlight"><code class="language-c++ highlight"><c- n><c- n>mapping_type</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>is_always_exhaustive</c-></c-><c- p><c- p>()</c-></c->
 <c- n><c- n>mapping_type</c-></c-><c- o><c- o>::</c-></c-><c- n><c- n>is_always_unique</c-></c-><c- p><c- p>()</c-></c->
@@ -2959,11 +2982,11 @@ The authors note std::mdspan <em>did not include</em> at( OtherIndexTypes ... in
 If the former is not true, but mapping_type::is_always_unique() is true, then these functions may rely on iterating over all valid combinations of indices and using the mapping object to access the desired element.</p>
    <p>If neither are true, then the authors believe a more definition of iterators within the context of multidimensional containers is needed.
 Without such concepts, the current implementation is to isolate these functions in a way the user may provide custom overloads.</p>
-   <h3 class="heading settled" data-level="4.13" id="mdslice-submdspan-or-subtensor"><span class="secno">4.13. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
+   <h3 class="heading settled" data-level="4.14" id="mdslice-submdspan-or-subtensor"><span class="secno">4.14. </span><span class="content">mdslice, submdspan, or subtensor</span><a class="self-link" href="#mdslice-submdspan-or-subtensor"></a></h3>
     Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> have proposed a reasonable implementation to achieve this in proposal <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a>. 
    <p>If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.</p>
    <p>The authors of this proposal are preferential to the implementation of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html">P2630</a>; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.</p>
-   <h3 class="heading settled" data-level="4.14" id="rank-one-extents-implicit-conversions"><span class="secno">4.14. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
+   <h3 class="heading settled" data-level="4.15" id="rank-one-extents-implicit-conversions"><span class="secno">4.15. </span><span class="content">Rank One Extents Implicit Conversions</span><a class="self-link" href="#rank-one-extents-implicit-conversions"></a></h3>
     One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose: 
 <pre class="highlight"><code class="language-c++ highlight"><c- k><c- n>template</c-></c-> <c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- k><c- k>auto</c-></c-> <c- n><c- n>N</c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c->
 <c- k><c- n>using</c-></c-> <c- n><c- n>vector</c-></c-> <c- o><c- o>=</c-></c-> <c- n><c- n>tensor</c-></c-><c- o><c- o>&lt;</c-></c-> <c- n><c- n>T</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>extents</c-></c-><c- o><c- o>&lt;</c-></c-> <c- b><c- b>size_t</c-></c-><c- p><c- p>,</c-></c-> <c- n><c- n>N</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>,</c-></c-> <c- p><c- p>...</c-></c-> <c- o><c- o>></c-></c-><c- p><c- p>;</c-></c->
@@ -2998,7 +3021,7 @@ If the standard was to adopt a specialization which allowed extents
     Iterators which operate on multidimensional containers and views is a key concept not yet introduced to the standard. While the lack of them complicates certain implementations, the authors are choosing not to pursue defining these for a several reasons: 
    <ul>
     <li data-md>
-     <p>The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan.</p>
+     <p>The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan. Possible memory layouts as well as the possible inclusion of more vector-like functions could have significant behavior implications for iterators. The authors would like to have these design considerations solidified first.</p>
     <li data-md>
      <p>Previous versions of <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html">P0009</a> mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.</p>
     <li data-md>

@@ -14,7 +14,7 @@ namespace std
 namespace experimental
 {
 
-/// @brief Tensor - a memory owning multidimensional container.
+/// @brief tensor - a memory owning multidimensional container.
 /// @tparam T type of element stored
 /// @tparam Extents defines the multidimensional size
 /// @tparam LayoutPolicy layout defines the ordering of elements in memory
@@ -86,27 +86,6 @@ class tensor
       using type = decltype( ::std::experimental::submdspan( ::std::declval<capacity_span_type>(),
                                                              ::std::declval<decltype( full_ext( Indices ) )>() ... ) );
     };
-
-    //- Implementation details
-
-    // Verifies lambda expression takes a set of indices and produces an output convertible to element type
-    template < class Lambda, class Seq, bool > struct convertible_lambda_expression_impl : public false_type { };
-    template < class Lambda,
-               template < class, auto ... > class Seq,
-               class IndexType,
-               IndexType ... Indices >
-    struct convertible_lambda_expression_impl< Lambda, Seq<IndexType,Indices...>, true >  : public
-      conditional_t< ::std::is_convertible_v< decltype( ::std::declval<Lambda&&>()( Indices ... ) ), element_type >, ::std::true_type, ::std::false_type > { };
-    template < class Lambda, class Seq > struct convertible_lambda_expression : public false_type { };
-    template < class Lambda,
-               template < class, auto ... > class Seq,
-               class IndexType,
-               IndexType ... Indices >
-    struct convertible_lambda_expression< Lambda, Seq<IndexType,Indices...> > :
-      public convertible_lambda_expression_impl< Lambda, Seq<IndexType,Indices...>, LINALG_DETAIL::has_index_operator_v<Lambda,IndexType,Indices...> > { };
-    template < class Lambda,
-               class Seq >
-    static inline constexpr bool convertible_lambda_expression_v = convertible_lambda_expression<Lambda,Seq>::value;
     
   public:
 
@@ -144,11 +123,11 @@ class tensor
     /// @brief Construct from an initializer list
     /// @param il initializer list of elements to be copied
     #ifndef LINALG_ENABLE_CONCEPTS
-    template < typename = ::std::enable_if_t< LINALG_DETAIL::extents_is_static_v<extents_type> > >
+    template < typename = ::std::enable_if_t< extents_type::dynamic_rank() == 0 > >
     #endif
     explicit constexpr tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( LINALG_DETAIL::extents_is_static_v<extents_type> );
+      requires ( extents_type::dynamic_rank() == 0 );
     #endif
     /// @brief Construct from an initializer list with a specified extents
     /// @param il initializer list of elements to be copied
@@ -160,13 +139,13 @@ class tensor
     /// @param last end iterator
     /// @param a allocator
     #ifndef LINALG_ENABLE_CONCEPTS
-    template < class InputIt, typename = ::std::enable_if< LINALG_DETAIL::extents_is_static_v<extents_type> > >
+    template < class InputIt, typename = ::std::enable_if< extents_type::dynamic_rank() == 0 > >
     #else
     template < class InputIt >
     #endif
     constexpr tensor( InputIt first, InputIt last, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ::std::input_iterator< InputIt > && LINALG_DETAIL::extents_is_static_v<extents_type> )
+      requires ( ::std::input_iterator< InputIt > && ( extents_type::dynamic_rank() == 0 ) )
     #endif
     ;
     /// @brief Constructs from an iterator pair
@@ -213,38 +192,23 @@ class tensor
     /// @param s defines the length of each dimension of the tensor
     /// @param alloc allocator used to construct with
     explicit constexpr tensor( extents_type s, const allocator_type& alloc = allocator_type() );
-    /// @brief Construct by applying lambda to every element in the tensor
-    /// @tparam Lambda lambda expression with an operator()( indices ... ) defined
-    /// @param lambda lambda expression to be performed on each element
+    /// @brief Construct by applying Tensor[indices...] to every element in the tensor
+    /// @tparam Tensor tensor expression with an operator[]( indices ... ) defined
+    /// @param tensor tensor expression to be performed on each element
     /// @param alloc allocator used to construct with
     #ifdef LINALG_ENABLE_CONCEPTS
-    template < class Lambda >
+    template < LINALG_CONCEPTS::tensor_expression Tensor >
     #else
-    template < class Lambda,
-               typename = ::std::enable_if_t< convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,extents_type::rank()> > > >
+    template < class Tensor,
+               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
+                                              ( Tensor::rank() == extents_type::rank() ) &&
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type,typename Tensor::extents_type > > >
     #endif
-    constexpr tensor( Lambda&& lambda, const allocator_type& alloc = allocator_type() )
+    explicit constexpr tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,extents_type::rank()> >
+      requires ( ( Tensor::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > )
     #endif
-      ;
-    /// @brief Construct by applying lambda to every element in the tensor
-    /// @tparam Lambda lambda expression with an operator()( indices ... ) defined
-    /// @param s defines the length of each dimension of the tensor
-    /// @param lambda lambda expression to be performed on each element
-    /// @param alloc allocator used to construct with
-    #ifdef LINALG_ENABLE_CONCEPTS
-    template < class Lambda >
-    #else
-    template < class Lambda,
-               typename = ::std::enable_if_t< convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,extents_type::rank()> > > >
-    #endif
-    constexpr tensor( extents_type s, Lambda&& lambda, const allocator_type& alloc = allocator_type() )
-    #ifdef LINALG_ENABLE_CONCEPTS
-      requires convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,extents_type::rank()> >
-    #endif
-      ;
-
+    ;
     /// @brief Move assignment
     /// @param  tensor to be moved
     /// @return self
@@ -254,11 +218,26 @@ class tensor
     /// @param  tensor to be copied
     /// @return self
     constexpr tensor& operator = ( const tensor& rhs );
-
     /// @brief Assign from an initializer list
     /// @param  il initializer list to be copied
     /// @return self
     constexpr tensor& operator = ( const initializer_list<value_type>& il );
+    /// @brief Assign from tensor expression
+    /// @param tensor_expression to be copied
+    /// @return self
+    #ifdef LINALG_ENABLE_CONCEPTS
+    template < LINALG_CONCEPTS::tensor_expression Tensor >
+    #else
+    template < class Tensor,
+               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
+                                              ( Tensor::rank() == extents_type::rank() ) &&
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type,typename Tensor::extents_type > > >
+    #endif
+    constexpr tensor& operator = ( Tensor&& rhs )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ( Tensor::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > )
+    #endif
+    ;
 
     //- Size / Capacity
 
@@ -546,7 +525,7 @@ template < typename >
 constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( LINALG_DETAIL::extents_is_static_v<extents_type> )
+  requires ( extents_type::dynamic_rank() == 0 )
 #endif
   :
   tensor( il, extents_type(), alloc )
@@ -592,7 +571,7 @@ template < class InputIt >
 constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 tensor( InputIt first, InputIt last, const allocator_type& alloc  )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ::std::input_iterator< InputIt > && LINALG_DETAIL::extents_is_static_v<extents_type> )
+  requires ( ::std::input_iterator< InputIt > && ( extents_type::dynamic_rank() == 0 ) )
 #endif
   :
   tensor( first, last, extents_type(), alloc )
@@ -731,54 +710,28 @@ constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::te
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class Lambda >
+template < LINALG_CONCEPTS::tensor_expression Tensor >
 #else
-template < class Lambda, typename >
+template < class Tensor, typename >
 #endif
-constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::tensor( Lambda&& lambda, const allocator_type& alloc )
+constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank()> > :
-#else
-  :
+  requires ( ( Tensor::rank() == tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
 #endif
-  accessor_(),
-  cap_map_(),
-  size_map_( this->cap_map_ ),
+  :
+  accessoor_(),
+  cap_map_( t.extents() ),
+  size_map( this->cap_map_ ),
   tm_( alloc, this->cap_map_ )
 {
-  // Construct all elements from lambda expression
-  auto lambda_ctor = [this,&lambda]( auto ... indices ) constexpr noexcept( ::std::is_nothrow_copy_constructible_v<element_type> )
+  // Construct all elements from tensor expression
+  auto tensor_ctor = [this,&t]( auto ... indices ) constexpr noexcept( ::std::is_nothrow_copy_constructible_v<element_type> )
   {
     // TODO: This requires reference returned from mdspan to be the address of the element
-    ::new ( ::std::addressof( LINALG_DETAIL::access( *this, indices ... ) ) ) element_type( lambda( indices ... ) );
+    ::new ( ::std::addressof( LINALG_DETAIL::access( *this, indices ... ) ) ) element_type( LINALG_DETAIL::access( t, indices ... ) );
   };
-  LINALG_DETAIL::apply_all( *this, lambda_ctor, LINALG_EXECUTION_UNSEQ );
-}
-
-template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-#ifdef LINALG_ENABLE_CONCEPTS
-template < class Lambda >
-#else
-template < class Lambda, typename >
-#endif
-constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::tensor( extents_type s, Lambda&& lambda, const allocator_type& alloc )
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires convertible_lambda_expression_v< Lambda, ::std::make_integer_sequence<index_type,tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank()> > :
-#else
-  :
-#endif
-  accessor_(),
-  cap_map_( s ),
-  size_map_( this->cap_map_ ),
-  tm_( alloc, this->cap_map_ )
-{
-  // Construct all elements from lambda expression
-  auto lambda_ctor = [this,&lambda]( auto ... indices ) constexpr noexcept( ::std::is_nothrow_copy_constructible_v<element_type> )
-  {
-    // TODO: This requires reference returned from mdspan to be the address of the element
-    ::new ( ::std::addressof( LINALG_DETAIL::access( *this, indices ... ) ) ) element_type( lambda( indices ... ) );
-  };
-  LINALG_DETAIL::apply_all( *this, lambda_ctor, LINALG_EXECUTION_UNSEQ );
+  LINALG_DETAIL::apply_all( *this, tensor_ctor, LINALG_EXECUTION_UNSEQ );
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
@@ -914,6 +867,55 @@ tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = (
   else
   {
     static_assert( !is_always_exhaustive(), "Tensor does not support non-contiguous mapping types." );
+  }
+  return *this;
+}
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor >
+#else
+template < class Tensor, typename >
+#endif
+constexpr tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>&
+tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( Tensor&& rhs )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ( Tensor::rank() == tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< typename tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
+#endif
+{
+  if constexpr ( ::std::is_trivially_destructible_v<element_type> )
+  {
+    if ( this->cap_map_.extents() != rhs.extents() )
+    {
+      // Deallocate
+      this->tm_.deallocate( this->cap_map_ );
+      // Set new capacity
+      this->cap_map_ = capacity_mapping_type( rhs.extents() );
+      // Allocate
+      this->tm_.allocate( this->cap_map_ );
+      // Copy construct all elements
+      LINALG_DETAIL::copy_view( this, rhs );
+    }
+    else
+    {
+      // Set new size
+      this->size_map_ = mapping_type( rhs.extents() );
+      // Copy construct all elements
+      LINALG_DETAIL::copy_view( this, rhs );
+    }
+  }
+  else
+  {
+    // Destroy all
+    this->destroy_all();
+    // Set new capacity
+    this->cap_map_ = capacity_mapping_type( rhs.extents() );
+    // Allocate
+    this->tm_.allocate( this->cap_map_ );
+    // Set new size
+    this->size_map_ = mapping_type( rhs.extents() );
+    // Copy construct all elements
+    LINALG_DETAIL::copy_view( this, rhs );
   }
   return *this;
 }

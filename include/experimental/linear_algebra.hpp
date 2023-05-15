@@ -49,6 +49,7 @@ using ::std::experimental::dynamic_extent;
 #include "linear_algebra/subtensor.hpp"
 #include "linear_algebra/tensor_memory.hpp"
 #include "linear_algebra/tensor.hpp"
+#include "linear_algebra/fs_tensor.hpp"
 // #include "linear_algebra/instant_evaluated_operations.hpp"
 // namespace std::experimental::math::operations { using namespace std::experimental::math::instant_evaluated_operations; }
 // #include "linear_algebra/arithmetic_operators.hpp"

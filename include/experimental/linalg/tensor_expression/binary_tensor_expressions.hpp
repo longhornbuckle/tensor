@@ -76,7 +76,11 @@ class add_tensor_expression
       // If add and subtracts with the same layout traits can be serialized, then they should.
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -156,7 +160,11 @@ class subtract_tensor_expression
       // If add and subtracts with the same layout traits can be serialized, then they should.
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -223,7 +231,11 @@ class scalar_preprod_tensor_expression requires requires ( const S& s, const typ
       // If add and subtracts with the same layout traits can be serialized, then they should.
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -290,7 +302,11 @@ class scalar_postprod_tensor_expression requires requires ( const S& s, const ty
       // If add and subtracts with the same layout traits can be serialized, then they should.
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
