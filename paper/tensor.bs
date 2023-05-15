@@ -52,11 +52,11 @@ Description {#descript}
 
 ## Tensor Expressions
 
+### Tensor Expression
+
 The tensor expression defines the minimum requirement for a *tensor object*. A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this context, a concrete tensor object is an object which owns the underlying memory and is conformant to the *writable tensor* concept.
 
 The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations. In short, the tensor expression must specify the size (in the generic sense of the word) and provide the ability access the representative value given a valid set of indices.
-
-### Tensor Expression
 
 <pre class="highlight">
 <code class="language-c++">
@@ -85,10 +85,40 @@ requires( T& t, auto ... indices )
 </code>
 </pre>
 
-The authors additionally propose two *unevaluated tensor expression* concepts: the `unary_tensor_expression` and `binary_tensor_expression`.
-An *unevaluated tensor expression* is conformant to a tensor expression; however, additionally provides an `operator auto()` which evaluates the function represented by the tensor expression.
+### Unevaluated Tensor Expression
 
-### Unary Tensor Expression
+An unevaluated tensor expression is conformant to `tensor_expression` concept and guarantees an `operator auto()` which results in an evaluated tensor expression. In this context, evaluated refers to a tensor expression which manages its own memory.
+
+The authors propose standardizing this concept as it becomes useful in defining custom tensor expressions: If a tensor expression is unevaluated, then the template argument guarantees a consistent method for producing an evaluated result (as well as the types and traits associated with the result).
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept unevaluated_tensor_expression =
+tensor_expression< T > &&
+requires( T t )
+{
+  { t.operator auto() };
+} &&
+tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
+( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+}
+</code>
+</pre>
+
+The authors additionally propose two `unevaluated_tensor_expression` concepts: the `unary_tensor_expression` and `binary_tensor_expression`. Note, neither concept requires a `tensor_expression` as an input.
+
+Note: Would nullary tensor expressions be useful? The authors tend to believe not. The unary and binary tensor expression concepts are generally used to indicate there are underlying elements which may warrant further inspection.
+
+Note: Would it be useful to define an N-ary tensor expresson instead of a unary and binary tensor expression? Are there meaningful examples of N-ary expressions which cannot be easily decomposed into a composition of unary and binary expressions?
+
+#### Unary Tensor Expression
+
+The unary tensor expression represents a function requiring a single argument and producing a result conformant to a `tensor_expression`.
+The `negate_tensor_expression`, `transpose_tensor_expression`, and `conjugate_tensor_expression` are all conformant to the `unary_tensor_expression` (although the latter two may include an additional parameter to indicate along which dimensions to transpose / conjugate ).
+
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -106,7 +136,11 @@ requires ( T& t )
 </code>
 </pre>
 
-### Binary Tensor Expression
+#### Binary Tensor Expression
+
+The binary tensor expression represents a function requiring two arguments and producing a result conformant to a `tensor_expression`.
+The `addition_tensor_expression`, `subtraction_tensor_expression`, and various product-like expressions are all conformant to the `binary_tensor_expression`.
+
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -128,8 +162,6 @@ requires ( T& t )
 ### Tensor Expression Traits
 
 The authors also propose several traits related to the *unevaluated tensor expressions*. The intent is to provide additional information on custom `unary_tensor_expression`s and `binary_tensor_expression`s which may be taken advantage of without further inspection of the types. In this section, consider `t1`, `t2`, and `t3` to be objects which satisfy the `tensor_expression` concept.
-
-Advisement: If the below traits evaluate `true`, should the compiler be free to take advantage of them liberally or should the traits be purely informative?
 
 #### Commutative
 <pre class="highlight">
@@ -179,26 +211,26 @@ auto t = TE1( TE2( t1, t2 ), t3 );
 <code class="language-c++">
 namespace std {
 template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
-struct is_distributive< TE1, TE2 > : public false_type;
-template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
-[[nodiscard]] inline constexpr bool is_distributive_v = is_commutative< TE1, TE2 > && is_distributive< TE1, TE2 >::value;
-
-template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
 struct is_left_distributive< TE1, TE2 > : public false_type;
 template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
-[[nodiscard]] inline constexpr bool is_left_distributive_v = is_distributive_v< TE1, TE2 > || is_left_distributive< TE1, TE2 >::value;
+[[nodiscard]] inline constexpr bool is_left_distributive_v = is_left_distributive< TE1, TE2 >::value;
 
 template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
 struct is_right_distributive< TE1, TE2 > : public false_type;
 template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
-[[nodiscard]] inline constexpr bool is_right_distributive_v = is_distributive_v< TE1, TE2 > || is_right_distributive< TE1, TE2 >::value;
+[[nodiscard]] inline constexpr bool is_right_distributive_v = is_right_distributive< TE1, TE2 >::value;
+
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_distributive< TE1, TE2 > : public conditional_t< is_commutative_v< TE1, TE2 > && is_left_distributive_v< TE1, TE2 > && is_right_distributive_v< TE1, TE2 >, true_type, false_type >;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_distributive_v = is_distributive< TE1, TE2 >::value;
 }
 </code>
 </pre>
 
-The `is_distributive` class may be specialized for any pair of binary tensor expressions. Note, for `is_distributive_v< TE1, TE2 >` to be `true`, then `is_commutative_v< TE1, TE2 >` must also be `true`.
+For `is_distributive_v< TE1, TE2 >` to be `true`, then `is_commutative_v< TE1, TE2 >`, `is_left_distributive_v< TE1, TE2 >`, and `is_right_distributive_v< TE1, TE2 >` must also be `true`.
 
-The `is_left_distributive` class may be specialized for any pair of binary tensor expressions. Note, if `is_distributive_v< TE1, TE2 >` is `true`, then `is_left_distributive< TE1, TE2 >` need not be specialized. If `is_left_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
+The `is_left_distributive` class may be specialized for any pair of binary tensor expressions. If `is_left_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
 
 <pre class="highlight">
 <code class="language-c++">
@@ -207,20 +239,10 @@ auto t = TE2( TE1( t1, t2 ), TE1( t1, t2 ) );
 </code>
 </pre>
 
-The `is_right_distributive` class may be specialized for any pair of binary tensor expressions. Note, if `is_distributive_v< TE1, TE2 >` is `true`, then `is_right_distributive< TE1, TE2 >` need not be specialized. If `is_right_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
+The `is_right_distributive` class may be specialized for any pair of binary tensor expressions. If `is_right_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
 
 <pre class="highlight">
 <code class="language-c++">
-auto t = TE1( TE2( t1, t2 ), t3 );
-auto t = TE2( TE1( t1, t2 ), TE1( t1, t2 ) );
-</code>
-</pre>
-
-If `is_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the compiler is free to treat both sets of expressions as equivalent. This illustrates why `is_commutative< TE1, TE2 >` must be `true`.
-
-<pre class="highlight">
-<code class="language-c++">
-auto t = TE1( t1, TE2( t2, t3 ) );
 auto t = TE1( TE2( t1, t2 ), t3 );
 auto t = TE2( TE1( t1, t2 ), TE1( t1, t2 ) );
 </code>
@@ -247,6 +269,8 @@ auto t = TE1( TE2( t1, t2 ) );
 auto t = TE2( TE1( t1 ), TE1( t2 ) );
 </code>
 </pre>
+
+Note: Is a closure trait useful? Closure traits can provide additional guarantees about otherwise unknown expressions. Implementations attempting to optimize behavior have to inspect the underlying type. A closure trait can standardize the way the inputs are inspected.
 
 ## Additional Concepts
 
