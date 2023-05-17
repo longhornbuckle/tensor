@@ -32,7 +32,6 @@
 //- mdspan include
 #include <experimental/mdspan>
 #include <experimental/mdspan_extensions/rank_one_extents_specialization.hpp>
-using ::std::experimental::dynamic_extent;
 
 //- Implementation headers
 #include "linear_algebra/config.hpp"
@@ -45,7 +44,7 @@ using ::std::experimental::dynamic_extent;
 #include "linear_algebra/tensor_expression/binary_tensor_expression.hpp"
 #include "linear_algebra/subtensor.hpp"
 #include "linear_algebra/tensor_memory.hpp"
-#include "linear_algebra/tensor.hpp"
+#include "linear_algebra/dr_tensor.hpp"
 #include "linear_algebra/fs_tensor.hpp"
 #include "linear_algebra/arithmetic_operators.hpp"
 

@@ -213,14 +213,14 @@ template < class T,
            class AccessorPolicy = ::std::experimental::default_accessor< T > >
 class fs_tensor;
 
-// Tensor
+// Dynamic Size Tensor
 template < class T,
            class Extents,
            class LayoutPolicy   = default_layout,
            class CapExtents     = Extents,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor< T > >
-class tensor;
+class dr_tensor;
 
 namespace math
 {

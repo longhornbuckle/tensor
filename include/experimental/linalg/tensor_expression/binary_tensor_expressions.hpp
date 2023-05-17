@@ -92,12 +92,12 @@ class addition_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -111,12 +111,12 @@ class addition_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -194,12 +194,12 @@ class subtraction_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -213,12 +213,12 @@ class subtraction_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -283,12 +283,12 @@ class scalar_preprod_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -302,12 +302,12 @@ class scalar_preprod_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -372,12 +372,12 @@ class scalar_postprod_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -391,12 +391,12 @@ class scalar_postprod_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -461,12 +461,12 @@ class scalar_division_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                   accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -480,12 +480,12 @@ class scalar_division_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -563,12 +563,12 @@ class matrix_product_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                   accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -582,12 +582,12 @@ class matrix_product_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -686,12 +686,12 @@ class vector_matrix_product_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -705,12 +705,12 @@ class vector_matrix_product_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -809,12 +809,12 @@ class matrix_vector_product_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -828,12 +828,12 @@ class matrix_vector_product_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -920,12 +920,12 @@ class outer_product_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
@@ -939,12 +939,12 @@ class outer_product_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };

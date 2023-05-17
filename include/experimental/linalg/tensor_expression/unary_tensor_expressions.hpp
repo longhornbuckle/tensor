@@ -70,12 +70,12 @@ class negate_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
@@ -88,12 +88,12 @@ class negate_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -319,12 +319,12 @@ class transpose_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
@@ -337,12 +337,12 @@ class transpose_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -419,12 +419,12 @@ class transpose_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -484,12 +484,12 @@ class conjugate_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
@@ -502,12 +502,12 @@ class conjugate_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
@@ -566,12 +566,12 @@ class conjugate_tensor_expression
                                                                                                     layout_result_t< self_type >,
                                                                                                     accessor_result_t< self_type > >,
                                                                                          self_type > :
-                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
-                                                                                                 extents_type,
-                                                                                                 layout_result_t< self_type >,
-                                                                                                 extents_type,
-                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                                                                                                 accessor_result_t< self_type > >,
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                    accessor_result_t< self_type > >,
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
@@ -584,12 +584,12 @@ class conjugate_tensor_expression
       }
       else
       {
-        return tensor< value_type,
-                       extents_type,
-                       layout_result_t< self_type >,
-                       extents_type,
-                       typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
-                       accessor_result_t< self_type > >
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
           ( *this, allocator_result< self_type >::get_allocator( *this ) );
       }
     };
