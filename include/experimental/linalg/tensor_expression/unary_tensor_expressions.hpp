@@ -18,7 +18,11 @@ namespace experimental
 {
 
 // Negation tensor expression
-template < tensor_expression Tensor >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor >
+#else
+template < class Tensor, typename >
+#endif
 class negate_tensor_expression
 {
   private:
@@ -58,11 +62,27 @@ class negate_tensor_expression
       { return - LINALG_DETAIL::access( *this, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto()
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
+                                                                                                 extents_type,
+                                                                                                 layout_result_t< self_type >,
+                                                                                                 extents_type,
+                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                 accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -246,7 +266,11 @@ class transpose_helper< transpose_indices_t<index1,index2> >
     }
 };
 
-template < tensor_expression Tensor, class Transpose >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose >
+#else
+template < class Tensor, class Transpose, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
+#endif
 class transpose_tensor_expression
   requires ( Tensor::rank() > 1 )
 {
@@ -287,11 +311,27 @@ class transpose_tensor_expression
       { return transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto()
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
+                                                                                                 extents_type,
+                                                                                                 layout_result_t< self_type >,
+                                                                                                 extents_type,
+                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                 accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -309,12 +349,15 @@ private:
   [[no_unique_address]] transpose_indices_t indices_;
 };
 
-template < tensor_expression Tensor >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::vector_expression Tensor >
+#else
+template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+#endif
 class transpose_tensor_expression
-  requires ( Tensor::rank() == 1 )
 {
   private:
-    using self_type = transpose_tensor_expression< Tensor, Transpose >;
+    using self_type = transpose_tensor_expression< Tensor >;
   public:
     // Special member functions
     constexpr transpose_tensor_expression( Tensor&& t ) noexcept : t_(t) { }
@@ -350,11 +393,27 @@ class transpose_tensor_expression
       { return LINALG_DETAIL::access( this->t_, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto()
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
+                                                                                                 extents_type,
+                                                                                                 layout_result_t< self_type >,
+                                                                                                 extents_type,
+                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                 accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
-        // TBD
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
       }
       else
       {
@@ -372,7 +431,11 @@ private:
 };
 
 // Conjugate
-template < tensor_expression Tensor, class Transpose = transpose_indices_t >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose >
+#else
+template < class Tensor, class Transpose, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
+#endif
 class conjugate_tensor_expression
   requires ( Tensor::rank() > 1 )
 {
@@ -413,7 +476,19 @@ class conjugate_tensor_expression
       { return ::std::conj( transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto()
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
+                                                                                                 extents_type,
+                                                                                                 layout_result_t< self_type >,
+                                                                                                 extents_type,
+                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                 accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {
@@ -439,10 +514,12 @@ private:
   [[no_unique_address]] transpose_indices_t indices_;
 };
 
-
-template < tensor_expression Tensor >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::vector_expression Tensor >
+#else
+template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+#endif
 class conjugate_tensor_expression
-  requires ( Tensor::rank() == 1 )
 {
   private:
     using self_type = conjugate_tensor_expression< Tensor, Transpose >;
@@ -481,7 +558,19 @@ class conjugate_tensor_expression
       { return ::std::conj( LINALG_DETAIL::access( this->t_, indices ... ) ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto()
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< tensor< value_type,
+                                                                                                 extents_type,
+                                                                                                 layout_result_t< self_type >,
+                                                                                                 extents_type,
+                                                                                                 typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                 accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       if constexpr ( extents_type::dynamic_rank() == 0 )
       {

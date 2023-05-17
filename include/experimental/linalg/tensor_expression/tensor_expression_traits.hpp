@@ -101,7 +101,7 @@ struct layout_result< conjugate_tensor_expression< Tensor > >
 };
 
 template < readable_tensor FirstTensor, readable_tensor SecondTensor >
-struct layout_result< add_tensor_expression< FirstTensor, SecondTensor > >
+struct layout_result< binary_tensor_expression< FirstTensor, SecondTensor > >
   requires ( ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_right > ||
                ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_left > ||
                ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_stride > ) &&
@@ -116,21 +116,21 @@ struct layout_result< add_tensor_expression< FirstTensor, SecondTensor > >
 };
 
 template < unevaluated_tensor_expression FirstTensor, readable_tensor SecondTensor >
-struct layout_result< add_tensor_expression< FirstTensor, SecondTensor > >
+struct layout_result< binary_tensor_expression< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< add_tensor_expression< decltype( ::std::declval< FirstTensor >().operator auto() ), SecondTensor > >::type;
+  using type = typename layout_result< binary_tensor_expression< decltype( ::std::declval< FirstTensor >().operator auto() ), SecondTensor > >::type;
 };
 
 template < readable_tensor FirstTensor, unevaluated_tensor_expression SecondTensor >
-struct layout_result< add_tensor_expression< FirstTensor, SecondTensor > >
+struct layout_result< binary_tensor_expression< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< add_tensor_expression< FirstTensor, decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
+  using type = typename layout_result< binary_tensor_expression< FirstTensor, decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
 };
 
 template < unevaluated_tensor_expression FirstTensor, unevaluated_tensor_expression SecondTensor >
-struct layout_result< add_tensor_expression< FirstTensor, SecondTensor > >
+struct layout_result< binary_tensor_expression< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< add_tensor_expression< decltype( ::std::declval< FirstTensor >().operator auto() ), decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
+  using type = typename layout_result< binary_tensor_expression< decltype( ::std::declval< FirstTensor >().operator auto() ), decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
 };
 
 template < tensor_expression Tensor >
@@ -175,8 +175,8 @@ struct accessor_result< conjugate_tensor_expression< Tensor > >
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
 };
 
-template < readable_tensor FirstTensor, readable_tensor SecondTensor >
-struct accessor_result< add_tensor_expression< FirstTensor, SecondTensor > >
+template < tensor_expression FirstTensor, tensor_expression SecondTensor >
+struct accessor_result< binary_tensor_expression< FirstTensor, SecondTensor > >
   requires ( is_default_accessor_v< typename FirstTensor::accessor_type > &&
              is_default_accessor_v< typename SecondTensor::accessor_type > )
 {
@@ -225,18 +225,18 @@ struct allocator_result< Tensor >
 {
   using type = typename allocator_result< ::std::conditional_t< dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.first() ) > > ||
                                                                   !dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.second() ) > >,
-                                                                decltype( ::std::declval<Tensor>.first() ),
-                                                                decltype( ::std::declval<Tensor>.second() ) >::allocator_type;
+                                                                decltype( ::std::declval<Tensor>().first() ),
+                                                                decltype( ::std::declval<Tensor>().second() ) >::allocator_type;
   [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
   {
-    if constexpr ( dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.first() ) > > ||
-                   !dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>.second() ) > )
+    if constexpr ( dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>().first() ) > > ||
+                   !dynamic_tensor< ::std_remove_cv_t< decltype( ::std::declval<Tensor>().second() ) > )
     {
-      return allocator_result< decltype( ::std::declval<Tensor>.first() ) >::get_allocator( t.first() );
+      return allocator_result< decltype( ::std::declval<Tensor>().first() ) >::get_allocator( t.first() );
     }
     else
     {
-      return allocator_result< decltype( ::std::declval<Tensor>.second() ) >::get_allocator( t.second() );
+      return allocator_result< decltype( ::std::declval<Tensor>().second() ) >::get_allocator( t.second() );
     }
   }
 };
