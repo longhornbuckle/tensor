@@ -16,6 +16,8 @@ namespace std
 {
 namespace experimental
 {
+namespace expressions
+{
 
 // Negation tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -595,6 +597,7 @@ private:
   Tensor t_;
 };
 
+}       //- expressions namespace
 }       //- experimental namespace
 }       //- std namespace
 #endif  //- LINEAR_ALGEBRA_TENSOR_EXPRESSION_UNARY_TENSOR_EXPRESSIONS_HPP

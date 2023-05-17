@@ -22,6 +22,8 @@ namespace std
 {
 namespace experimental
 {
+namespace expressions
+{
 
 // Addition tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -952,6 +954,7 @@ class outer_product_expression
     SecondVector& v2_;
 };
 
+}       //- expressions namespace
 }       //- experimental namespace
 }       //- std namespace
 #endif  //- LINEAR_ALGEBRA_TENSOR_EXPRESSION_BINARY_TENSOR_EXPRESSIONS_HPP

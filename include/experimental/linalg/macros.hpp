@@ -15,7 +15,11 @@
 #endif
 
 #ifndef LINALG_CONCEPTS
-  #define LINALG_CONCEPTS ::std::experimental::math::concepts
+  #define LINALG_CONCEPTS ::std::experimental::concepts
+#endif
+
+#ifdef LINALG_EXPRESSIONS
+  #define LINALG_EXPRESSIONS ::std::experimental::expressions
 #endif
 
 // Force compiler to inline function
