@@ -7,6 +7,7 @@
 //              scalar_preprod_tensor_expression< S, Tensor >
 //              scalar_postprod_tensor_expression< S, Tensor >
 //              scalar_division_tensor_expression< S, Tensor >
+//              scalar_modulo_tensor_expression< S, Tensor >
 //              matrix_product_expression< FirstMatrix, SecondMatrix >
 //              vector_matrix_product_expression< Vector, Matrix >
 //              matrix_vector_product_expression< Matrix, Vector >
@@ -407,9 +408,9 @@ class scalar_postprod_tensor_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
+template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class S, class Tensor, typename >
+template < class Tensor, class S, typename >
 #endif
 class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -453,6 +454,95 @@ class scalar_division_tensor_expression
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) / this->s_; }
+    #endif
+    // Implicit conversion
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+                                                      ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    accessor_result_t< self_type > >,
+                                                                                         self_type > :
+                                                      ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                                                                    extents_type,
+                                                                                                    layout_result_t< self_type >,
+                                                                                                    extents_type,
+                                                                                                    typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                                                                                                   accessor_result_t< self_type > >,
+                                                                                         self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
+    {
+      // TODO: Optimizations using tensor traits
+      if constexpr ( extents_type::dynamic_rank() == 0 )
+      {
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          accessor_result_t< self_type > >
+          ( *this );
+      }
+      else
+      {
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< self_type >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_t< value_type >,
+                          accessor_result_t< self_type > >
+          ( *this, allocator_result< self_type >::get_allocator( *this ) );
+      }
+    };
+  private:
+    // Data
+    Tensor& t_;
+    S&      s_;
+};
+
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
+#else
+template < class Tensor, class S, typename >
+#endif
+class scalar_modulo_tensor_expression
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v % s; } }
+#endif
+{
+  private:
+    // Alias for self
+    using self_type = scalar_modulo_tensor_expression< T, Tensor >;
+  public:
+    // Special member functions
+    constexpr scalar_modulo_tensor_expression( Tensor&& t, S&& s ) noexcept : t_(t), s_(s) { };
+    constexpr scalar_modulo_tensor_expression& operator = ( const scalar_modulo_tensor_expression& t ) noexcept { this->t_ = t.t_; this->s_ = t.s_; }
+    constexpr scalar_modulo_tensor_expression& operator = ( scalar_modulo_tensor_expression&& t ) noexcept { this->t_ = t.t_; this->s_ = t.s_; }
+    // Aliases
+    using value_type   = decltype( ::std::declval<typename Tensor::value_type>() % ::std::declval<S>() );
+    using index_type   = typename Tensor::index_type;
+    using size_type    = typename Tensor::size_type;
+    using extents_type = typename Tensor::extents_type;
+    using rank_type    = typename Tensor::rank_type;
+    // Tensor expression functions
+    [[nodiscard]] static constexpr rank_type rank() noexcept { return Tensor::rank(); }
+    [[nodiscard]] constexpr extents_type extents() noexcept { return this->t_.extents(); }
+    [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { return this->t_.extent(n); }
+    // Binary tensor expression function
+    [[nodiscard]] constexpr const S& first() const noexcept { return this->s_; }
+    [[nodiscard]] constexpr const Tensor& second() const noexcept { return this->t_; }
+    // Post-Scalar Modulo
+    #if LINALG_USE_BRACKET_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return LINALG_DETAIL::access( this->t1_, indices ... ) % this->s_; }
+    #endif
+    #if LINALG_USE_PAREN_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return LINALG_DETAIL::access( this->t1_, indices ... ) % this->s_; }
     #endif
     // Implicit conversion
     [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?

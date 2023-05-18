@@ -444,6 +444,11 @@ template < class S, class T, class = void > struct tensor_is_scalar_divisible : 
 template < class S, class T > struct tensor_is_scalar_divisible< S, T, ::std::enable_if_t< ::std::is_same_v< ( ::std::declval< typename T::value_type >() / ::std::declval< S >() ), ( ::std::declval< typename T::value_type >() / ::std::declval< S >() ) > > > : public ::std::true_type { };
 template < class S, class T > inline constexpr bool tensor_is_scalar_divisible_v = tensor_is_scalar_divisible< S, T >::value;
 
+// Test for scalar modulo
+template < class S, class T, class = void > struct tensor_is_scalar_modulo : public ::std::false_type { };
+template < class S, class T > struct tensor_is_scalar_modulo< S, T, ::std::enable_if_t< ::std::is_same_v< ( ::std::declval< typename T::value_type >() % ::std::declval< S >() ), ( ::std::declval< typename T::value_type >() % ::std::declval< S >() ) > > > : public ::std::true_type { };
+template < class S, class T > inline constexpr bool tensor_is_scalar_modulo_v = tensor_is_scalar_modulo< S, T >::value;
+
 // Test for matrices may be multiplicative
 template < class M1, class M2, class = void > struct matrices_may_be_multiplicative : public ::std::false_type { };
 template < class M1, class M2 > struct matrices_may_be_multiplicative< M1, M2, ::std::enable_if_t< ( M1::extents_type::static_extent(1) == M2::extents_type::static_extent(0) ) || ( M1::extents_type::static_extent(1) == ::std::experimental::dynamic_extent ) || ( M2::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) > > : public ::std::true_type { };

@@ -321,6 +321,45 @@ operator /= ( T& t, const S& s ) noexcept
 }
 
 //=================================================================================================
+//  Scalar modulo operators
+//=================================================================================================
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class T, class S >
+#else
+template < class T, class S,
+           typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< const T&, const S& >, const T&, const S& > >,
+           typename = ::std::enable_if_t< true > >
+#endif
+[[nodiscard]] inline constexpr decltype(auto)
+operator % ( const T& t, const S& s ) noexcept
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< const T&, const S& >, const T&, const S& >
+#endif
+{
+  return LINALG_EXPRESSIONS::scalar_modulo_tensor_expression( t, s );
+}
+
+//=================================================================================================
+//  Scalar modulo assignment operators
+//=================================================================================================
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class T, class S >
+#else
+template < class T, class S,
+           typename = ::std::enable_if_t< ( ::std::is_constructible_v< LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< T&, const S& >, T&, const S& > &&
+                                            ::std::is_assignable_v< T&, LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< T&, const S& > ) > >
+#endif
+[[nodiscard]] inline constexpr T&
+operator %= ( T& t, const S& s ) noexcept
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::is_constructible_v< LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< T&, const S& >, T&, const S& > &&
+             ::std::is_assignable_v< T&, LINALG_EXPRESSIONS::scalar_modulo_tensor_expression< T&, const S& > )
+#endif
+{
+  return t = LINALG_EXPRESSIONS::scalar_modulo_tensor_expression( t, s );
+}
+
+//=================================================================================================
 //  Inner product
 //=================================================================================================
 #ifdef LINALG_ENABLE_CONCEPTS

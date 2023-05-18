@@ -128,13 +128,25 @@ class scalar_postprod_tensor_expression
 
 // Scalar Division
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
+template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class S, class Tensor, typename = ::std::enable_if_t< tensor_is_scalar_divisible_v< S, Tensor > > >
+template < class Tensor, class S, typename = ::std::enable_if_t< tensor_is_scalar_divisible_v< S, Tensor > > >
 #endif
 class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
   requires requires ( const S& s, const typename Tensor::value_type& v ) { { v / s; } }
+#endif
+;
+
+// Scalar Modulo
+#ifdef LINALG_ENABLE_CONCEPTS
+template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
+#else
+template < class Tensor, class S, typename = ::std::enable_if_t< tensor_is_scalar_modulo_v< S, Tensor > > >
+#endif
+class scalar_modulo_tensor_expression
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v % s; } }
 #endif
 ;
 
