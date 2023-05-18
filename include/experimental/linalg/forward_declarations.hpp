@@ -234,9 +234,6 @@ template < class T,
            class AccessorPolicy = ::std::experimental::default_accessor< T > >
 class dr_tensor;
 
-namespace math
-{
-
 // Alias mdspan
 template < class ElementType,
            class Extents,
@@ -259,101 +256,41 @@ template < class ElementType,
            class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
 using vector_view = tensor_view< ElementType, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
 
-// Alias tensor
-template < class T,
-           class Extents,
-           class LayoutPolicy   = default_layout,
-           class CapExtents     = Extents,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using tensor = ::std::experimental::tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>;
-
-// Alias for matrix
+// Alias for dr_matrix
 template < class T,
            auto  R,
            auto  C,
            class LayoutPolicy   = default_layout,
+           auto  Rc             = R,
+           auto  Cc             = C,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using matrix = tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, Allocator, AccessorPolicy >;
+using dr_matrix = dr_tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, ::std::experimental::extents<::std::common_type_t<decltype(Rc),decltype(Cc)>,static_cast<::std::size_t>(Rc),static_cast<::std::size_t>(Cc)>, Allocator, AccessorPolicy >;
 
-// Alias for vector
+// Alias for dr_vector
 template < class T,
            auto  N,
            class LayoutPolicy   = default_layout,
+           auto  Nc             = N,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using vector = tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, Allocator, AccessorPolicy >;
+using dr_vector = dr_tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, ::std::experimental::extents<decltype(Nc),static_cast<::std::size_t>(Nc)>, Allocator, AccessorPolicy >;
 
-// namespace detail
-// {
-// [[nodiscard]] constexpr ::std::size_t dyn_ext( [[maybe_unused]] size_t i ) noexcept { return ::std::experimental::dynamic_extent; }
+// Alias for fs_matrix
+template < class T,
+           auto  R,
+           auto  C,
+           class LayoutPolicy   = default_layout,
+           class AccessorPolicy = ::std::experimental::default_accessor<T> >
+using fs_matrix = fs_tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, AccessorPolicy >;
 
-// template < class T,
-//            class LayoutPolicy,
-//            class Allocator,
-//            class AccessorPolicy,
-//            class Seq >
-// struct dyn_tensor_impl;
+// Alias for fs_vector
+template < class T,
+           auto  N,
+           class LayoutPolicy   = default_layout,
+           class AccessorPolicy = ::std::experimental::default_accessor<T> >
+using fs_vector = fs_tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
 
-// template < class T,
-//            class LayoutPolicy,
-//            class Allocator,
-//            class AccessorPolicy,
-//            size_t ... Indices >
-// struct dyn_tensor_impl< T, LayoutPolicy, Allocator, AccessorPolicy, ::std::index_sequence<Indices...> >
-// {
-//   using type = tensor< T, ::std::experimental::extents<::std::size_t,dyn_ext(Indices) ...>, LayoutPolicy, Allocator, AccessorPolicy >;
-// };
-
-// }
-
-// // Alias for dynamic tensor
-// template < class T,
-//            size_t Rank,
-//            class LayoutPolicy   = default_layout,
-//            class Allocator      = ::std::allocator<T>,
-//            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-// using dyn_tensor = typename detail::dyn_tensor_impl< T, LayoutPolicy, Allocator, AccessorPolicy, ::std::make_index_sequence<Rank> >::type;
-
-// // Alias for dynamic matrix
-// template < class T,
-//            class LayoutPolicy   = default_layout,
-//            class Allocator      = ::std::allocator<T>,
-//            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-// using dyn_matrix = matrix< T, ::std::experimental::dynamic_extent, ::std::experimental::dynamic_extent, LayoutPolicy, Allocator, AccessorPolicy >;
-
-// // Alias for dynamic vector
-// template < class T,
-//            class LayoutPolicy   = default_layout,
-//            class Allocator      = ::std::allocator<T>,
-//            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-// using dyn_vector = vector< T, ::std::experimental::dynamic_extent, LayoutPolicy, Allocator, AccessorPolicy >;
-
-// // Alias for fixed size tensor
-// template < class T,
-//            class Extents,
-//            class LayoutPolicy   = default_layout,
-//            class AccessorPolicy = ::std::experimental::default_accessor<T> >
-//  using fixed_size_tensor = tensor< T, Extents, LayoutPolicy, util::fixed_size_allocator< T, LayoutPolicy::template mapping<Extents>( Extents() ).required_span_size() >, AccessorPolicy >;
-
-//  // Alias for fixed size matrix
-//  template < class T,
-//             auto  R,
-//             auto  C,
-//             class LayoutPolicy   = default_layout,
-//             class AccessorPolicy = ::std::experimental::default_accessor<T> >
-// using fixed_size_matrix = matrix< T, R, C, LayoutPolicy, util::fixed_size_allocator< T, LayoutPolicy::template mapping< ::std::experimental::extents< ::std::size_t, R, C > >( ::std::experimental::extents< ::std::size_t, R, C >() ).required_span_size() >, AccessorPolicy >;
-
-// // Alias for fixed size vector
-//  template < class T,
-//             auto  N,
-//             class LayoutPolicy   = default_layout,
-//             class AccessorPolicy = ::std::experimental::default_accessor<T> >
-// using fixed_size_vector = vector< T, N, LayoutPolicy, util::fixed_size_allocator< T, LayoutPolicy::template mapping< ::std::experimental::extents< ::std::size_t, N > >( ::std::experimental::extents< ::std::size_t, N >() ).required_span_size() >, AccessorPolicy >;
-
-
-}       //- math namespace
 }       //- experimental namespace
 }       //- std namespace
 #endif  //- LINEAR_ALGEBRA_FORWARD_DECLARATIONS_HPP
