@@ -46,6 +46,7 @@
 #include "linear_algebra/tensor_memory.hpp"
 #include "linear_algebra/dr_tensor.hpp"
 #include "linear_algebra/fs_tensor.hpp"
+#include "linear_algebra/subtensor.hpp"
 #include "linear_algebra/arithmetic_operators.hpp"
 
 #endif  //- LINEAR_ALGEBRA_HPP
