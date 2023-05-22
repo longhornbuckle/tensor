@@ -22,11 +22,9 @@
 #endif
 
 #include <experimental/mdspan>
-using std::experimental::dynamic_extent;
+using ::std::dynamic_extent;
 
 namespace std
-{
-namespace experimental
 {
 
 template < class IndexType, size_t Extent >
@@ -211,7 +209,6 @@ public:
   }
 };
 
-} //- experimental
 } //- std namespace
 
 

@@ -10,12 +10,7 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
-namespace detail
-{
+LINALG_DETAIL_BEGIN // detail namespace
 
 //==================================================================================================
 //  Helper class for encapsulating macro dependent multidimensional access
@@ -134,8 +129,8 @@ struct extents_may_be_equal_impl< ::std::experimental::extents<SizeType,Extents.
                                   ::std::experimental::extents<OtherSizeType,OtherExtents...>,
                                   ::std::index_sequence<Indices...> > :
   ::std::conditional_t< ( ( ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) ) ||
-                            ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::experimental::dynamic_extent ) ||
-                            ( ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::experimental::dynamic_extent ) ) && ... ),
+                            ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::dynamic_extent ) ||
+                            ( ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::dynamic_extent ) ) && ... ),
                         ::std::true_type, ::std::false_type > {};
 
 template < class T, class U >
@@ -170,7 +165,7 @@ template < class T >
 struct nondynamic_rank;
 
 template < template < class, ::std::size_t ... > class E, class T, ::std::size_t ... Extents >
-struct nondynamic_rank< E<T,Extents...> > : public ::std::integral_constant< ::std::size_t, ( ( ( Extents > 1 ) && ( Extents != ::std::experimental::dynamic_extent ) ) + ... ) > {};
+struct nondynamic_rank< E<T,Extents...> > : public ::std::integral_constant< ::std::size_t, ( ( ( Extents > 1 ) && ( Extents != ::std::dynamic_extent ) ) + ... ) > {};
 
 template < class E, typename = ::std::enable_if_t< is_extents_v<E> > >
 inline constexpr ::std::size_t nondynamic_rank_v = nondynamic_rank<E>::value;
@@ -1012,7 +1007,7 @@ template < class U, U ... Indices >
 class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
 {
   private:
-    static constexpr U dyn_ext( [[maybe_unused]] U index ) noexcept { return ::std::experimental::dynamic_extent; }
+    static constexpr U dyn_ext( [[maybe_unused]] U index ) noexcept { return ::std::dynamic_extent; }
   public:
     using extents_type = ::std::experimental::extents<U,dyn_ext(Indices)...>;
     using tuple_type   = ::std::tuple<decltype(Indices)...>;
@@ -1024,7 +1019,6 @@ class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
 template < class U, ::std::size_t R >
 using extents_helper = extents_helper_impl< ::std::make_integer_sequence<U,R> >;
 
-}       //- detail namespace
-}       //- experimental namespace
-}       //- std namespace
+LINALG_DETAIL_END // end detail namespace
+
 #endif  //- LINEAR_ALGEBRA_PRIVATE_SUPPORT_HPP

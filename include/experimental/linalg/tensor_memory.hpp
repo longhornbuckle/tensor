@@ -8,10 +8,8 @@
 #define LINEAR_ALGEBRA_TENSOR_MEMORY_HPP
 
 #include <experimental/linear_algebra.hpp>
-namespace std
-{
-namespace experimental
-{
+
+LINALG_BEGIN // linalg namespace
 
 template < class T,
            class Allocator >
@@ -39,9 +37,9 @@ class tensor_memory
     //- Destructor / Constructors / Assignments
 
     // Destructor
-    constexpr ~tensor_memory() noexcept = default;
+    LINALG_CONSTEXPR_DESTRUCTOR ~tensor_memory() noexcept = default;
     // Default constructor
-    constexpr tensor_memory() noexcept requires ( ::std::is_default_constructible_v<allocator_type> ) = default;
+    constexpr tensor_memory() noexcept = default;
     // Template copy construction
     template < class U, class Alloc, class MappingType >
     constexpr tensor_memory( const tensor_memory<U,Alloc>& tm, const MappingType& mapping );
@@ -201,6 +199,6 @@ tensor_memory<T,Allocator>::deallocate( const MappingType& mapping )
   ::std::allocator_traits<rebound_allocator_type>::deallocate( this->alloc_, this->p_, mapping.required_span_size() );
 }
 
-}       //- experimental namespace
-}       //- std namespace
+LINALG_END // end linalg namespace
+
 #endif  //- LINEAR_ALGEBRA_TENSOR_MEMORY_HPP

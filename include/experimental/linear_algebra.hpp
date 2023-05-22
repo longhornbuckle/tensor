@@ -31,22 +31,22 @@
 
 //- mdspan include
 #include <experimental/mdspan>
-#include <experimental/mdspan_extensions/rank_one_extents_specialization.hpp>
+#include "mdspan_extensions/rank_one_extents_specialization.hpp"
 
 //- Implementation headers
-#include "linear_algebra/config.hpp"
-#include "linear_algebra/macros.hpp"
-#include "linear_algebra/private_support.hpp"
-#include "linear_algebra/forward_declarations.hpp"
-#include "linear_algebra/tensor_concepts.hpp"
-#include "linear_algebra/tensor_expression/tensor_expression_traits.hpp"
-#include "linear_algebra/tensor_expression/unary_tensor_expression.hpp"
-#include "linear_algebra/tensor_expression/binary_tensor_expression.hpp"
-#include "linear_algebra/subtensor.hpp"
-#include "linear_algebra/tensor_memory.hpp"
-#include "linear_algebra/dr_tensor.hpp"
-#include "linear_algebra/fs_tensor.hpp"
-#include "linear_algebra/subtensor.hpp"
-#include "linear_algebra/arithmetic_operators.hpp"
+#include "linalg/config.hpp"
+#include "linalg/macros.hpp"
+#include "linalg/private_support.hpp"
+#include "linalg/tensor_concepts.hpp"
+#include "linalg/forward_declarations.hpp"
+#include "linalg/tensor_expression/tensor_expression_traits.hpp"
+#include "linalg/tensor_expression/unary_tensor_expressions.hpp"
+#include "linalg/tensor_expression/binary_tensor_expressions.hpp"
+#include "linalg/subtensor.hpp"
+#include "linalg/tensor_memory.hpp"
+#include "linalg/dr_tensor.hpp"
+#include "linalg/fs_tensor.hpp"
+#include "linalg/subtensor.hpp"
+#include "linalg/arithmetic_operators.hpp"
 
 #endif  //- LINEAR_ALGEBRA_HPP

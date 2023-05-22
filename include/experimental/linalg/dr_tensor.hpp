@@ -10,10 +10,7 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
+LINALG_BEGIN // linalg namespace
 
 /// @brief dr_tensor - a memory owning dynamically sized multidimensional container.
 /// @tparam T type of element stored
@@ -42,7 +39,7 @@ class dr_tensor
     /// @brief Type used to express capacity of dr_tensor
     using capacity_extents_type    = CapExtents;
     /// @brief Type used to map multidimensional indices into the buffer
-    using capacity_mapping_type    = layout_type::template mapping<capacity_extents_type>;
+    using capacity_mapping_type    = typename layout_type::template mapping<capacity_extents_type>;
     /// @brief Type used to define access into memory
     using accessor_type            = AccessorPolicy;
     /// @brief Type used for size along any dimension
@@ -79,10 +76,11 @@ class dr_tensor
     template < class MDS, class Seq >
     class span_impl;
     template < class MDS, auto ... Indices >
-    class span_impl< MDS, index_sequence<Indices...> >
+    class span_impl< MDS, index_sequence< Indices ... > >
     {
     private:
-      [[nodiscard]] static inline constexpr auto full_ext( [[maybe_unused]] auto ) noexcept { return ::std::experimental::full_extent; }
+      template < class OtherIndex >
+      [[nodiscard]] static inline constexpr auto full_ext( [[maybe_unused]] OtherIndex ) noexcept { return ::std::full_extent; }
     public:
       using type = decltype( ::std::experimental::submdspan( ::std::declval<capacity_span_type>(),
                                                              ::std::declval<decltype( full_ext( Indices ) )>() ... ) );
@@ -124,43 +122,34 @@ class dr_tensor
     /// @brief Construct from an initializer list
     /// @param il initializer list of elements to be copied
     #ifndef LINALG_ENABLE_CONCEPTS
-    template < typename = ::std::enable_if_t< extents_type::dynamic_rank() == 0 > >
+    template < typename = ::std::enable_if_t< extents_type::rank_dynamic() == 0 > >
     #endif
-    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() )
+    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() );
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( extents_type::dynamic_rank() == 0 );
+      requires ( extents_type::rank_dynamic() == 0 );
     #endif
     /// @brief Construct from an initializer list with a specified extents
     /// @param il initializer list of elements to be copied
     /// @param s  extents size
     constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    #ifdef LINALG_ENABLE_CONCEPTS
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
     /// @param first begin iterator
     /// @param last end iterator
     /// @param a allocator
-    #ifndef LINALG_ENABLE_CONCEPTS
-    template < class InputIt, typename = ::std::enable_if< extents_type::dynamic_rank() == 0 > >
-    #else
-    template < class InputIt >
-    #endif
+    template < ::std::input_iterator InputIt >
     constexpr dr_tensor( InputIt first, InputIt last, const allocator_type& alloc = allocator_type() )
-    #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ::std::input_iterator< InputIt > && ( extents_type::dynamic_rank() == 0 ) )
-    #endif
-    ;
+      requires ( ( extents_type::rank_dynamic() == 0 ) );
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
     /// @param first begin iterator
     /// @param last end iterator
     /// @param s extents size
     /// @param a allocator
-    template < class InputIt >
-    constexpr dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() )
-    #ifdef LINALG_ENABLE_CONCEPTS
-      requires ::std::input_iterator< InputIt >
+    template < ::std::input_iterator InputIt >
+    constexpr dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() );
     #endif
-    ;
     #ifdef LINALG_RANGES_TO_CONTAINER
     /// @brief Construct from a range
     /// @tparam R range which satisfies input range concept
@@ -526,7 +515,7 @@ template < typename >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( extents_type::dynamic_rank() == 0 )
+  requires ( extents_type::rank_dynamic() == 0 )
 #endif
   :
   dr_tensor( il, extents_type(), alloc )
@@ -563,27 +552,21 @@ dr_tensor( const ::std::initializer_list<value_type>& il, const extents_type& s,
   }
 }
 
+#ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-#ifndef LINALG_ENABLE_CONCEPTS
-template < class InputIt, typename >
-#else
-template < class InputIt >
-#endif
+template < ::std::input_iterator< InputIt > InputIt >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 dr_tensor( InputIt first, InputIt last, const allocator_type& alloc  )
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ::std::input_iterator< InputIt > && ( extents_type::dynamic_rank() == 0 ) )
-#endif
+  requires ( ( extents_type::rank_dynamic() == 0 ) )
   :
   dr_tensor( first, last, extents_type(), alloc )
 {
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class InputIt >
+template < ::std::input_iterator< InputIt > InputIt >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
-dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc )
-  requires ::std::input_iterator< InputIt > :
+dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc ) :
   accessor_(),
   cap_map_( s ),
   size_map_( s ),
@@ -629,6 +612,7 @@ dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_t
     static_assert( !is_always_exhaustive(), "Tensor does not support non-contiguous mapping types." );
   }
 }
+#endif
 
 #ifdef LINALG_RANGES_TO_CONTAINER
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
@@ -715,15 +699,15 @@ template < LINALG_CONCEPTS::tensor_expression Tensor >
 #else
 template < class Tensor, typename >
 #endif
-constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::dr_tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::dr_tensor( Tensor&& t, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ( ( Tensor::rank() == dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) &&
              LINALG_DETAIL::extents_may_be_equal_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
 #endif
   :
-  accessoor_(),
+  accessor_(),
   cap_map_( t.extents() ),
-  size_map( this->cap_map_ ),
+  size_map_( this->cap_map_ ),
   tm_( alloc, this->cap_map_ )
 {
   // Construct all elements from tensor expression
@@ -737,7 +721,7 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>&
-dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( tensor&& rhs )
+dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( dr_tensor&& rhs )
   noexcept( typename ::std::allocator_traits< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::allocator_type >::propagate_on_container_move_assignment{} )
 {
   // If the allocator is moved, then move everything
@@ -945,7 +929,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extent( r
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::static_extent( rank_type n ) noexcept
 {
   return extents_type::static_extent( n );
@@ -1149,7 +1133,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::mapping()
 //- Data access
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::allocator_type
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::allocator_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::get_allocator() const noexcept
 {
   return this->tm_.get_allocator();
@@ -1254,7 +1238,7 @@ inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
   {
     // If elements are not-contiguous, then attempt to destroy using multidimensional indices
     LINALG_DETAIL::apply_all( this,
-                              [&]( auto ... indices ) constexpr noexcept
+                              [&]( auto ... indices ) noexcept
                                 { try { access( *this, indices ... ).~element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } },
                               LINALG_EXECUTION_UNSEQ );
   }
@@ -1315,7 +1299,7 @@ inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
   {
     // Attempt to construct via iteration over multi-index operator
     apply_all( *this,
-                [&]( auto ... indices ) constexpr noexcept
+                [&]( auto ... indices ) noexcept
                   { try { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } },
                 LINALG_EXECUTION_UNSEQ );
   }
@@ -1392,6 +1376,6 @@ max_extents( extents_type extents_a, extents_type extents_b ) noexcept
   return extents_type( max_extents );
 }
 
-}       //- experimental namespace
-}       //- std namespace
+LINALG_END // end linalg namespace
+
 #endif  //- LINEAR_ALGEBRA_DR_TENSOR_HPP

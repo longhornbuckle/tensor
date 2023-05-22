@@ -9,10 +9,7 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
+LINALG_BEGIN // linalg namespace
 
 /// @brief fs_tensor - a memory owning multidimensional container.
 /// @tparam T type of element stored
@@ -23,7 +20,10 @@ template < class T,
            class Extents,
            class LayoutPolicy,
            class AccessorPolicy >
-class fs_tensor requires ( Extents::dynamic_rank() == 0 )
+class fs_tensor
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( Extents::rank_dynamic() == 0 )
+#endif
 {
   public:
     //- Types
@@ -73,7 +73,7 @@ class fs_tensor requires ( Extents::dynamic_rank() == 0 )
     //- Destructor / Constructors / Assignments
 
     /// @brief Destructor
-    LINALG_CONSTEXPR_DESTRUCTOR ~fs_tensor() noexcept( ::std::is_nothrow_destructible_v< element_type > ) = default;
+    LINALG_CONSTEXPR_DESTRUCTOR ~fs_tensor() noexcept( ::std::is_nothrow_destructible_v< element_type > );
     /// @brief Default constructor
     constexpr fs_tensor() noexcept( ::std::is_nothrow_default_constructible_v< element_type > ) = default;
     /// @brief Copy constructor
@@ -86,12 +86,10 @@ class fs_tensor requires ( Extents::dynamic_rank() == 0 )
     /// @tparam InputIt Iterator Type
     /// @param first begin iterator
     /// @param last end iterator
-    #ifndef LINALG_ENABLE_CONCEPTS
-    template < class InputIt >
-    #else
+    #ifdef LINALG_ENABLE_CONCEPTS
     template < ::std::input_iterator InputIt >
-    #endif
     constexpr fs_tensor( InputIt first, InputIt last );
+    #endif
     #ifdef LINALG_RANGES_TO_CONTAINER
     /// @brief Construct from a range
     /// @tparam R range which satisfies input range concept
@@ -139,7 +137,7 @@ class fs_tensor requires ( Extents::dynamic_rank() == 0 )
                                               ( Tensor::rank() == extents_type::rank() ) &&
                                               LINALG_DETAIL::extents_may_be_equal_v< extents_type,typename Tensor::extents_type > > >
     #endif
-    constexpr tensor& operator = ( Tensor&& rhs )
+    constexpr fs_tensor& operator = ( Tensor&& rhs )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( ( Tensor::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > )
     #endif
@@ -305,39 +303,15 @@ LINALG_CONSTEXPR_DESTRUCTOR fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::~f
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::fs_tensor()
-  noexcept( ::std::is_nothrow_default_constructible_v< typename fs_tensor<T,Extents,LayoutPolicyAccessorPolicy>::element_type > ) :
-  accessor_(),
-  size_map_(),
-  elems_()
-{
-}
-
-template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::fs_tensor( const fs_tensor& rhs )
-  noexcept( ::std::is_nothrow_copy_constructible_v< typename fs_tensor<T,Extents,LayoutPolicyAccessorPolicy>::element_type > ) :
-  // Copy accessor
-  accessor_( rhs.accessor_ ),
-  // Copy mapping
-  size_map_( rhs.size_map_ ),
-  // Copy elements
-  elems_( rhs.elems_ )
-{
-}
-
-template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
 constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::
 fs_tensor( const ::std::initializer_list<value_type>& il ) :
   fs_tensor( il.begin(), il.end() )
 {
 }
 
+#ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-#ifndef LINALG_ENABLE_CONCEPTS
-template < class InputIt >
-#else
 template < ::std::input_iterator InputIt InputIt >
-#endif
 constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::
 fs_tensor( InputIt first, InputIt last ) :
   acccessor_(),
@@ -384,6 +358,7 @@ fs_tensor( InputIt first, InputIt last ) :
     static_assert( !is_always_exhaustive(), "Tensor does not support non-contiguous mapping types." );
   }
 }
+#endif
 
 #ifdef LINALG_RANGES_TO_CONTAINER
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
@@ -410,8 +385,8 @@ constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::fs_tensor( Tensor&& 
              LINALG_DETAIL::extents_may_be_equal_v< typename tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
 #endif
   :
-  accessoor_(),
-  size_map( t.extents() ),
+  accessor_(),
+  size_map_( t.extents() ),
   elems_()
 {
   // Construct all elements from tensor expression
@@ -432,7 +407,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator = ( const fs_tensor& 
     // Destroy all
     this->destroy_all();
   }
-  if constexpr ( !LINALG_DETAIL::extents_are_equal_v< extents_type, typename Tensor::extents_type > )
+  if constexpr ( !LINALG_DETAIL::extents_are_equal_v< extents_type, typename fs_tensor::extents_type > )
   {
     if ( this->size_map_.extents() != rhs.extents() )
     {
@@ -527,7 +502,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extent( rank_type n ) const no
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::static_extent( rank_type n ) noexcept
 {
   return extents_type::static_extent( n );
@@ -663,7 +638,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::rank_dynamic() noexcept
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr typename tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::stride( rank_type n ) const noexcept
 {
   return this->size_map_.stride( n );
@@ -711,7 +686,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle() const noexcept
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] inline constexpr typename tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle_type
+[[nodiscard]] inline constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle() noexcept
 {
   return this->elems_.data();
@@ -767,7 +742,7 @@ inline void fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::destroy_all_except
   {
     // If elements are not-contiguous, then attempt to destroy using multidimensional indices
     LINALG_DETAIL::apply_all( this,
-                              [&]( auto ... indices ) constexpr noexcept
+                              [&]( auto ... indices ) noexcept
                                 { try { access( *this, indices ... ).~element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } },
                               LINALG_EXECUTION_UNSEQ );
   }
@@ -826,7 +801,7 @@ inline void fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::construct_all_exce
   {
     // Attempt to construct via iteration over multi-index operator
     apply_all( *this,
-                [&]( auto ... indices ) constexpr noexcept
+                [&]( auto ... indices ) noexcept
                   { try { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } },
                 LINALG_EXECUTION_UNSEQ );
   }
@@ -838,6 +813,6 @@ inline void fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::construct_all_exce
   }
 }
 
-}       //- experimental namespace
-}       //- std namespace
+LINALG_END // end linalg namespace
+
 #endif  //- LINEAR_ALGEBRA_FS_TENSOR_HPP

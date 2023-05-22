@@ -2091,7 +2091,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">PXXXXR0<br>Tensor</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-14">2023-05-14</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">, <time class="dt-updated" datetime="2023-05-21">2023-05-21</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>This version:
@@ -2800,8 +2800,8 @@ It encourages implementations of ordered strided layouts which still allow effic
      </ul>
    </ol>
    <h3 class="heading settled" data-level="4.3" id="dynamic-only-extents"><span class="secno">4.3. </span><span class="content">Dynamic Only Extents</span><a class="self-link" href="#dynamic-only-extents"></a></h3>
-    Should tensor require extents_type::dynamic_rank() != 0? 
-   <p>If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type&amp; alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.</p>
+    Should tensor require extents_type::rank_dynamic() != 0? 
+   <p>If rank_dynamic() == 0, then the constructors, tensor() and tensor( const allocator_type&amp; alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.</p>
    <p>Alternatively, tensor could impose the requirement only on the impacted constructors.</p>
    <h3 class="heading settled" data-level="4.4" id="tensor-expressions-contain-by-value"><span class="secno">4.4. </span><span class="content">Tensor Expressions Contain by Value</span><a class="self-link" href="#tensor-expressions-contain-by-value"></a></h3>
     Is it useful to be able to constuct expressions which contain the operands by value? If so, what syntax is desired to indicate contain-by-value? 

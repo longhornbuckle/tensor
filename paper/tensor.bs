@@ -675,9 +675,9 @@ The expected behavior of reserve also needs further guidance. There are several 
     - Introduces another template parameter; however, this can be marginalized through appropriate aliasing.
 
 ## Dynamic Only Extents
-Should tensor require extents_type::dynamic_rank() != 0?
+Should tensor require extents_type::rank_dynamic() != 0?
 
-If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
+If rank_dynamic() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
 
 Alternatively, tensor could impose the requirement only on the impacted constructors.
 

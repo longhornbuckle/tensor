@@ -1,0 +1,89 @@
+name: CMake
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linalg-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [ "Release", "Debug" ]
+        settings:
+        - {
+            os: ubuntu-latest,
+            cxx: g++-12,
+            cxx_path: /usr/bin,
+            cxx_ver: 23
+          }
+        - {
+            os: ubuntu-latest,
+            cxx: g++-12,
+            cxx_path: /usr/bin,
+            cxx_ver: 20
+          }
+        - {
+            os: ubuntu-latest,
+            cxx: g++-12,
+            cxx_path: /usr/bin,
+            cxx_ver: 17
+          }
+        - {
+            os: ubuntu-latest,
+            cxx: clang++-14,
+            cxx_path: /usr/bin,
+            cxx_ver: 20
+          }
+        - {
+            os: ubuntu-latest,
+            cxx: clang++-14,
+            cxx_path: /usr/bin,
+            cxx_ver: 17
+          }
+    runs-on: ${{ matrix.settings.os }}
+    name: ${{ matrix.settings.cxx }}, C++${{ matrix.settings.cxx_ver }}, ${{ matrix.configuration }}
+    steps:
+    
+    - name: Install gtest manually
+      run: sudo apt-get install libgtest-dev &&
+           cd /usr/src/gtest &&
+           sudo cmake CMakeLists.txt &&
+           sudo make &&
+           sudo cp lib/*.a /usr/lib &&
+           sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a &&
+           sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+           
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{github.workspace}}/tensor-build
+
+    - name: Check Out
+      uses: actions/checkout@v3
+      with:
+        path: ${{github.workspace}}/tensor-src
+        submodules: recursive
+        
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/tensor-build
+      run: CMAKE_CXX_COMPILER=${{ matrix.settings.cxx_path}}/${{ matrix.settings.cxx }}
+           CXX=${{ matrix.settings.cxx_path}}/${{ matrix.settings.cxx }} 
+           CMAKE_CXX_STANDARD=${{ matrix.settings.cxx_ver }}
+           cmake $GITHUB_WORKSPACE/tensor-src -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/tensor-install
+
+    - name: Build
+      shell: bash
+      env:
+        BUILD_TYPE: ${{ matrix.configuration }}
+      working-directory: ${{github.workspace}}/tensor-build
+      run: make -j
+    
+    - name: Test
+      working-directory: ${{github.workspace}}/tensor-build
+      shell: bash
+      run: ctest --rerun-failed --output-on-failure
+            
+    - name: Install
+      shell: bash
+      working-directory: ${{github.workspace}}/tensor-build
+      run: make install

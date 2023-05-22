@@ -9,10 +9,8 @@
 #define LINEAR_ALGEBRA_SUBTENSOR_HPP
 
 #include <experimental/linear_algebra.hpp>
-namespace std
-{
-namespace experimental
-{
+
+LINALG_BEGIN // linalg namespace
 
 template < class T,
            class Extents,
@@ -420,6 +418,6 @@ template < class ElementType,
   return ::std::experimental::submdspan( view, args ... );
 }
 
-}       //- experimental namespace
-}       //- std namespace
+LINALG_END // end linalg namespace
+
 #endif  //- LINEAR_ALGEBRA_SUBTENSOR_HPP

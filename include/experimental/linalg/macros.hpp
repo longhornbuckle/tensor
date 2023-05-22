@@ -8,18 +8,29 @@
 #ifndef LINEAR_ALGEBRA_MACROS_HPP
 #define LINEAR_ALGEBRA_MACROS_HPP
 
-
 // namespaces
-#ifndef LINALG_DETAIL
-  #define LINALG_DETAIL ::std::experimental::detail
+#if ! ( defined( LINALG ) || defined( LINALG_BEGIN ) || defined( LINALG_END ) )
+  #define LINALG                 ::std::experimental
+  #define LINALG_BEGIN namespace std { namespace experimental {
+  #define LINALG_END             } }
 #endif
 
-#ifndef LINALG_CONCEPTS
-  #define LINALG_CONCEPTS ::std::experimental::concepts
+#if ! ( defined( LINALG_DETAIL ) || defined( LINALG_DETAIL_BEGIN ) || defined( LINALG_DETAIL_END ) )
+  #define LINALG_DETAIL       LINALG::detail
+  #define LINALG_DETAIL_BEGIN LINALG_BEGIN namespace detail {
+  #define LINALG_DETAIL_END   LINALG_END }
 #endif
 
-#ifdef LINALG_EXPRESSIONS
-  #define LINALG_EXPRESSIONS ::std::experimental::expressions
+#if ! ( defined( LINALG_CONCEPTS ) || defined( LINALG_CONCEPTS_BEGIN ) || defined( LINALG_CONCEPTS_END ) )
+  #define LINALG_CONCEPTS       LINALG::concepts
+  #define LINALG_CONCEPTS_BEGIN LINALG_BEGIN namespace concepts {
+  #define LINALG_CONCEPTS_END   LINALG_END }
+#endif
+
+#if ! ( defined( LINALG_EXPRESSIONS ) || defined( LINALG_EXPRESSIONS_BEGIN ) || defined( LINALG_EXPRESSIONS_END ) )
+  #define LINALG_EXPRESSIONS       LINALG::expressions
+  #define LINALG_EXPRESSIONS_BEGIN LINALG_BEGIN namespace expressions {
+  #define LINALG_EXPRESSIONS_END   LINALG_END }
 #endif
 
 // Force compiler to inline function

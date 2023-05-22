@@ -9,13 +9,24 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
+// namespaces
+// LINALG
+LINALG_BEGIN LINALG_END
+// LINALG_DETAIL
+LINALG_DETAIL_BEGIN LINALG_DETAIL_END
+// LINALG_CONCEPTS
+LINALG_CONCEPTS_BEGIN LINALG_CONCEPTS_END
+// LINALG_EXPRESSIONS
+LINALG_EXPRESSIONS_BEGIN LINALG_EXPRESSIONS_END
 
 // Default layout
+LINALG_BEGIN
 using default_layout = ::std::experimental::layout_right;
+LINALG_END
+
+//-  Tensor Expressions
+
+LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
 // Unary Tensor Expressions
 
@@ -23,7 +34,7 @@ using default_layout = ::std::experimental::layout_right;
 #ifdef LINALG_ENABLE_CONCEPTS
 template < tensor_expression Tensor >
 #else
-template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
+template < class Tensor, typename Enable = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
 #endif
 class negate_tensor_expression;
 
@@ -34,31 +45,23 @@ struct transpose_indices_v;
 
 // Transpose
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpose_indices_t >
+template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpose_indices_t<> >
 #else
-template < class Tensor, class Transpose = transpose_indices_t, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
-#endif
-class transpose_tensor_expression
-  requires ( Tensor::rank() > 1 );
-#ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::vector_expression Tensor >
-#else
-template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+template < class Tensor,
+           class Transpose = transpose_indices_t<>,
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
+                                          !LINALG_CONCEPTS::vector_expression_v< Tensor > > >
 #endif
 class transpose_tensor_expression;
 
 // Conjugate
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpose_indices_t >
+template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpose_indices_t<> >
 #else
-template < class Tensor, class Transpose = transpose_indices_t, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
-#endif
-class conjugate_tensor_expression
-  requires ( Tensor::rank() > 1 );
-#ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::vector_expression Tensor >
-#else
-template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+template < class Tensor,
+           class Transpose = transpose_indices_t<>,
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
+                                          !LINALG_CONCEPTS::vector_expression_v< Tensor > > >
 #endif
 class conjugate_tensor_expression;
 
@@ -106,7 +109,7 @@ class subtraction_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
 #else
-template < class S, class Tensor, typename = ::std::enable_if_t< tensor_is_scalar_premultiplicative_v< S, Tensor > > >
+template < class S, class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_premultiplicative_v< S, Tensor > > >
 #endif
 class scalar_preprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -118,7 +121,7 @@ class scalar_preprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
 #else
-template < class S, class Tensor, typename = ::std::enable_if_t< tensor_is_scalar_postmultiplicative_v< S, Tensor > > >
+template < class S, class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_postmultiplicative_v< S, Tensor > > >
 #endif
 class scalar_postprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -130,7 +133,7 @@ class scalar_postprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class Tensor, class S, typename = ::std::enable_if_t< tensor_is_scalar_divisible_v< S, Tensor > > >
+template < class Tensor, class S, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisible_v< S, Tensor > > >
 #endif
 class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -142,7 +145,7 @@ class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class Tensor, class S, typename = ::std::enable_if_t< tensor_is_scalar_modulo_v< S, Tensor > > >
+template < class Tensor, class S, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_modulo_v< S, Tensor > > >
 #endif
 class scalar_modulo_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -199,8 +202,8 @@ class matrix_vector_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ( ( requires ( const typename Matrix::value_type& v1, const typename Vector::value_type& v2 ) { { v1 * v2; } } ) &&
              ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(1) ) ||
-               ( Vector::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) ||
-               ( Matrix::extents_type::static_extent(1) == ::std::experimental::dynamic_extent ) ) )
+               ( Vector::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
+               ( Matrix::extents_type::static_extent(1) == ::std::dynamic_extent ) ) )
 #endif
 ;
 
@@ -218,12 +221,20 @@ class outer_product_expression
 #endif
 ;
 
+LINALG_EXPRESSIONS_END // end expressions namespace
+
+LINALG_BEGIN // linalg namespace
+
 // Fixed Size Tensor
 template < class T,
            class Extents,
            class LayoutPolicy   = default_layout,
            class AccessorPolicy = ::std::experimental::default_accessor< T > >
-class fs_tensor;
+class fs_tensor
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( Extents::rank_dynamic() == 0 )
+#endif
+;
 
 // Dynamic Size Tensor
 template < class T,
@@ -291,6 +302,6 @@ template < class T,
            class AccessorPolicy = ::std::experimental::default_accessor<T> >
 using fs_vector = fs_tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
 
-}       //- experimental namespace
-}       //- std namespace
+LINALG_END // end linalg namespace
+
 #endif  //- LINEAR_ALGEBRA_FORWARD_DECLARATIONS_HPP

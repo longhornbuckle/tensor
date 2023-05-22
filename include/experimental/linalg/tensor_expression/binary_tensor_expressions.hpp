@@ -19,18 +19,13 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
-namespace expressions
-{
+LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
 // Addition tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
 #else
-template < class FirstTensor, class SecondTensor, typename >
+template < class FirstTensor, class SecondTensor, typename Enable >
 #endif
 class addition_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -40,7 +35,11 @@ class addition_tensor_expression
 #endif
 {
   private:
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = addition_tensor_expression< FirstTensor, SecondTensor >;
+    #else
+    using self_type = addition_tensor_expression< FirstTensor, SecondTensor, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr addition_tensor_expression( FirstTensor&& t1, SecondTensor&& t2 )
@@ -57,15 +56,15 @@ class addition_tensor_expression
     constexpr addition_tensor_expression& operator = ( const addition_tensor_expression& t ) noexcept { this->t1_ = t.t1_; this->t2_ = t.t2_; }
     constexpr addition_tensor_expression& operator = ( addition_tensor_expression&& t ) noexcept { this->t1_ = t.t1_; this->t2_ = t.t2_; }
     // Aliases
-    using value_type   = decltype( ::std::declval<typename Tensor::value_type>() + ::std::declval<typename Tensor::value_type>() );
+    using value_type   = decltype( ::std::declval< typename FirstTensor::value_type >() + ::std::declval< typename SecondTensor::value_type >() );
     using index_type   = ::std::common_type_t< typename FirstTensor::index_type, typename SecondTensor::index_type >;
     using size_type    = ::std::common_type_t< typename FirstTensor::size_type, typename SecondTensor::size_type >;
-    using extents_type = ::std::conditional_t< ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ), typename FirstTensor::extents_type, typename SecondTensor::extents_type >;
+    using extents_type = ::std::conditional_t< ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ), typename FirstTensor::extents_type, typename SecondTensor::extents_type >;
     using rank_type    = ::std::common_type_t< typename FirstTensor::rank_type, typename SecondTensor::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return FirstTensor::rank(); }
-    [[nodiscard]] constexpr extents_type extents() noexcept { if constexpr ( ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ) ) { return this->t1_.extents(); } else { return this->t2_.extents(); } }
-    [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { if constexpr ( ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ) ) { return this->t1_.extent(n); } else { return this->t2_.extent(n); } }
+    [[nodiscard]] constexpr extents_type extents() noexcept { if constexpr ( ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ) ) { return this->t1_.extents(); } else { return this->t2_.extents(); } }
+    [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { if constexpr ( ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ) ) { return this->t1_.extent(n); } else { return this->t2_.extent(n); } }
     // Binary tensor expression function
     [[nodiscard]] constexpr const FirstTensor& first() const noexcept { return this->t1_; }
     [[nodiscard]] constexpr const SecondTensor& second() const noexcept { return this->t2_; }
@@ -80,14 +79,14 @@ class addition_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) + LINALG_DETAIL::access( this->t2_, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -102,7 +101,7 @@ class addition_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -132,7 +131,7 @@ class addition_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
 #else
-template < class FirstTensor, class SecondTensor, typename >
+template < class FirstTensor, class SecondTensor, typename Enable >
 #endif
 class subtraction_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -142,7 +141,11 @@ class subtraction_tensor_expression
 #endif
 {
   private:
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = subtraction_tensor_expression< FirstTensor, SecondTensor >;
+    #else
+    using self_type = subtraction_tensor_expression< FirstTensor, SecondTensor, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr subtraction_tensor_expression( FirstTensor&& t1, SecondTensor&& t2 )
@@ -159,15 +162,15 @@ class subtraction_tensor_expression
     constexpr subtraction_tensor_expression& operator = ( const subtraction_tensor_expression& t ) noexcept { this->t1_ = t.t1_; this->t2_ = t.t2_; }
     constexpr subtraction_tensor_expression& operator = ( subtraction_tensor_expression&& t ) noexcept { this->t1_ = t.t1_; this->t2_ = t.t2_; }
     // Aliases
-    using value_type   = decltype( ::std::declval<typename Tensor::value_type>() - ::std::declval<typename Tensor::value_type>() );
+    using value_type   = decltype( ::std::declval< typename FirstTensor::value_type >() - ::std::declval< typename SecondTensor::value_type >() );
     using index_type   = ::std::common_type_t< typename FirstTensor::index_type, typename SecondTensor::index_type >;
     using size_type    = ::std::common_type_t< typename FirstTensor::size_type, typename SecondTensor::size_type >;
-    using extents_type = ::std::conditional_t< ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ), typename FirstTensor::extents_type, typename SecondTensor::extents_type >;
+    using extents_type = ::std::conditional_t< ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ), typename FirstTensor::extents_type, typename SecondTensor::extents_type >;
     using rank_type    = ::std::common_type_t< typename FirstTensor::rank_type, typename SecondTensor::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return FirstTensor::rank(); }
-    [[nodiscard]] constexpr extents_type extents() noexcept { if constexpr ( ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ) ) { return this->t1_.extents(); } else { return this->t2_.extents(); } }
-    [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { if constexpr ( ( FirstTensor::extents_type::dynamic_rank() == 0 ) || ( SecondTensor::extents_type::dynamic_rank() != 0 ) ) { return this->t1_.extent(n); } else { return this->t2_.extent(n); } }
+    [[nodiscard]] constexpr extents_type extents() noexcept { if constexpr ( ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ) ) { return this->t1_.extents(); } else { return this->t2_.extents(); } }
+    [[nodiscard]] constexpr size_type extents( rank_type n ) noexcept { if constexpr ( ( FirstTensor::extents_type::rank_dynamic() == 0 ) || ( SecondTensor::extents_type::rank_dynamic() != 0 ) ) { return this->t1_.extent(n); } else { return this->t2_.extent(n); } }
     // Binary tensor expression function
     [[nodiscard]] constexpr const FirstTensor& first() const noexcept { return this->t1_; }
     [[nodiscard]] constexpr const SecondTensor& second() const noexcept { return this->t2_; }
@@ -182,14 +185,14 @@ class subtraction_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) - LINALG_DETAIL::access( this->t2_, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -204,7 +207,7 @@ class subtraction_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -232,7 +235,7 @@ class subtraction_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
 #else
-template < class S, class Tensor, typename >
+template < class S, class Tensor, typename Enable >
 #endif
 class scalar_preprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -241,7 +244,11 @@ class scalar_preprod_tensor_expression
 {
   private:
     // Alias for self
-    using self_type = scalar_preprod_tensor_expression< T, Tensor >;
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using self_type = scalar_preprod_tensor_expression< S, Tensor >;
+    #else
+    using self_type = scalar_preprod_tensor_expression< S, Tensor, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr scalar_preprod_tensor_expression( S&& s, Tensor&& t ) noexcept : s_(s), t_(t) { };
@@ -271,14 +278,14 @@ class scalar_preprod_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return this->s_ * LINALG_DETAIL::access( this->t1_, indices ... ); }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -293,7 +300,7 @@ class scalar_preprod_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -319,9 +326,9 @@ class scalar_preprod_tensor_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
+template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class S, class Tensor, typename >
+template < class Tensor, class S, typename Enable >
 #endif
 class scalar_postprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -330,7 +337,11 @@ class scalar_postprod_tensor_expression
 {
   private:
     // Alias for self
-    using self_type = scalar_postprod_tensor_expression< T, Tensor >;
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using self_type = scalar_postprod_tensor_expression< Tensor, S >;
+    #else
+    using self_type = scalar_postprod_tensor_expression< Tensor, S, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr scalar_postprod_tensor_expression( Tensor&& t, S&& s ) noexcept : t_(t), s_(s) { };
@@ -360,14 +371,14 @@ class scalar_postprod_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) * this->s_; }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -382,7 +393,7 @@ class scalar_postprod_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -410,7 +421,7 @@ class scalar_postprod_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class Tensor, class S, typename >
+template < class Tensor, class S, typename Enable >
 #endif
 class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -419,7 +430,11 @@ class scalar_division_tensor_expression
 {
   private:
     // Alias for self
-    using self_type = scalar_division_tensor_expression< T, Tensor >;
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using self_type = scalar_division_tensor_expression< Tensor, S >;
+    #else
+    using self_type = scalar_division_tensor_expression< Tensor, S, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr scalar_division_tensor_expression( Tensor&& t, S&& s ) noexcept : t_(t), s_(s) { };
@@ -449,14 +464,14 @@ class scalar_division_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) / this->s_; }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -471,7 +486,7 @@ class scalar_division_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -499,7 +514,7 @@ class scalar_division_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
 #else
-template < class Tensor, class S, typename >
+template < class Tensor, class S, typename Enable >
 #endif
 class scalar_modulo_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -508,7 +523,11 @@ class scalar_modulo_tensor_expression
 {
   private:
     // Alias for self
-    using self_type = scalar_modulo_tensor_expression< T, Tensor >;
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using self_type = scalar_modulo_tensor_expression< Tensor, S >;
+    #else
+    using self_type = scalar_modulo_tensor_expression< Tensor, S, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr scalar_modulo_tensor_expression( Tensor&& t, S&& s ) noexcept : t_(t), s_(s) { };
@@ -538,14 +557,14 @@ class scalar_modulo_tensor_expression
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( IndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( *this, indices ... ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
       requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
     #endif
       { return LINALG_DETAIL::access( this->t1_, indices ... ) % this->s_; }
     #endif
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -560,7 +579,7 @@ class scalar_modulo_tensor_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -588,7 +607,7 @@ class scalar_modulo_tensor_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < matrix_expression FirstMatrix, matrix_expression SecondMatrix >
 #else
-template < class FirstMatrix, class SecondMatrix, typename >
+template < class FirstMatrix, class SecondMatrix, typename Enable >
 #endif
 class matrix_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -600,7 +619,11 @@ class matrix_product_expression
 {
   private:
     // Alias for self
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = matrix_product_expression< FirstMatrix, SecondMatrix >;
+    #else
+    using self_type = matrix_product_expression< FirstMatrix, SecondMatrix, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr matrix_product_expression( FirstMatrix&& m1, SecondMatrix&& m2 ) noexcept( FirstMatrix::extents_type::static_extent(1) == SecondMatrix::extents_type::static_extent(0) ) :
@@ -608,7 +631,7 @@ class matrix_product_expression
     {
       if constexpr ( FirstMatrix::extents_type::static_extent(1) != SecondMatrix::extents_type::static_extent(0) )
       {
-        if ( FirstMatrix::extents_type::extent(1) != SecondMatrix::extents_type::extent(0) ) LINALG_DETAIL
+        if ( FirstMatrix::extents_type::extent(1) != SecondMatrix::extents_type::extent(0) ) LINALG_UNLIKELY
         {
           throw length_error( "Matrix extents are incompatible for matrix multiplication." );
         }
@@ -647,7 +670,7 @@ class matrix_product_expression
       return this->access( index1, index2 );
     }
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -662,7 +685,7 @@ class matrix_product_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -688,16 +711,16 @@ class matrix_product_expression
                 noexcept( LINALG_DETAIL::access( ::std::declval<SecondMatrix>(), ::std::declval<index_type>(), index2 ) ) )
     {
       value_type val { 0 };
-      if constexpr ( FirstMatrix::static_extent(1) != ::std::experimental::dynamic_extent )
+      if constexpr ( FirstMatrix::static_extent(1) != ::std::dynamic_extent )
       {
-        for ( auto count = 0 : this->m1_.extent(1) )
+        for ( auto count = 0; count < this->m1_.extent(1); ++count )
         {
           val += LINALG_DETAIL::access( this->m1_, index1, count ) * LINALG_DETAIL::access( this->m2_, count, index2 );
         }
       }
       else
       {
-        for ( auto count = 0 : this->m2_.extent(0) )
+        for ( auto count = 0; count < this->m2_.extent(0); ++count )
         {
           val += LINALG_DETAIL::access( this->m1_, index1, count ) * LINALG_DETAIL::access( this->m2_, count, index2 );
         }
@@ -712,7 +735,7 @@ class matrix_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < vector_expression Vector, matrix_expression Matrix >
 #else
-template < class Vector, class Matrix, typename >
+template < class Vector, class Matrix, typename Enable >
 #endif
 class vector_matrix_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -724,7 +747,11 @@ class vector_matrix_product_expression
 {
   private:
     // Alias for self
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = vector_matrix_product_expression< Vector, Matrix >;
+    #else
+    using self_type = vector_matrix_product_expression< Vector, Matrix, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr vector_matrix_product_expression( Vector&& v, Matrix&& m ) noexcept( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(0) ) :
@@ -770,7 +797,7 @@ class vector_matrix_product_expression
       return this->access( index );
     }
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -785,7 +812,7 @@ class vector_matrix_product_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -811,16 +838,16 @@ class vector_matrix_product_expression
                 noexcept( LINALG_DETAIL::access( ::std::declval<Matrix>(), ::std::declval<index_type>(), index ) ) )
     {
       value_type val { 0 };
-      if constexpr ( Vector::extents_type::static_extent(0) != ::std::experimental::dynamic_extent )
+      if constexpr ( Vector::extents_type::static_extent(0) != ::std::dynamic_extent )
       {
-        for ( auto count = 0 : this->v_.extent(0) )
+        for ( auto count = 0; count < this->v_.extent(0); ++count )
         {
           val += LINALG_DETAIL::access( this->v_, count ) * LINALG_DETAIL::access( this->m_, count, index );
         }
       }
       else
       {
-        for ( auto count = 0 : this->m_.extent(0) )
+        for ( auto count = 0; count < this->m_.extent(0); ++count )
         {
           val += LINALG_DETAIL::access( this->v_, count ) * LINALG_DETAIL::access( this->m_, count, index );
         }
@@ -835,7 +862,7 @@ class vector_matrix_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < matrix_expression Matrix, vector_expression Vector >
 #else
-template < class Matrix, class Vector, typename >
+template < class Matrix, class Vector, typename Enable >
 #endif
 class matrix_vector_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -847,7 +874,11 @@ class matrix_vector_product_expression
 {
   private:
     // Alias for self
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = matrix_vector_product_expression< Matrix, Vector >;
+    #else
+    using self_type = matrix_vector_product_expression< Matrix, Vector, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr matrix_vector_product_expression( Matrix&& m, Vector&& v ) noexcept( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(1) ) :
@@ -893,7 +924,7 @@ class matrix_vector_product_expression
       return this->access( index );
     }
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -908,7 +939,7 @@ class matrix_vector_product_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -934,16 +965,16 @@ class matrix_vector_product_expression
                 noexcept( LINALG_DETAIL::access( ::std::declval<Matrix>(), ::std::declval<index_type>(), index ) ) )
     {
       value_type val { 0 };
-      if constexpr ( Vector::extents_type::static_extent(0) != ::std::experimental::dynamic_extent )
+      if constexpr ( Vector::extents_type::static_extent(0) != ::std::dynamic_extent )
       {
-        for ( auto count = 0 : this->v_.extent(0) )
+        for ( auto count = 0; count < this->v_.extent(0); ++count )
         {
           val += LINALG_DETAIL::access( this->m_, index, count ) * LINALG_DETAIL::access( this->v_, count );
         }
       }
       else
       {
-        for ( auto count = 0 : this->m1_.extent(1) )
+        for ( auto count = 0; count < this->m1_.extent(1); ++count )
         {
           val += LINALG_DETAIL::access( this->m_, index, count ) * LINALG_DETAIL::access( this->v_, count );
         }
@@ -958,7 +989,7 @@ class matrix_vector_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < vector_expression FirstVector, vector_expression SecondVector >
 #else
-template < class FirstVector, class SecondVector, typename >
+template < class FirstVector, class SecondVector, typename Enable >
 #endif
 class outer_product_expression
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -967,7 +998,11 @@ class outer_product_expression
 {
   private:
     // Alias for self
+    #ifdef LINALG_ENABLE_CONCEPTS
     using self_type = outer_product_expression< FirstVector, SecondVector >;
+    #else
+    using self_type = outer_product_expression< FirstVector, SecondVector, Enable >;
+    #endif
   public:
     // Special member functions
     constexpr outer_product_expression( FirstVector&& v1, SecondVector&& v2 ) : v1_(v1), v2_(v2) { }
@@ -1004,7 +1039,7 @@ class outer_product_expression
       return LINALG_ACCESS( this->v1_, index1 ) * LINALG_ACCESS( this->v2_, index2 );
     }
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::dynamic_rank() == 0 ) ?
+    [[nodiscard]] constexpr operator auto() noexcept( ( extents_type::rank_dynamic() == 0 ) ?
                                                       ::std::is_nothrow_constructible_v< fs_tensor< value_type,
                                                                                                     extents_type,
                                                                                                     layout_result_t< self_type >,
@@ -1019,7 +1054,7 @@ class outer_product_expression
                                                                                          self_type, decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
     {
       // TODO: Optimizations using tensor traits
-      if constexpr ( extents_type::dynamic_rank() == 0 )
+      if constexpr ( extents_type::rank_dynamic() == 0 )
       {
         return fs_tensor< value_type,
                           extents_type,
@@ -1044,7 +1079,6 @@ class outer_product_expression
     SecondVector& v2_;
 };
 
-}       //- expressions namespace
-}       //- experimental namespace
-}       //- std namespace
+LINALG_EXPRESSIONS_END // end expressions namespace
+
 #endif  //- LINEAR_ALGEBRA_TENSOR_EXPRESSION_BINARY_TENSOR_EXPRESSIONS_HPP
