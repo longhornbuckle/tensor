@@ -224,9 +224,9 @@ class dr_tensor
     template < LINALG_CONCEPTS::tensor_expression Tensor >
     #else
     template < class Tensor,
-               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
-                                              ( Tensor::rank() == extents_type::rank() ) &&
-                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type >
+               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
+                                              ( ::std::decay_t< Tensor >::rank() == extents_type::rank() ) &&
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::decay_t< Tensor >::extents_type >
                                               > >
     #endif
     explicit constexpr dr_tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
@@ -254,9 +254,9 @@ class dr_tensor
     template < LINALG_CONCEPTS::tensor_expression Tensor >
     #else
     template < class Tensor,
-               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
-                                              ( Tensor::rank() == extents_type::rank() ) &&
-                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type,typename Tensor::extents_type > > >
+               typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
+                                              ( ::std::decay_t< Tensor >::rank() == extents_type::rank() ) &&
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::decay_t< Tensor >::extents_type > > >
     #endif
     constexpr dr_tensor& operator = ( Tensor&& rhs )
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -856,8 +856,10 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
       tm_.assign_allocator( rhs.tm_ );
       // Set new capacity
       this->cap_map_ = rhs.cap_map_;
+      // Set new size
+      this->size_map_ = rhs.size_map_;
       // Copy construct all elements
-      LINALG_DETAIL::copy_view( this, rhs );
+      LINALG_DETAIL::copy_view( *this, rhs );
     }
     else
     {
@@ -871,7 +873,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
       // Set new size
       this->size_map_ = rhs.size_map_;
       // Copy construct all elements
-      LINALG_DETAIL::copy_view( this, rhs );
+      LINALG_DETAIL::copy_view( *this, rhs );
     }
   }
   else
@@ -885,7 +887,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
     // Set new size
     this->size_map_ = rhs.size_map_;
     // Copy construct all elements
-    LINALG_DETAIL::copy_view( this, rhs );
+    LINALG_DETAIL::copy_view( *this, rhs );
   }
   return *this;
 }
@@ -939,16 +941,11 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
       this->cap_map_ = capacity_mapping_type( rhs.extents() );
       // Allocate
       this->tm_.allocate( this->cap_map_ );
-      // Copy construct all elements
-      LINALG_DETAIL::copy_view( this, rhs );
     }
-    else
-    {
-      // Set new size
-      this->size_map_ = mapping_type( rhs.extents() );
-      // Copy construct all elements
-      LINALG_DETAIL::copy_view( this, rhs );
-    }
+    // Set new size
+    this->size_map_ = mapping_type( rhs.extents() );
+    // Copy construct all elements
+    LINALG_DETAIL::copy_view( *this, rhs );
   }
   else
   {
@@ -961,7 +958,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
     // Set new size
     this->size_map_ = mapping_type( rhs.extents() );
     // Copy construct all elements
-    LINALG_DETAIL::copy_view( this, rhs );
+    LINALG_DETAIL::copy_view( *this, rhs );
   }
   return *this;
 }

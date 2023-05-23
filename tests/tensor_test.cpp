@@ -155,74 +155,33 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
-/*
-  TEST( DR_TENSOR, TEMPLATE_COPY_CONSTRUCTOR )
+  TEST( DR_TENSOR, CONSTRUCT_FROM_FS_TENSOR )
   {
-    using float_left_tensor_type   = std::experimental::math::fs_tensor<float,std::experimental::layout_right,std::experimental::default_accessor<float>,2,2,2>;
-    using double_right_tensor_type = std::experimental::math::dr_tensor<double,3>;
+    using float_left_tensor_type   = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, std::experimental::layout_right,std::experimental::default_accessor<float> >;
+    using double_right_tensor_type = LINALG::dyn_tensor< double, 3 >;
     // Default construct
     float_left_tensor_type fs_tensor;
     // Populate via mutable index access
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 1 ) = 8.0;
     // Construct from float tensor
     double_right_tensor_type dyn_tensor_copy{ fs_tensor };
     // Access elements from const fs tensor
-    auto val1 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 1 );
+    auto val1 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 1 );
+    auto val5 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 0 );
+    auto val6 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 1 );
+    auto val7 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 0 );
+    auto val8 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 1 );
     // Check the fs tensor was populated correctly and provided the correct values
-    EXPECT_EQ( val1, 1.0 );
-    EXPECT_EQ( val2, 2.0 );
-    EXPECT_EQ( val3, 3.0 );
-    EXPECT_EQ( val4, 4.0 );
-    EXPECT_EQ( val5, 5.0 );
-    EXPECT_EQ( val6, 6.0 );
-    EXPECT_EQ( val7, 7.0 );
-    EXPECT_EQ( val8, 8.0 );
-  }
-
-  TEST( DR_TENSOR, CONSTRUCT_FROM_LAMBDA_EXPRESSION )
-  {
-    using fs_tensor_type = std::experimental::math::fs_tensor<double,std::experimental::layout_right,std::experimental::default_accessor<double>,2,2,2>;
-    // Default construct
-    fs_tensor_type fs_tensor;
-    // Populate via mutable index access
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 1 ) = 8.0;
-    // Get underling view
-    auto view = fs_tensor.span();
-    // Create a lambda expression from view
-    auto lambda = [&view]( auto index1, auto index2, auto index3 ) { return std::experimental::math::detail::access( view, index1, index2, index3 ); };
-    // Construct from lambda
-    std::experimental::math::dr_tensor<double,3> dyn_tensor_copy( std::experimental::extents<size_t,2,2,2>(), lambda );
-    // Access elements from const fs tensor tensor
-    auto val1 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 1 );
-    // Check the fs tensor tensor was populated correctly and provided the correct values
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
     EXPECT_EQ( val3, 3.0 );
@@ -236,28 +195,28 @@ namespace
   TEST( DR_TENSOR, ASSIGNMENT_OPERATOR )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,2,2,2>(), std::experimental::extents<size_t,3,3,3>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 2, 2, 2 >() };
     // Populate via mutable index access
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) = 8.0;
     // Default construct and assign
-    std::experimental::math::dr_tensor<double,3> dyn_tensor_copy;
+    LINALG::dyn_tensor< double, 3 > dyn_tensor_copy;
     dyn_tensor_copy = dyn_tensor;
     // Access elements from dyn tensor
-    auto val1 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 1 );
+    auto val1 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 1 );
+    auto val5 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 0 );
+    auto val6 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 1 );
+    auto val7 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 0 );
+    auto val8 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 1 );
     // Check the fs tensor was populated correctly and provided the correct values
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -269,32 +228,32 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
-  TEST( DR_TENSOR, TEMPLATE_ASSIGNMENT_OPERATOR )
+  TEST( DR_TENSOR, TENSOR_EXPRESSION_ASSIGNMENT_OPERATOR )
   {
-    using float_left_tensor_type = std::experimental::math::fs_tensor<float,std::experimental::layout_right,std::experimental::default_accessor<float>,2,2,2>;
+    using float_left_tensor_type = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<float> >;
     // Default construct
     float_left_tensor_type fs_tensor;
     // Populate via mutable index access
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 1 ) = 8.0;
     // Default construct and then assign
-    std::experimental::math::dr_tensor<double,3> dyn_tensor_copy;
+    LINALG::dyn_tensor< double, 3 > dyn_tensor_copy;
     dyn_tensor_copy = fs_tensor;
     // Access elements from const fs tensor tensor
-    auto val1 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( dyn_tensor_copy, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( dyn_tensor_copy, 1, 1, 1 );
+    auto val1 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( dyn_tensor_copy, 0, 1, 1 );
+    auto val5 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 0 );
+    auto val6 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 0, 1 );
+    auto val7 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 0 );
+    auto val8 = LINALG_DETAIL::access( dyn_tensor_copy, 1, 1, 1 );
     // Check the fs tensor was populated correctly and provided the correct values
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -308,30 +267,29 @@ namespace
 
   TEST( DR_TENSOR, ASSIGN_FROM_VIEW )
   {
-    using fs_tensor_type = std::experimental::math::fs_tensor<double,std::experimental::layout_right,std::experimental::default_accessor<double>,2,2,2>;
+    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
     // Default construct
     fs_tensor_type fs_tensor;
     // Populate via mutable index access
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( fs_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( fs_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( fs_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( fs_tensor, 1, 1, 1 ) = 8.0;
     // Construct and assign from view
-    std::experimental::math::dr_tensor<double,3> dyn_tensor_view;
-    dyn_tensor_view = fs_tensor.span();
+    auto dyn_tensor_view = ::std::mdspan( fs_tensor.data_handle(), fs_tensor.mapping(), fs_tensor.accessor() );
     // Access elements from const fs tensor
-    auto val1 = std::experimental::math::detail::access( dyn_tensor_view, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( dyn_tensor_view, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( dyn_tensor_view, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( dyn_tensor_view, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( dyn_tensor_view, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( dyn_tensor_view, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( dyn_tensor_view, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( dyn_tensor_view, 1, 1, 1 );
+    auto val1 = LINALG_DETAIL::access( dyn_tensor_view, 0, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( dyn_tensor_view, 0, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( dyn_tensor_view, 0, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( dyn_tensor_view, 0, 1, 1 );
+    auto val5 = LINALG_DETAIL::access( dyn_tensor_view, 1, 0, 0 );
+    auto val6 = LINALG_DETAIL::access( dyn_tensor_view, 1, 0, 1 );
+    auto val7 = LINALG_DETAIL::access( dyn_tensor_view, 1, 1, 0 );
+    auto val8 = LINALG_DETAIL::access( dyn_tensor_view, 1, 1, 1 );
     // Check the fs tensor was populated correctly and provided the correct values
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -343,6 +301,7 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
+/*
   TEST( DR_TENSOR, SIZE_AND_CAPACITY )
   {
     // Construct
