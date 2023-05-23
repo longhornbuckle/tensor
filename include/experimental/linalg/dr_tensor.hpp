@@ -130,10 +130,21 @@ class dr_tensor
     explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type(), [[maybe_unused]] Enable = ::std::enable_if_t< extents_type::rank_dynamic() == 0 > {} );
     #endif
     /// @brief Construct from an initializer list with a specified extents
+    /// @tparam   SizeType size_type of input size
+    /// @tparam   OtherExtents extents of the input size
     /// @param il initializer list of elements to be copied
     /// @param s  extents size
     /// @param alloc allocator to be used
-    constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    #ifdef LINALG_ENABLE_CONCEPTS
+    template < class OtherSizeType, ::std::size_t ... OtherExtents >
+    #else
+    template < class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+    #endif
+    constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+    #endif
+    ;
     #ifdef LINALG_ENABLE_CONCEPTS
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
@@ -145,12 +156,15 @@ class dr_tensor
       requires ( ( extents_type::rank_dynamic() == 0 ) );
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
+    /// @tparam SizeType size_type of input size
+    /// @tparam OtherExtents extents of the input size
     /// @param first begin iterator
     /// @param last end iterator
     /// @param s extents size
     /// @param alloc allocator to be used
-    template < ::std::input_iterator InputIt >
-    constexpr dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    template < ::std::input_iterator InputIt, class OtherSizeType, ::std::size_t ... OtherExtents >
+    constexpr dr_tensor( InputIt first, InputIt last, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+      requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > );
     #endif
     #ifdef LINALG_RANGES_TO_CONTAINER
     /// @brief Construct from a range
@@ -166,14 +180,21 @@ class dr_tensor
     #endif
     /// @brief Construct from a range
     /// @tparam R range which satisfies input range concept
+    /// @tparam SizeType size_type of input size
+    /// @tparam OtherExtents extents of the input size
     /// @param tag range tag
     /// @param rg range
     /// @param s extents size
     /// @param alloc allocator to be used
-    template < class R >
-    constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const extents_type& s, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ::std::ranges::input_range< R >
+    template < class R, class OtherSizeType, ::std::size_t ... OtherExtents >
+    #else
+    template < class R, class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+    #endif
+    constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ::std::ranges::input_range< R > &&
+                 ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
     #endif
     ;
     #endif
@@ -181,9 +202,20 @@ class dr_tensor
     /// @param alloc allocator to construct with
     explicit constexpr dr_tensor( const allocator_type& alloc ) noexcept( extents_type::rank_dynamic() != 0 );
     /// @brief Attempt to allocate sufficient resources for a size dr_tensor and construct
-    /// @param s defines the length of each dimension of the dr_tensor
-    /// @param alloc allocator used to construct with
-    explicit constexpr dr_tensor( extents_type s, const allocator_type& alloc = allocator_type() );
+    /// @tparam OtherSizeType size_type of input size
+    /// @tparam OtherExtents extents of the input size
+    /// @param  s defines the length of each dimension of the dr_tensor
+    /// @param  alloc allocator used to construct with
+    #ifdef LINALG_ENABLE_CONCEPTS
+    template < class OtherSizeType, ::std::size_t ... OtherExtents >
+    #else
+    template < class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+    #endif
+    explicit constexpr dr_tensor( const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+    #endif
+    ;
     /// @brief Construct by applying Tensor[indices...] to every element in the tensor
     /// @tparam Tensor tensor expression with an operator[]( indices ... ) defined
     /// @param tensor tensor expression to be performed on each element
@@ -526,8 +558,17 @@ dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& 
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class OtherSizeType, ::std::size_t ... OtherExtents >
+#else
+template < class OtherSizeType, ::std::size_t ... OtherExtents, typename >
+#endif
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
-dr_tensor( const ::std::initializer_list<value_type>& il, const extents_type& s, const allocator_type& alloc ) :
+dr_tensor( const ::std::initializer_list<value_type>& il, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::is_constructible_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+#endif
+  :
   accessor_(),
   cap_map_( s ),
   size_map_( s ),
@@ -567,9 +608,10 @@ dr_tensor( InputIt first, InputIt last, const allocator_type& alloc  )
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < ::std::input_iterator< InputIt > InputIt >
+template < ::std::input_iterator InputIt, class OtherSizeType, ::std::size_t ... OtherExtents >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
-dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc ) :
+dr_tensor( InputIt first, InputIt last, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc ) 
+  requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > ) :
   accessor_(),
   cap_map_( s ),
   size_map_( s ),
@@ -620,7 +662,8 @@ dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_t
 #ifdef LINALG_RANGES_TO_CONTAINER
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 template < class R >
-constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const allocator_type& alloc )
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ::std::ranges::input_range< R >
 #endif
@@ -630,10 +673,16 @@ constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const allocat
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < class R >
-constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const extents_type& s, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ::std::ranges::input_range< R >
+template < class R, class OtherSizeType, ::std::size_t ... OtherExtents >
+#else
+template < class R, class OtherSizeType, ::std::size_t ... OtherExtents, typename >
+#endif
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc = allocator_type() )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::ranges::input_range< R > &&
+             ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
 #endif
   :
   accessor_(),
@@ -681,7 +730,17 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::dr_tensor( extents_type s, const allocator_type& alloc ) :
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class OtherSizeType, ::std::size_t ... OtherExtents >
+#else
+template < class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+#endif
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( ::std::extents< OtherSizeType, OtherExtents ... >& s, const allocator_type& alloc )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+#endif
+  :
   accessor_(),
   cap_map_( s ),
   size_map_( this->cap_map_ ),
