@@ -13,7 +13,7 @@ namespace
   {
     // Construct
     LINALG::dyn_tensor< double, 3 >
-      dyn_tensor( ( ::std::extents< ::std::size_t, ::std::dynamic_extent, ::std::dynamic_extent, ::std::dynamic_extent >( 2, 2, 2 ) ) );
+      dyn_tensor { ::std::extents< ::std::size_t, 2, 2, 2 > {} };
     // Populate via mutable index access
     LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) = 1.0;
     LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) = 2.0;
