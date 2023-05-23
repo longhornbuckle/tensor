@@ -6,34 +6,35 @@ namespace
   TEST( DR_TENSOR, DEFAULT_CONSTRUCTOR_AND_DESTRUCTOR )
   {
     // Default construction
-    [[maybe_unused]] std::experimental::dr_tensor< double, ::std::extents< ::std::size_t, 2 > > dyn_tensor;
+    [[maybe_unused]] LINALG::dyn_tensor< double, 2 > dyn_tensor;
     // Destructor will be called when unit test ends and the dr tensor exits scope
   }
-/*
   TEST( DR_TENSOR, MUTABLE_AND_CONST_INDEX_ACCESS )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,2,2,2>(), std::experimental::extents<size_t,3,3,3>() };
+    LINALG::dyn_tensor< double, 3 >
+      dyn_tensor( ( ::std::extents< ::std::size_t, ::std::dynamic_extent, ::std::dynamic_extent, ::std::dynamic_extent >( 2, 2, 2 ) ) );
     // Populate via mutable index access
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) = 8.0;
     // Get a const reference
-    const std::experimental::math::dr_tensor<double,3>& const_dyn_tensor( dyn_tensor );
+    const LINALG::dr_tensor< double, ::std::extents< ::std::size_t, ::std::dynamic_extent, ::std::dynamic_extent, ::std::dynamic_extent > >&
+      const_dyn_tensor( dyn_tensor );
     // Access elements from const fs tensor
-    auto val1 = std::experimental::math::detail::access( const_dyn_tensor, 0, 0, 0 );
-    auto val2 = std::experimental::math::detail::access( const_dyn_tensor, 0, 0, 1 );
-    auto val3 = std::experimental::math::detail::access( const_dyn_tensor, 0, 1, 0 );
-    auto val4 = std::experimental::math::detail::access( const_dyn_tensor, 0, 1, 1 );
-    auto val5 = std::experimental::math::detail::access( const_dyn_tensor, 1, 0, 0 );
-    auto val6 = std::experimental::math::detail::access( const_dyn_tensor, 1, 0, 1 );
-    auto val7 = std::experimental::math::detail::access( const_dyn_tensor, 1, 1, 0 );
-    auto val8 = std::experimental::math::detail::access( const_dyn_tensor, 1, 1, 1 );
+    auto val1 = LINALG_DETAIL::access( const_dyn_tensor, 0, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( const_dyn_tensor, 0, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( const_dyn_tensor, 0, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( const_dyn_tensor, 0, 1, 1 );
+    auto val5 = LINALG_DETAIL::access( const_dyn_tensor, 1, 0, 0 );
+    auto val6 = LINALG_DETAIL::access( const_dyn_tensor, 1, 0, 1 );
+    auto val7 = LINALG_DETAIL::access( const_dyn_tensor, 1, 1, 0 );
+    auto val8 = LINALG_DETAIL::access( const_dyn_tensor, 1, 1, 1 );
     // Check the fs tensor was populated correctly and provided the correct values
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -45,6 +46,7 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
+/*
   TEST( DR_TENSOR, COPY_CONSTRUCTOR )
   {
     // Construct

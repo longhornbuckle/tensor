@@ -1019,6 +1019,9 @@ class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
 template < class U, ::std::size_t R >
 using extents_helper = extents_helper_impl< ::std::make_integer_sequence<U,R> >;
 
+template < class U, ::std::size_t R >
+using dyn_extents = typename extents_helper< U, R >::extents_type;
+
 LINALG_DETAIL_END // end detail namespace
 
 #endif  //- LINEAR_ALGEBRA_PRIVATE_SUPPORT_HPP

@@ -534,7 +534,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator[]( OtherIndexType ...
            ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->elems_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( const_cast< data_handle_type >( this->elems_.data() ), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -547,7 +547,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator()( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->elems_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( const_cast< data_handle_type >( this->elems_.data() ), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -562,7 +562,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator[]( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->elems_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( this->elems_.data(), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -575,7 +575,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator()( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->elems_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( this->elems_.data(), this->size_map_( indices ... ) );
 }
 #endif
 

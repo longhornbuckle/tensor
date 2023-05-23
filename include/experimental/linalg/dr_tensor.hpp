@@ -121,23 +121,25 @@ class dr_tensor
     constexpr dr_tensor( const dr_tensor& rhs, const allocator_type& alloc );
     /// @brief Construct from an initializer list
     /// @param il initializer list of elements to be copied
-    #ifndef LINALG_ENABLE_CONCEPTS
-    template < typename = ::std::enable_if_t< extents_type::rank_dynamic() == 0 > >
-    #endif
-    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() );
+    /// @param alloc allocator to be used
     #ifdef LINALG_ENABLE_CONCEPTS
+    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() );
       requires ( extents_type::rank_dynamic() == 0 );
+    #else
+    template < typename Enable >
+    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type(), [[maybe_unused]] Enable = ::std::enable_if_t< extents_type::rank_dynamic() == 0 > {} );
     #endif
     /// @brief Construct from an initializer list with a specified extents
     /// @param il initializer list of elements to be copied
     /// @param s  extents size
+    /// @param alloc allocator to be used
     constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
     #ifdef LINALG_ENABLE_CONCEPTS
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
     /// @param first begin iterator
     /// @param last end iterator
-    /// @param a allocator
+    /// @param alloc allocator to be used
     template < ::std::input_iterator InputIt >
     constexpr dr_tensor( InputIt first, InputIt last, const allocator_type& alloc = allocator_type() )
       requires ( ( extents_type::rank_dynamic() == 0 ) );
@@ -146,7 +148,7 @@ class dr_tensor
     /// @param first begin iterator
     /// @param last end iterator
     /// @param s extents size
-    /// @param a allocator
+    /// @param alloc allocator to be used
     template < ::std::input_iterator InputIt >
     constexpr dr_tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() );
     #endif
@@ -155,7 +157,7 @@ class dr_tensor
     /// @tparam R range which satisfies input range concept
     /// @param tag range tag
     /// @param rg range
-    /// @param alloc allocator 
+    /// @param alloc allocator to be used
     template < class R >
     explicit constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -167,7 +169,7 @@ class dr_tensor
     /// @param tag range tag
     /// @param rg range
     /// @param s extents size
-    /// @param alloc allocator 
+    /// @param alloc allocator to be used
     template < class R >
     constexpr dr_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg, const extents_type& s, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -192,7 +194,7 @@ class dr_tensor
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
                                               ( Tensor::rank() == extents_type::rank() ) &&
-                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type,typename Tensor::extents_type > > >
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > > >
     #endif
     explicit constexpr dr_tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -509,13 +511,14 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-#ifndef LINALG_ENABLE_CONCEPTS
-template < typename >
-#endif
+#ifdef LINALG_ENABLE_CONCEPTS
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc )
-#ifdef LINALG_ENABLE_CONCEPTS
   requires ( extents_type::rank_dynamic() == 0 )
+#else
+template < typename Enable >
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc, [[maybe_unused]] Enable )
 #endif
   :
   dr_tensor( il, extents_type(), alloc )
@@ -1013,7 +1016,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[
            ( ::std::is_convertible_v< OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type > && ... )
 #endif
 {
-  return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( const_cast< data_handle_type >( this->tm_.data() ), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -1026,7 +1029,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator(
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( const_cast< data_handle_type >( this->tm_.data() ), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -1041,7 +1044,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v< OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type > && ... )
 #endif
 {
-  return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( this->tm_.data(), this->size_map_( indices ... ) );
 }
 #endif
 
@@ -1054,7 +1057,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator(
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
-  return this->accessor_( this->tm_.data(), this->size_map_( indices ... ) );
+  return this->accessor_.access( this->tm_.data(), this->size_map_( indices ... ) );
 }
 #endif
 

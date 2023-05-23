@@ -236,7 +236,7 @@ class fs_tensor
 #endif
 ;
 
-// Dynamic Size Tensor
+// Dynamic Resizable Tensor
 template < class T,
            class Extents,
            class LayoutPolicy   = default_layout,
@@ -244,6 +244,21 @@ template < class T,
            class Allocator      = ::std::allocator<T>,
            class AccessorPolicy = ::std::experimental::default_accessor< T > >
 class dr_tensor;
+
+// Dynamic Tensor
+template < class         T,
+           ::std::size_t N,
+           class LayoutPolicy   = default_layout,
+           class Allocator      = ::std::allocator<T>,
+           class AccessorPolicy = ::std::experimental::default_accessor< T > >
+using dyn_tensor = dr_tensor< T,
+                              LINALG_DETAIL::dyn_extents< ::std::size_t, N >,
+                              LayoutPolicy,
+                              LINALG_DETAIL::dyn_extents< ::std::size_t, N >,
+                              Allocator,
+                              AccessorPolicy >;
+
+
 
 // Alias mdspan
 template < class ElementType,
