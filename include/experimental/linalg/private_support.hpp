@@ -793,7 +793,7 @@ constexpr void apply_all( View&&            view,
                                       ::std::forward<ExecutionPolicy>( ::std::declval<ExecutionPolicy&&>() ),
                                       ::std::make_integer_sequence<typename ::std::decay_t<View>::extents_type::rank_type,::std::decay_t<View>::extents_type::rank()>{} ) ) )
 {
-  static_assert( View::is_always_unique(), "Apply all iterates over the set of viable indices. If some are invalid, then the function does not work properly." );
+  static_assert( ::std::remove_reference_t< View >::is_always_unique(), "Apply all iterates over the set of viable indices. If some are invalid, then the function does not work properly." );
   return apply_all_maybe_strided_helper< is_defined_v< stride_order< decay_t< View > > > &&
                                          is_unsequenced_v< decay_t< ExecutionPolicy > > >::
     apply_all( view, lambda, execution_policy );
@@ -922,27 +922,18 @@ assign_view( ToView& to_view, const FromView& from_view )
 //==================================================================================================
 //  Copy View copies inplace views with disparate but compatable types
 //==================================================================================================
-template < class ToView, class FromView
-#ifdef LINALG_ENABLE_CONCEPTS
-  > requires is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-             ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-             extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type>
-#else
-  , typename = ::std::enable_if_t< ( is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-                                     ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-                                     extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type> ) > >
-#endif
+template < class ToView, class FromView >
 constexpr void
 copy_view( ToView& to_view, const FromView& from_view )
   noexcept( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> &&
-            is_nothrow_convertible_v<typename FromView::reference,typename ToView::element_type> )
+            is_nothrow_convertible_v<typename FromView::reference,typename ToView::value_type> )
 {
   if constexpr ( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> )
   {
     apply_all( ::std::forward<ToView>( to_view ),
               [ &to_view, &from_view ]( auto ... indices )
                 constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
-                { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::element_type( access( from_view, indices ... ) ); },
+                { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
               LINALG_EXECUTION_UNSEQ );
   }
   else
@@ -952,7 +943,7 @@ copy_view( ToView& to_view, const FromView& from_view )
       apply_all( forward<ToView>( to_view ),
                 [ &to_view, &from_view ]( auto ... indices )
                   constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
-                  { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::element_type( access( from_view, indices ... ) ); },
+                  { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
                 LINALG_EXECUTION_UNSEQ );
     }
     else LINALG_UNLIKELY

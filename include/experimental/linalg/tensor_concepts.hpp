@@ -17,7 +17,6 @@ concept tensor_expression = requires
 {
   // Types
   typename T::value_type;
-  typename T::index_type;
   typename T::size_type;
   typename T::extents_type;
   typename T::rank_type;
@@ -246,7 +245,7 @@ template < class T > inline constexpr bool has_extent_func_v = has_extent_func< 
 
 // Test for extents function
 template < class T, class = void > struct has_extents_func : public ::std::false_type { };
-template < class T > struct has_extents_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().extents() ), typename T::extents_type > > > : public ::std::true_type { };
+template < class T > struct has_extents_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::decay_t< decltype( ::std::declval< const T >().extents() ) >, typename T::extents_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_extents_func_v = has_extents_func< T >::value;
 
 // Test for rank function
@@ -459,7 +458,6 @@ template < class M, class V > inline constexpr bool matrix_vector_may_be_multipl
 // Tensor expression
 template < class T > struct tensor_expression : public ::std::conditional_t< 
   has_value_type_v< T > &&
-  has_index_type_v< T > &&
   has_size_type_v< T > &&
   has_extents_type_v< T > &&
   has_rank_type_v< T > &&

@@ -226,7 +226,8 @@ class dr_tensor
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
                                               ( Tensor::rank() == extents_type::rank() ) &&
-                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > > >
+                                              LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type >
+                                              > >
     #endif
     explicit constexpr dr_tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -469,8 +470,6 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
   // Move memory
   tm_( ::std::move( rhs.tm_ ), this->cap_map_ )
 {
-  // Set the pointer in the moved dr_tensor to null so its destruction doesn't deallocate
-  rhs.data_handle() = nullptr;
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
