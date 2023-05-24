@@ -301,15 +301,15 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
-/*
   TEST( DR_TENSOR, SIZE_AND_CAPACITY )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,4> dyn_tensor{ std::experimental::extents<size_t,2,5,1,7>(), std::experimental::extents<size_t,3,5,2,10>() };
-    EXPECT_TRUE( ( dyn_tensor.size().extent(0) == 2 ) );
-    EXPECT_TRUE( ( dyn_tensor.size().extent(1) == 5 ) );
-    EXPECT_TRUE( ( dyn_tensor.size().extent(2) == 1 ) );
-    EXPECT_TRUE( ( dyn_tensor.size().extent(3) == 7 ) );
+    LINALG::dyn_tensor< double, 4 > dyn_tensor{ ::std::extents< ::std::size_t, 2, 5, 1, 7 >() };
+    EXPECT_TRUE( ( dyn_tensor.extents().extent(0) == 2 ) );
+    EXPECT_TRUE( ( dyn_tensor.extents().extent(1) == 5 ) );
+    EXPECT_TRUE( ( dyn_tensor.extents().extent(2) == 1 ) );
+    EXPECT_TRUE( ( dyn_tensor.extents().extent(3) == 7 ) );
+    dyn_tensor.reserve( ::std::extents< ::std::size_t, 3, 5, 2, 10 >() );
     EXPECT_TRUE( ( dyn_tensor.capacity().extent(0) == 3 ) );
     EXPECT_TRUE( ( dyn_tensor.capacity().extent(1) == 5 ) );
     EXPECT_TRUE( ( dyn_tensor.capacity().extent(2) == 2 ) );
@@ -319,65 +319,65 @@ namespace
   TEST( DR_TENSOR, RESIZE )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,2,2,2>(), std::experimental::extents<size_t,3,3,3>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents<::std::size_t, 2, 2, 2 >() };
     // Populate via mutable index access
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) = 8.0;
     // Resize
-    dyn_tensor.resize( std::experimental::extents<size_t,3,3,3>() );
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 2 ) = 9.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 2 ) = 10.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 2, 0 ) = 11.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 2, 1 ) = 12.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 2, 2 ) = 13.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 2 ) = 14.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 2 ) = 15.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 2, 0 ) = 16.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 2, 1 ) = 17.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 2, 2 ) = 18.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 0, 0 ) = 19.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 0, 1 ) = 20.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 0, 2 ) = 21.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 1, 0 ) = 22.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 1, 1 ) = 23.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 1, 2 ) = 24.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 2, 0 ) = 25.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 2, 1 ) = 26.0;
-    std::experimental::math::detail::access( dyn_tensor, 2, 2, 2 ) = 27.0;
+    dyn_tensor.resize( ::std::extents< ::std::size_t, 3, 3, 3 >() );
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 2 ) = 9.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 2 ) = 10.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 2, 0 ) = 11.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 2, 1 ) = 12.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 2, 2 ) = 13.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 2 ) = 14.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 2 ) = 15.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 2, 0 ) = 16.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 2, 1 ) = 17.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 2, 2 ) = 18.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 0, 0 ) = 19.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 0, 1 ) = 20.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 0, 2 ) = 21.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 1, 0 ) = 22.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 1, 1 ) = 23.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 1, 2 ) = 24.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 2, 0 ) = 25.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 2, 1 ) = 26.0;
+    LINALG_DETAIL::access( dyn_tensor, 2, 2, 2 ) = 27.0;
     // Get values
-    auto val1  = std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 );
-    auto val2  = std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 );
-    auto val3  = std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 );
-    auto val4  = std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 );
-    auto val5  = std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 );
-    auto val6  = std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 );
-    auto val7  = std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 );
-    auto val8  = std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 );
-    auto val9  = std::experimental::math::detail::access( dyn_tensor, 0, 0, 2 );
-    auto val10 = std::experimental::math::detail::access( dyn_tensor, 0, 1, 2 );
-    auto val11 = std::experimental::math::detail::access( dyn_tensor, 0, 2, 0 );
-    auto val12 = std::experimental::math::detail::access( dyn_tensor, 0, 2, 1 );
-    auto val13 = std::experimental::math::detail::access( dyn_tensor, 0, 2, 2 );
-    auto val14 = std::experimental::math::detail::access( dyn_tensor, 1, 0, 2 );
-    auto val15 = std::experimental::math::detail::access( dyn_tensor, 1, 1, 2 );
-    auto val16 = std::experimental::math::detail::access( dyn_tensor, 1, 2, 0 );
-    auto val17 = std::experimental::math::detail::access( dyn_tensor, 1, 2, 1 );
-    auto val18 = std::experimental::math::detail::access( dyn_tensor, 1, 2, 2 );
-    auto val19 = std::experimental::math::detail::access( dyn_tensor, 2, 0, 0 );
-    auto val20 = std::experimental::math::detail::access( dyn_tensor, 2, 0, 1 );
-    auto val21 = std::experimental::math::detail::access( dyn_tensor, 2, 0, 2 );
-    auto val22 = std::experimental::math::detail::access( dyn_tensor, 2, 1, 0 );
-    auto val23 = std::experimental::math::detail::access( dyn_tensor, 2, 1, 1 );
-    auto val24 = std::experimental::math::detail::access( dyn_tensor, 2, 1, 2 );
-    auto val25 = std::experimental::math::detail::access( dyn_tensor, 2, 2, 0 );
-    auto val26 = std::experimental::math::detail::access( dyn_tensor, 2, 2, 1 );
-    auto val27 = std::experimental::math::detail::access( dyn_tensor, 2, 2, 2 );
+    auto val1  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 );
+    auto val2  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 );
+    auto val3  = LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 );
+    auto val4  = LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 );
+    auto val5  = LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 );
+    auto val6  = LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 );
+    auto val7  = LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 );
+    auto val8  = LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 );
+    auto val9  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 2 );
+    auto val10 = LINALG_DETAIL::access( dyn_tensor, 0, 1, 2 );
+    auto val11 = LINALG_DETAIL::access( dyn_tensor, 0, 2, 0 );
+    auto val12 = LINALG_DETAIL::access( dyn_tensor, 0, 2, 1 );
+    auto val13 = LINALG_DETAIL::access( dyn_tensor, 0, 2, 2 );
+    auto val14 = LINALG_DETAIL::access( dyn_tensor, 1, 0, 2 );
+    auto val15 = LINALG_DETAIL::access( dyn_tensor, 1, 1, 2 );
+    auto val16 = LINALG_DETAIL::access( dyn_tensor, 1, 2, 0 );
+    auto val17 = LINALG_DETAIL::access( dyn_tensor, 1, 2, 1 );
+    auto val18 = LINALG_DETAIL::access( dyn_tensor, 1, 2, 2 );
+    auto val19 = LINALG_DETAIL::access( dyn_tensor, 2, 0, 0 );
+    auto val20 = LINALG_DETAIL::access( dyn_tensor, 2, 0, 1 );
+    auto val21 = LINALG_DETAIL::access( dyn_tensor, 2, 0, 2 );
+    auto val22 = LINALG_DETAIL::access( dyn_tensor, 2, 1, 0 );
+    auto val23 = LINALG_DETAIL::access( dyn_tensor, 2, 1, 1 );
+    auto val24 = LINALG_DETAIL::access( dyn_tensor, 2, 1, 2 );
+    auto val25 = LINALG_DETAIL::access( dyn_tensor, 2, 2, 0 );
+    auto val26 = LINALG_DETAIL::access( dyn_tensor, 2, 2, 1 );
+    auto val27 = LINALG_DETAIL::access( dyn_tensor, 2, 2, 2 );
     // Check the values are correct
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -411,27 +411,27 @@ namespace
   TEST( DR_TENSOR, RESERVE )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,2,2,2>(), std::experimental::extents<size_t,2,2,2>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 2, 2, 2 >() };
     // Populate via mutable index access
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 ) = 1.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) = 2.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 ) = 3.0;
-    std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) = 4.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 ) = 5.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 ) = 6.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 ) = 7.0;
-    std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 ) = 8.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 ) = 3.0;
+    LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) = 4.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 ) = 5.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 ) = 6.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) = 7.0;
+    LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) = 8.0;
     // Resize
     dyn_tensor.reserve( std::experimental::extents<size_t,4,4,4>() );
     // Get values
-    auto val1  = std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 );
-    auto val2  = std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 );
-    auto val3  = std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 );
-    auto val4  = std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 );
-    auto val5  = std::experimental::math::detail::access( dyn_tensor, 1, 0, 0 );
-    auto val6  = std::experimental::math::detail::access( dyn_tensor, 1, 0, 1 );
-    auto val7  = std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 );
-    auto val8  = std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 );
+    auto val1  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 );
+    auto val2  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 );
+    auto val3  = LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 );
+    auto val4  = LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 );
+    auto val5  = LINALG_DETAIL::access( dyn_tensor, 1, 0, 0 );
+    auto val6  = LINALG_DETAIL::access( dyn_tensor, 1, 0, 1 );
+    auto val7  = LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 );
+    auto val8  = LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 );
     // Check the values are correct
     EXPECT_EQ( val1, 1.0 );
     EXPECT_EQ( val2, 2.0 );
@@ -443,6 +443,7 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
+/*
   TEST( DR_TENSOR, CONST_SUBVECTOR )
   {
     // Construct

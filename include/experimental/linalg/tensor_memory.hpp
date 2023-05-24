@@ -144,7 +144,8 @@ constexpr tensor_memory<T,Allocator>& tensor_memory<T,Allocator>::operator = ( t
 {
   this->alloc_ = ::std::move( tm.alloc_ );
   this->p_     = ::std::move( tm.p_ );
-  tm.p         = nullptr;
+  tm.p_        = nullptr;
+  return *this;
 }
 
 template < class T, class Allocator >

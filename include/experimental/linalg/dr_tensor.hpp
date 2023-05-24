@@ -287,12 +287,32 @@ class dr_tensor
     /// @brief Returns the current capacity of (rows,columns,depth,etc.)
     /// @return capacity of (rows,columns,depth,etc.)
     [[nodiscard]] constexpr extents_type capacity() const noexcept;
+    /// @tparam OtherSizeType size_type of input size
+    /// @tparam OtherExtents extents of the input size
     /// @brief Attempts to resize the dr_tensor to the input extents
-    /// @param new_size extents type defining the new length of each dimension of the dr_tensor
-    constexpr void resize( extents_type new_size );
+    /// @param new_size extents defining the new length of each dimension of the dr_tensor
+    #ifdef LINALG_ENABLE_CONCEPTS
+    template < class OtherSizeType, ::std::size_t ... OtherExtents >
+    #else
+    template < class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+    #endif
+    constexpr void resize( const ::std::extents< OtherSizeType, OtherExtents ... >& new_size )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+    #endif
+    ;
     /// @brief Attempts to reserve the capacity of the dr_tensor to the input extents
     /// @param new_size extents type defining the new capacity along each dimension of the dr_tensor
-    constexpr void reserve( extents_type new_cap );
+    #ifdef LINALG_ENABLE_CONCEPTS
+    template < class OtherSizeType, ::std::size_t ... OtherExtents >
+    #else
+    template < class OtherSizeType, ::std::size_t ... OtherExtents, typename = ::std::enable_if_t< ::std::is_constructible_v< capacity_extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > > >
+    #endif
+    constexpr void reserve( const ::std::extents< OtherSizeType, OtherExtents ... >& new_cap )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( ::std::is_constructible_v< capacity_extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+    #endif
+    ;
     /// @brief Attempts to free up unused memory.
     constexpr void shrink_to_fit();
 
@@ -411,6 +431,9 @@ class dr_tensor
                class OtherAccessorPolicy >
     friend class dr_tensor;
     
+    // Construct given size mapping and capacity mapping
+    constexpr dr_tensor( const mapping_type& size_map, const capacity_mapping_type& cap_map, const allocator_type& alloc, const accessor_type& accessor );
+
     // Attempts to copy view. If an exception is thrown, deallocates and rethrows
     template < class MDS >
     inline void copy_view_except( MDS&& span );
@@ -780,6 +803,17 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
   LINALG_DETAIL::apply_all( *this, tensor_ctor, LINALG_EXECUTION_UNSEQ );
 }
 
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( const mapping_type& size_map, const capacity_mapping_type& cap_map, const allocator_type& alloc, const accessor_type& accessor ) :
+  accessor_( accessor ),
+  cap_map_( cap_map ),
+  size_map_( size_map ),
+  tm_( alloc, this->cap_map_ )
+{
+}
+
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>&
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( dr_tensor&& rhs )
@@ -797,8 +831,6 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
     this->cap_map_  = ::std::move( rhs.cap_map_ );
     this->size_map_ = ::std::move( rhs.size_map_ );
     this->tm_       = ::std::move( rhs.tm_ );
-    // Set moved tensor element pointer to null so its destruction doesn't deallocate
-    this->data() = nullptr;
   }
   else
   {
@@ -1011,14 +1043,23 @@ template < class T, class Extents, class LayoutPolicy, class CapExtents, class A
 [[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::capacity() const noexcept
 {
-  return this->cap_;
+  return this->cap_map_.extents();
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::resize( extents_type new_size )
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class OtherSizeType, ::std::size_t ... OtherExtents >
+#else
+template < class OtherSizeType, ::std::size_t ... OtherExtents, typename >
+#endif
+constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+resize( const ::std::extents< OtherSizeType, OtherExtents ... >& new_size )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::is_constructible_v< extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+#endif
 {
   // Check if the memory layout must change
-  if ( LINALG_DETAIL::sufficient_extents( this->cap_, new_size ) )
+  if ( LINALG_DETAIL::sufficient_extents( this->capacity(), new_size ) )
   {
     this->resize_impl( new_size, ::std::make_integer_sequence<index_type,extents_type::rank()>() );
   }
@@ -1027,22 +1068,31 @@ constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPol
     // Copy current state
     dr_tensor clone = ::std::move( *this );
     // Set to new size
-    *this = dr_tensor( new_size, max_extents( new_size, this->capacity() ), this->get_allocator() );
+    *this = dr_tensor( mapping_type( new_size ), capacity_mapping_type( max_extents( new_size, this->capacity() ) ), this->get_allocator(), this->accessor() );
     // Copy view
     LINALG_DETAIL::assign_view( *this, clone );
   }
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::reserve( extents_type new_cap )
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class OtherSizeType, ::std::size_t ... OtherExtents >
+#else
+template < class OtherSizeType, ::std::size_t ... OtherExtents, typename >
+#endif
+constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+reserve( const ::std::extents< OtherSizeType, OtherExtents ... >& new_cap )
+#ifdef LINALG_ENABLE_CONCEPTS
+  requires ( ::std::is_constructible_v< capacity_extents_type, const ::std::extents< OtherSizeType, OtherExtents ... >& > )
+#endif
 {
   // Only expand if capacity is not currently sufficient
-  if ( !LINALG_DETAIL::sufficient_extents( this->cap_, new_cap ) )
+  if ( !LINALG_DETAIL::sufficient_extents( this->capacity(), new_cap ) )
   {
     // Copy current state
     dr_tensor clone = ::std::move( *this );
-    // Set to new size
-    *this = dr_tensor( this->size(), max_extents( new_cap, this->capacity() ), this->get_allocator() );
+    // Set to new capacity
+    *this = dr_tensor( this->mapping(), capacity_mapping_type( max_extents( new_cap, this->capacity() ) ), this->get_allocator(), this->accessor() );
     // Copy view
     LINALG_DETAIL::assign_view( *this, clone );
   }

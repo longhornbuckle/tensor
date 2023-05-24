@@ -878,26 +878,17 @@ template < class SizeType, class OtherSizeType, ::std::size_t ... Extents, ::std
 //==================================================================================================
 //  Assign View assigns views with disparate but compatable types
 //==================================================================================================
-template < class ToView, class FromView
-#ifdef LINALG_ENABLE_CONCEPTS
-  > requires is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-             ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-             extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type>
-#else
-  , typename = ::std::enable_if_t< ( is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-                                   ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-                                   extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type> ) > >
-#endif
+template < class ToView, class FromView >
 constexpr ToView&
 assign_view( ToView& to_view, const FromView& from_view )
-  noexcept( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> &&
-            is_nothrow_convertible_v<typename FromView::reference,typename ToView::element_type> )
+  noexcept( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > &&
+            is_nothrow_convertible_v< typename FromView::reference, typename ToView::value_type > )
 {
-  if constexpr ( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> )
+  if constexpr ( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > )
   {
     apply_all( from_view,
                [ &to_view, &from_view ]( auto ... indices )
-                 constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                 constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference, typename ::std::decay_t< ToView >::reference > )
                  { access( to_view, indices ... ) = access( from_view, indices ... ); },
                LINALG_EXECUTION_UNSEQ );
   }
@@ -907,7 +898,7 @@ assign_view( ToView& to_view, const FromView& from_view )
     {
       apply_all( from_view,
                  [ &to_view, &from_view ]( auto ... indices )
-                   constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                   constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t<FromView>::reference, typename ::std::decay_t<ToView>::reference > )
                    { access( to_view, indices ... ) = access( from_view, indices ... ); },
                  LINALG_EXECUTION_UNSEQ );
     }
@@ -925,14 +916,14 @@ assign_view( ToView& to_view, const FromView& from_view )
 template < class ToView, class FromView >
 constexpr void
 copy_view( ToView& to_view, const FromView& from_view )
-  noexcept( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> &&
-            is_nothrow_convertible_v<typename FromView::reference,typename ToView::value_type> )
+  noexcept( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > &&
+            is_nothrow_convertible_v< typename FromView::reference, typename ToView::value_type > )
 {
-  if constexpr ( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> )
+  if constexpr ( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > )
   {
     apply_all( ::std::forward<ToView>( to_view ),
               [ &to_view, &from_view ]( auto ... indices )
-                constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference, typename ::std::decay_t< ToView >::reference > )
                 { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
               LINALG_EXECUTION_UNSEQ );
   }
@@ -942,7 +933,7 @@ copy_view( ToView& to_view, const FromView& from_view )
     {
       apply_all( forward<ToView>( to_view ),
                 [ &to_view, &from_view ]( auto ... indices )
-                  constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                  constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference,typename ::std::decay_t< ToView >::reference > )
                   { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
                 LINALG_EXECUTION_UNSEQ );
     }
@@ -960,10 +951,10 @@ template < class T >
 struct is_complex : public ::std::false_type {};
 
 template < class T >
-struct is_complex< complex<T> > : public ::std::true_type {};
+struct is_complex< complex< T > > : public ::std::true_type {};
 
 template < class T >
-inline constexpr bool is_complex_v = is_complex<T>::value;
+inline constexpr bool is_complex_v = is_complex< T >::value;
 
 //==================================================================================================
 //  Rebind Accessor rebinds the accessor to a new value type
