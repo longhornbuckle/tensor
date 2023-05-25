@@ -50,8 +50,10 @@ class dr_tensor
     using reference                = typename accessor_type::reference;
     /// @brief Type returned by const index access
     using const_reference          = ::std::add_const_t<typename accessor_type::reference>;
-    /// @brief Type used to point to th beginning of the element buffer
+    /// @brief Type used to point to the beginning of the element buffer
     using data_handle_type         = typename accessor_type::data_handle_type;
+    /// @brief Const type used to point to the beginning of the element buffer
+    using const_data_handle_type   = const ::std::remove_pointer_t< typename accessor_type::data_handle_type > *;
     /// @brief Type used for indexing
     using index_type               = typename extents_type::index_type;
     /// @brief Type of allocator used to get memory
@@ -352,8 +354,8 @@ class dr_tensor
     //- Data access
 
     /// @brief Get a const pointer to the beginning of the element array
-    /// @returns const data_handle_type
-    [[nodiscard]] constexpr const data_handle_type data_handle() const noexcept;
+    /// @returns const_data_handle_type
+    [[nodiscard]] constexpr const_data_handle_type data_handle() const noexcept;
     /// @brief Get a pointer to the beginning of the element array
     /// @returns data_handle_type
     [[nodiscard]] constexpr data_handle_type data_handle() noexcept;
@@ -1276,7 +1278,7 @@ inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] inline constexpr const typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::data_handle_type
+[[nodiscard]] inline constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::const_data_handle_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::data_handle() const noexcept
 {
   return this->tm_.data();

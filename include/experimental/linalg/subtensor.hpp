@@ -52,25 +52,13 @@ template < class T,
            class ... SliceArgs >
 [[nodiscard]] constexpr auto subvector( const dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >& t, SliceArgs&& ... args )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( decltype( ::std::experimental::submdspan( mdspan< typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::value_type,
-                                                               typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::extents_type,
-                                                               typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::layout_type,
-                                                               typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::accessor_type >
-                                                         ( t.data_handle(), t.mapping(), t.accessor() ),
+  requires ( decltype( ::std::experimental::submdspan( mdspan( t.data_handle(), t.mapping(), t.accessor() ),
                                                        args ... ) )::rank() == 1 )
 #endif
-  noexcept( noexcept( ::std::experimental::submdspan( mdspan< typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::value_type,
-                                                              typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::extents_type,
-                                                              typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::layout_type,
-                                                              typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::accessor_type >
-                                                        ( t.data_handle(), t.mapping(), t.accessor() ),
+  noexcept( noexcept( ::std::experimental::submdspan( mdspan( t.data_handle(), t.mapping(), t.accessor() ),
                                                       args ... ) ) )
 {
-  return ::std::experimental::submdspan( mdspan< typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::value_type,
-                                                 typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::extents_type,
-                                                 typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::layout_type,
-                                                 typename dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >::accessor_type >
-                                           ( t.data_handle(), t.mapping(), t.accessor() ),
+  return ::std::experimental::submdspan( mdspan( t.data_handle(), t.mapping(), t.accessor() ),
                                          args ... );
 }
 

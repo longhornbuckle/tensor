@@ -459,8 +459,8 @@ namespace
         }
       }
     }
-    const LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
-    auto subvector = LINALG::subvector( const_dyn_tensor, 0, std::experimental::full_extent, 1 );
+    LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
+    auto subvector = LINALG::subvector( const_dyn_tensor, 0, ::std::full_extent, 1 );
     
     EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) ) );
