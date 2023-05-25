@@ -565,7 +565,7 @@ constexpr void apply_all_strided( View&&            view,
                          lambda,
                          execution_policy,
                          indices );
-};
+}
 
 template < class     View,
            class     Lambda,

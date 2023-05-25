@@ -11,12 +11,12 @@
 //- STL includes
 #include <algorithm>
 #include <array>
-#ifdef LINALG_ENABLE_CONCEPTS
+#if __has_include( <concepts> )
 #include <concepts>
 #endif
 #include <complex>
 #include <cstddef>
-#if LINALG_EXECUTION_POLICY
+#if __has_include( <execution> )
 #include <execution>
 #endif
 #include <exception>
@@ -24,10 +24,10 @@
 #include <initializer_list>
 #include <iterator>
 #include <memory>
-#ifdef LINALG_ENABLE_RANGED
+#if __has_include( <ranges> )
 #include <ranges>
 #endif
-#if LINALG_HAS_CXX_20
+#if __has_include( <span> )
 #include <span>
 #endif
 #include <stdexcept>

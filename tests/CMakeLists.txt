@@ -8,7 +8,7 @@ macro( tensor_add_test name )
   else()
     set_property( TARGET ${name} PROPERTY CXX_STANDARD 17 ) # set c++ version
   endif()
-  set( CMAKE_CXX_STANDARD_REQUIRED YES)
+  set( CMAKE_CXX_STANDARD_REQUIRED YES )
   set( CMAKE_CXX_EXTENSIONS NO )
   target_link_libraries( ${name} tensor gtest_main gtest )
   target_compile_options( ${name}

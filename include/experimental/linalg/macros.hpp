@@ -115,7 +115,7 @@
 // Define execution::unseq if available.
 // If not, then just use execution::seq instead.
 #ifndef LINALG_EXECUTION_UNSEQ
-#  if ( __cpp_lib_execution >= 201902L ) && ( ( LINALG_COMPILER_GNU >= 9 ) || ( LINALG_COMPILER_MSVC >= 1928 ) )
+#  if LINALG_EXECTUION_POLICY && ( __cpp_lib_execution >= 201902L ) && ( ( LINALG_COMPILER_GNU >= 9 ) || ( LINALG_COMPILER_MSVC >= 1928 ) )
 #    define LINALG_EXECUTION_UNSEQ ::std::execution::unseq
 #  else
 #    define LINALG_EXECUTION_UNSEQ LINALG_EXECUTION_SEQ

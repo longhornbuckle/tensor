@@ -93,6 +93,7 @@
         "unordered_set": "cpp",
         "__string": "cpp",
         "cinttypes": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "execution": "cpp"
     }
 }

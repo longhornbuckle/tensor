@@ -443,11 +443,10 @@ namespace
     EXPECT_EQ( val8, 8.0 );
   }
 
-/*
   TEST( DR_TENSOR, CONST_SUBVECTOR )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 5, 5, 5 >() };
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
     {
@@ -455,21 +454,22 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i, j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i, j, k ) = val;
           val = 2 * val;
         }
       }
     }
-    const std::experimental::math::dr_tensor<double,3>& const_dyn_tensor( dyn_tensor );
-    auto subvector = const_dyn_tensor.subvector( 0, std::experimental::full_extent, 1 );
+    const LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
+    auto subvector = LINALG::subvector( const_dyn_tensor, 0, std::experimental::full_extent, 1 );
     
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 2 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 2, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 3 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 3, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 4 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 4, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 2 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 2, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 3 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 3, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 4 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 4, 1 ) ) );
   }
 
+/*
   TEST( DR_TENSOR, CONST_SUBMATRIX )
   {
     // Construct
