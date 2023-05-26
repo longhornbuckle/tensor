@@ -42,6 +42,8 @@ class dr_tensor
     using capacity_mapping_type    = typename layout_type::template mapping<capacity_extents_type>;
     /// @brief Type used to define access into memory
     using accessor_type            = AccessorPolicy;
+    /// @brief Type used to define const access into memory
+    using const_accessor_type      = detail::rebind_accessor_t< AccessorPolicy, const value_type >;
     /// @brief Type used for size along any dimension
     using size_type                = typename extents_type::size_type;
     // @brief Type used to express dimensions of the dr_tensor
@@ -362,9 +364,12 @@ class dr_tensor
     /// @brief returns the allocator being used
     /// @returns the allocator being used
     [[nodiscard]] constexpr allocator_type get_allocator() const noexcept;
+    /// @brief Returns the const accessor policy object
+    /// @return the contained const accessor policy object
+    [[nodiscard]] constexpr const_accessor_type accessor() const noexcept;
     /// @brief Returns the accessor policy object
     /// @return the contained accessor policy object
-    [[nodiscard]] constexpr const accessor_type& accessor() const noexcept;
+    [[nodiscard]] constexpr accessor_type accessor() noexcept;
 
     //- Const views
 
@@ -1250,8 +1255,15 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::get_alloc
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr const typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::accessor_type&
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::const_accessor_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::accessor() const noexcept
+{
+  return this->accessor_;
+}
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::accessor_type
+dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::accessor() noexcept
 {
   return this->accessor_;
 }

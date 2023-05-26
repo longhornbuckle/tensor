@@ -36,6 +36,8 @@ class fs_tensor
     using extents_type             = Extents;
     /// @brief Type used to define access into memory
     using accessor_type            = AccessorPolicy;
+    /// @brief Type used to define const access into memory
+    using const_accessor_type      = detail::rebind_accessor_t< AccessorPolicy, const value_type >;
     /// @brief Type used for size along any dimension
     using size_type                = typename extents_type::size_type;
     // @brief Type used to express dimensions of the tensor
@@ -46,6 +48,8 @@ class fs_tensor
     using const_reference          = ::std::add_const_t<typename accessor_type::reference>;
     /// @brief Type used to point to th beginning of the element buffer
     using data_handle_type         = typename accessor_type::data_handle_type;
+    /// @brief Const type used to point to the beginning of the element buffer
+    using const_data_handle_type   = const ::std::remove_pointer_t< typename accessor_type::data_handle_type > *;
     /// @brief Type used for indexing
     using index_type               = typename extents_type::index_type;
 
@@ -201,13 +205,16 @@ class fs_tensor
 
     /// @brief Get a const pointer to the beginning of the element array
     /// @returns const data_handle_type
-    [[nodiscard]] constexpr const data_handle_type data_handle() const noexcept;
+    [[nodiscard]] constexpr const_data_handle_type data_handle() const noexcept;
     /// @brief Get a pointer to the beginning of the element array
     /// @returns data_handle_type
     [[nodiscard]] constexpr data_handle_type data_handle() noexcept;
+    /// @brief Returns the const accessor policy object
+    /// @return the contained const accessor policy object
+    [[nodiscard]] constexpr const_accessor_type accessor() const noexcept;
     /// @brief Returns the accessor policy object
     /// @return the contained accessor policy object
-    [[nodiscard]] constexpr const accessor_type& accessor() const noexcept;
+    [[nodiscard]] constexpr accessor_type accessor() noexcept;
 
     //- Const views
 
@@ -654,8 +661,15 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::mapping() const noexcept
 //- Data access
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr const typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::accessor_type&
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::const_accessor_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::accessor() const noexcept
+{
+  return this->accessor_;
+}
+
+template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::accessor_type
+fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::accessor() noexcept
 {
   return this->accessor_;
 }
@@ -679,7 +693,7 @@ inline void fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::copy_view_except( 
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] inline constexpr const typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle_type
+[[nodiscard]] inline constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::const_data_handle_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::data_handle() const noexcept
 {
   return this->elems_.data();

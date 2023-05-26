@@ -459,7 +459,7 @@ namespace
         }
       }
     }
-    LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
+    const LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
     auto subvector = LINALG::subvector( const_dyn_tensor, 0, ::std::full_extent, 1 );
     
     EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) ) );
@@ -469,11 +469,10 @@ namespace
     EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 4 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 4, 1 ) ) );
   }
 
-/*
   TEST( DR_TENSOR, CONST_SUBMATRIX )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor { ::std::extents< ::std::size_t, 5, 5, 5 >() };
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
     {
@@ -481,30 +480,30 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i,j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i,j, k ) = val;
           val = 2 * val;
         }
       }
     }
-    const std::experimental::math::dr_tensor<double,3>& const_dyn_tensor( dyn_tensor );
-    auto submatrix = const_dyn_tensor.submatrix( 0, std::experimental::full_extent, std::tuple(0,1) );
+    const LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
+    auto submatrix = LINALG::submatrix( const_dyn_tensor, 0, ::std::full_extent, ::std::tuple( 0, 1 ) );
     
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 0, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 1, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 2, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 2, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 3, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 3, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 4, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 4, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 0, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 0, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 1, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 1, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 2, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 2, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 3, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 3, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 4, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 0, 4, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 1, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 2, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 2, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 3, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 3, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 4, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 4, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 0, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 1, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 1, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 2, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 2, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 3, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 3, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 4, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 0, 4, 1 ) ) );
   }
 
   TEST( DR_TENSOR, CONST_SUBTENSOR )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 5, 5, 5 >() };
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
     {
@@ -512,26 +511,26 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i, j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i, j, k ) = val;
           val = 2 * val;
         }
       }
     }
-    const std::experimental::math::dr_tensor<double,3>& const_dyn_tensor( dyn_tensor );
-    auto subtensor = const_dyn_tensor.subtensor( std::tuple(2,5), std::tuple(2,4), std::tuple(2,3) );
+    const LINALG::dyn_tensor< double, 3 >& const_dyn_tensor( dyn_tensor );
+    auto subtensor = LINALG::subtensor( const_dyn_tensor, ::std::tuple(2,5), ::std::tuple(2,4), ::std::tuple(2,3) );
     
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 0, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 2, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 1, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 3, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 2, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 4, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 0, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 2, 3, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 1, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 3, 3, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 2, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 4, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 0, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 2, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 1, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 3, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 2, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 4, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 0, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 2, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 1, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 3, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 2, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 4, 3, 2 ) ) );
   }
 
   TEST( DR_TENSOR, SUBVECTOR )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 5, 5, 5 >() };
     // Set values in tensor
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
@@ -540,29 +539,29 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i, j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i, j, k ) = val;
           val = 2 * val;
         }
       }
     }
     // Get subvector
-    auto subvector = dyn_tensor.subvector( 1, std::experimental::full_extent, 0 );
+    auto subvector = LINALG::subvector( dyn_tensor, 1, ::std::full_extent, 0 );
     // Modify view
     for ( auto i : { 1, 2, 3 } )
     {
-      std::experimental::math::detail::access( subvector, i ) = val;
+      LINALG_DETAIL::access( subvector, i ) = val;
       val = 2 * val;
     }
     // Assert original tensor has been modified as well
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 1, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 2 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 2, 0 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subvector, 3 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 3, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 2 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 2, 0 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subvector, 3 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 3, 0 ) ) );
   }
 
   TEST( DR_TENSOR, SUBMATRIX )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 5, 5, 5 >() };
     // Set values in tensor
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
@@ -571,35 +570,35 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i,j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i, j, k ) = val;
           val = 2 * val;
         }
       }
     }
     // Get submatrix
-    auto submatrix = dyn_tensor.submatrix( 1, std::experimental::full_extent, std::tuple( 1, 4 ) );
+    auto submatrix = LINALG::submatrix( dyn_tensor, 1, ::std::full_extent, ::std::tuple( 1, 4 ) );
     // Modify view
     for ( auto i : { 1, 2, 3 } )
     {
       for ( auto j : { 0, 1 } )
       {
-        std::experimental::math::detail::access( submatrix, i, j ) = val;
+        LINALG_DETAIL::access( submatrix, i, j ) = val;
         val = 2 * val;
       }
     }
     // Assert original tensor has been modified as well
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 1, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 2, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 2, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 3, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 3, 1 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 1, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 1, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 2, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( submatrix, 3, 1 ) ), ( std::experimental::math::detail::access( dyn_tensor, 1, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 2, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 2, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 3, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 3, 1 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 1, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 1, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 2, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( submatrix, 3, 1 ) ), ( LINALG_DETAIL::access( dyn_tensor, 1, 3, 2 ) ) );
   }
 
   TEST( DR_TENSOR, SUBTENSOR )
   {
     // Construct
-    std::experimental::math::dr_tensor<double,3> dyn_tensor{ std::experimental::extents<size_t,5,5,5>(), std::experimental::extents<size_t,10,10,10>() };
+    LINALG::dyn_tensor< double, 3 > dyn_tensor{ ::std::extents< ::std::size_t, 5, 5, 5 >() };
     // Set values in tensor
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
@@ -608,13 +607,13 @@ namespace
       {
         for ( auto k : { 0, 1, 2, 3, 4 } )
         {
-          std::experimental::math::detail::access( dyn_tensor, i, j, k ) = val;
+          LINALG_DETAIL::access( dyn_tensor, i, j, k ) = val;
           val = 2 * val;
         }
       }
     }
     // Get subtensor
-    auto subtensor = dyn_tensor.subtensor( std::tuple(2,5), std::tuple(2,4), std::tuple(2,3) );
+    auto subtensor = LINALG::subtensor( dyn_tensor, ::std::tuple(2,5), ::std::tuple(2,4), ::std::tuple(2,3) );
     // Modify view
     for ( auto i : { 0, 1, 2 } )
     {
@@ -622,20 +621,21 @@ namespace
       {
         for ( auto k : { 0 } )
         {
-          std::experimental::math::detail::access( subtensor, i,j, k ) = val;
+          LINALG_DETAIL::access( subtensor, i,j, k ) = val;
           val = 2 * val;
         }
       }
     }
     // Assert original tensor has been modified as well
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 0, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 2, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 1, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 3, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 2, 0, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 4, 2, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 0, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 2, 3, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 1, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 3, 3, 2 ) ) );
-    EXPECT_EQ( ( std::experimental::math::detail::access( subtensor, 2, 1, 0 ) ), ( std::experimental::math::detail::access( dyn_tensor, 4, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 0, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 2, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 1, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 3, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 2, 0, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 4, 2, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 0, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 2, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 1, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 3, 3, 2 ) ) );
+    EXPECT_EQ( ( LINALG_DETAIL::access( subtensor, 2, 1, 0 ) ), ( LINALG_DETAIL::access( dyn_tensor, 4, 3, 2 ) ) );
   }
 
+/*
   TEST( DR_TENSOR, NEGATION )
   {
     using tensor_type = std::experimental::math::dr_tensor<double,3>;
