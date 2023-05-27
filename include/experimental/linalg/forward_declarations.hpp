@@ -34,7 +34,7 @@ LINALG_EXPRESSIONS_BEGIN // expressions namespace
 #ifdef LINALG_ENABLE_CONCEPTS
 template < tensor_expression Tensor >
 #else
-template < class Tensor, typename Enable = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
+template < class Tensor, typename Enable = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class negate_tensor_expression;
 
@@ -49,8 +49,8 @@ template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpos
 #else
 template < class Tensor,
            class Transpose = transpose_indices_t<>,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
-                                          !LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
+                                          !LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class transpose_tensor_expression;
 
@@ -60,8 +60,8 @@ template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose = transpos
 #else
 template < class Tensor,
            class Transpose = transpose_indices_t<>,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > &&
-                                          !LINALG_CONCEPTS::vector_expression_v< Tensor > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
+                                          !LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class conjugate_tensor_expression;
 

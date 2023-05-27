@@ -105,7 +105,7 @@ struct layout_result;
 template < LINALG_CONCEPTS::readable_tensor Tensor >
 struct layout_result< negate_tensor_expression< Tensor > >
 {
-  using type = typename Tensor::layout_type;
+  using type = typename ::std::remove_reference_t< Tensor >::layout_type;
 };
 
 template < LINALG_CONCEPTS::unevaluated_tensor_expression Tensor >
@@ -123,19 +123,19 @@ private :
   template < class T >
   struct readable_helper
   {
-    using type = typename T::layout_type;
+    using type = typename ::std::remove_reference_t< T >::layout_type;
   };
   template < class T >
   struct unevaluated_helper
   {
-    using type = typename decltype( ::std::declval< T >().operator auto() )::layout_type;
+    using type = typename decltype( ::std::declval< ::std::remove_reference< T > >().operator auto() )::layout_type;
   };
 public :
-  using type = ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< Tensor >,
-                                     typename readable_helper< Tensor >::type,
-                                     ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< Tensor >,
-                                                           typename unevaluated_helper< Tensor >::type,
-                                                           typename invalid_helper< Tensor >::type > >;
+  using type = typename ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< ::std::remove_reference_t< Tensor > >,
+                                              readable_helper< Tensor >,
+                                              ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< Tensor > >,
+                                                                    unevaluated_helper< Tensor >,
+                                                                    invalid_helper< Tensor > > >::type;
 };
 #endif
 
@@ -360,9 +360,10 @@ struct accessor_result< UTA< Tensor > >
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
 };
 #else
-template < template < class > class UTE,
-           class                    Tensor >
-struct accessor_result< UTE< Tensor > >
+template < template < class, class > class UTE,
+           class                           Tensor,
+           class                           Enable >
+struct accessor_result< UTE< Tensor, Enable > >
 {
 private:
   template < class T >
@@ -370,7 +371,7 @@ private:
   template < class T >
   struct readable_helper
   {
-    using type = typename T::accessor_type;
+    using type = typename ::std::remove_reference_t< T >::accessor_type;
   };
   template < class T >
   struct unevaluated_helper
@@ -378,13 +379,13 @@ private:
     using type = typename decltype( ::std::declval< T >().operator auto() )::accessor_type;
   };
 public:
-  using type = ::std::conditional_t< LINALG_CONCEPTS::unary_tensor_expression_v< UTE< Tensor > >,
-                                     ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< Tensor >,
-                                                           typename readable_helper< Tensor >::type,
-                                                           ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< Tensor >,
-                                                                                 typename unevaluated_helper< Tensor >::type,
-                                                                                 typename invalid_helper< Tensor >::type > >,
-                                     typename invalid_helper< UTE< Tensor > >::type >;
+  using type = typename ::std::conditional_t< LINALG_CONCEPTS::unary_tensor_expression_v< ::std::decay_t< UTE< Tensor, Enable > > >,
+                                              ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< ::std::remove_reference_t< Tensor > >,
+                                                                    readable_helper< Tensor >,
+                                                                    ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< Tensor > >,
+                                                                                          unevaluated_helper< Tensor >,
+                                                                                          invalid_helper< Tensor > > >,
+                                              invalid_helper< UTE< Tensor, Enable > > >::type;
 };
 #endif
 
@@ -399,10 +400,11 @@ struct accessor_result< BTE< FirstTensor, SecondTensor > >
   using type = ::std::experimental::default_accessor< decltype( ::std::declval< typename FirstTensor::value_type >() + ::std::declval< typename SecondTensor::value_type >() ) >;
 };
 #else
-template < template < class, class > class BTE,
-           class                           FirstTensor,
-           class                           SecondTensor >
-struct accessor_result< BTE< FirstTensor, SecondTensor > >
+template < template < class, class, class Enable > class BTE,
+           class                                         FirstTensor,
+           class                                         SecondTensor,
+           class                                         Enable >
+struct accessor_result< BTE< FirstTensor, SecondTensor, Enable > >
 {
 private:
   template < class T, class U >
@@ -410,23 +412,23 @@ private:
   template < class T, class U >
   struct default_helper
   {
-    using type = ::std::conditional_t< ( is_default_accessor_v< typename T::accessor_type > &&
-                                         is_default_accessor_v< typename U::accessor_type > ),
-                                       ::std::experimental::default_accessor< decltype( ::std::declval< typename T::value_type >() + ::std::declval< typename U::value_type >() ) >,
+    using type = ::std::conditional_t< ( is_default_accessor_v< typename ::std::remove_reference_t< T >::accessor_type > &&
+                                         is_default_accessor_v< typename ::std::remove_reference_t< U >::accessor_type > ),
+                                       ::std::experimental::default_accessor< decltype( ::std::declval< typename ::std::remove_reference_t< T >::value_type >() + ::std::declval< typename ::std::remove_reference_t< U >::value_type >() ) >,
                                        typename invalid_helper< T, U >::type >;
   };
 public:
-  using type = ::std::conditional_t< ( LINALG_CONCEPTS::tensor_expression_v< FirstTensor > &&
-                                       LINALG_CONCEPTS::tensor_expression_v< SecondTensor > ),
-                                     typename default_helper< FirstTensor, SecondTensor >::type,
-                                     typename invalid_helper< FirstTensor, SecondTensor >::type >;
+  using type = typename ::std::conditional_t< ( LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< FirstTensor > > &&
+                                                LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< SecondTensor > > ),
+                                              default_helper< FirstTensor, SecondTensor >,
+                                              invalid_helper< FirstTensor, SecondTensor > >::type;
 };
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor >
 #else
-template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
+template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 using accessor_result_t = typename accessor_result< Tensor >::type;
 
@@ -465,20 +467,20 @@ private:
   template < class T >
   struct invalid_helper;
   template < class T >
-  struct dynamic_helper
-  {
-    using type = ::std::allocator< typename Tensor::value_type >;
-    [[nodiscard]] static inline constexpr type get_allocator( Tensor&& ) noexcept { return type(); }
-  };
-  template < class T >
   struct default_helper
   {
-    using type = typename Tensor::allocator_type;
-    [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
+    using type = ::std::allocator< typename ::std::remove_reference_t< T >::value_type >;
+    [[nodiscard]] static inline constexpr type get_allocator( T&& ) noexcept { return type(); }
+  };
+  template < class T >
+  struct dynamic_helper
+  {
+    using type = typename ::std::remove_reference_t< T >::allocator_type;
+    [[nodiscard]] static inline constexpr type get_allocator( T&& t ) noexcept
     {
-      if constexpr ( ! ::std::is_rvalue_reference_v<Tensor> )
+      if constexpr ( ! ::std::is_rvalue_reference_v< T > )
       {
-        return ::std::allocator_traits< typename Tensor::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
+        return ::std::allocator_traits< typename ::std::remove_reference_t< T >::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
       }
       else
       {
@@ -487,18 +489,18 @@ private:
     }
   };
 public:
-  using type = ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< Tensor >,
-                                     typename dynamic_helper< Tensor >::type,
-                                     ::std::conditional_t< LINALG_CONCEPTS::tensor_expression_v< Tensor >,
-                                                           typename default_helper< Tensor >::type,
-                                                           typename invalid_helper< Tensor >::type > >;
+  using type = typename ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< Tensor > >,
+                                              dynamic_helper< Tensor >,
+                                              ::std::conditional_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > >,
+                                                                    default_helper< Tensor >,
+                                                                    invalid_helper< Tensor > > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< Tensor > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< Tensor > > )
     {
       return dynamic_helper< Tensor >::get_allocator( t );
     }
-    else if constexpr ( LINALG_CONCEPTS::tensor_expression_v< Tensor > )
+    else if constexpr ( LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > )
     {
       return default_helper< Tensor >::get_allocator( t );
     }
@@ -519,9 +521,10 @@ struct allocator_result< UTE< Tensor > >
   [[nodiscard]] static inline constexpr type get_allocator( UTE< Tensor >&& t ) noexcept { return allocator_result< decltype( ::std::declval< UTE< Tensor > >.underlying() ) >::get_allocator( t.underlying(); ) }
 };
 #else
-template < template < class > class UTE,
-           class                    Tensor >
-struct allocator_result< UTE< Tensor > >
+template < template < class, class > class UTE,
+           class                           Tensor,
+           class                           Enable >
+struct allocator_result< UTE< Tensor, Enable > >
 {
 private:
   template < class T >
@@ -529,22 +532,22 @@ private:
   template < class T >
   struct valid_helper
   {
-    using type = typename allocator_result< decltype( ::std::declval< T >.underlying() ) >::allocator_type;
-    [[nodiscard]] static inline constexpr type get_allocator( T&& t ) noexcept { return allocator_result< decltype( ::std::declval< T >.underlying() ) >::get_allocator( t.underlying() ); }
+    using type = typename allocator_result< decltype( ::std::declval< T >().underlying() ) >::type;
+    [[nodiscard]] static inline constexpr type get_allocator( T&& t ) noexcept { return allocator_result< decltype( ::std::declval< T >().underlying() ) >::get_allocator( t.underlying() ); }
   };
 public:
-  using type = ::std::conditional_t< LINALG_CONCEPTS::unary_tensor_expression_v< UTE< Tensor > >,
-                                     typename valid_helper< UTE< Tensor > >::type,
-                                     typename invalid_helper< UTE< Tensor > >::type >;
-  [[nodiscard]] static inline constexpr type get_allocator( UTE< Tensor >&& t ) noexcept
+  using type = typename ::std::conditional_t< LINALG_CONCEPTS::unary_tensor_expression_v< UTE< Tensor, Enable > >,
+                                              valid_helper< UTE< Tensor, Enable > >,
+                                              invalid_helper< UTE< Tensor, Enable > > >::type;
+  [[nodiscard]] static inline constexpr type get_allocator( const UTE< Tensor, Enable >& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::unary_tensor_expression_v< UTE< Tensor > > )
+    if constexpr ( LINALG_CONCEPTS::unary_tensor_expression_v< UTE< Tensor, Enable > > )
     {
-      return valid_helper< UTE< Tensor > >::get_allocator( t );
+      return valid_helper< const UTE< Tensor, Enable > >::get_allocator( ::std::forward< const UTE< Tensor, Enable > >( t ) );
     }
     else
     {
-      return invalid_helper< UTE< Tensor > >::get_allocator( t );
+      return invalid_helper< const UTE< Tensor, Enable > >::get_allocator( ::std::forward< const UTE< Tensor, Enable > >( t ) );
     }
   }
 };
@@ -574,10 +577,11 @@ struct allocator_result< BTE< FirstTensor, SecondTensor > >
   }
 };
 #else
-template < template < class, class > class BTE,
-           class                           FirstTensor,
-           class                           SecondTensor >
-struct allocator_result< BTE< FirstTensor, SecondTensor > >
+template < template < class, class, class > class BTE,
+           class                                  FirstTensor,
+           class                                  SecondTensor,
+           class                                  Enable >
+struct allocator_result< BTE< FirstTensor, SecondTensor, Enable > >
 {
 private:
   template < class T >
@@ -585,14 +589,14 @@ private:
   template < class T >
   struct valid_helper
   {
-    using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_cv_t< decltype( ::std::declval< T >.first() ) > > ||
-                                                                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_cv_t< decltype( ::std::declval< T >.second() ) > >,
+    using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
+                                                                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > >,
                                                                   decltype( ::std::declval< T >().first() ),
-                                                                  decltype( ::std::declval< T>().second() ) > >::type;
+                                                                  decltype( ::std::declval< T >().second() ) > >::type;
     [[nodiscard]] static inline constexpr type get_allocator( T&& t ) noexcept
     {
-      if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_cv_t< decltype( ::std::declval< T >().first() ) > > ||
-                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_cv_t< decltype( ::std::declval< T >().second() ) > > )
+      if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
+                     ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > > )
       {
         return allocator_result< decltype( ::std::declval< T >().first() ) >::get_allocator( t.first() );
       }
@@ -603,18 +607,18 @@ private:
     }
   };
 public:
-  using type = ::std::conditional_t< LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor > >,
-                                     typename valid_helper< BTE< FirstTensor, SecondTensor > >::type,
-                                     typename invalid_helper< BTE< FirstTensor, SecondTensor > >::type >;
-  [[nodiscard]] static inline constexpr type get_allocator( BTE< FirstTensor, SecondTensor >&& t ) noexcept
+  using type = ::std::conditional_t< LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor, Enable > >,
+                                     typename valid_helper< BTE< FirstTensor, SecondTensor, Enable > >::type,
+                                     typename invalid_helper< BTE< FirstTensor, SecondTensor, Enable > >::type >;
+  [[nodiscard]] static inline constexpr type get_allocator( BTE< FirstTensor, SecondTensor, Enable >&& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor > > )
+    if constexpr ( LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor, Enable > > )
     {
-      return valid_helper< BTE< FirstTensor, SecondTensor > >::get_allocator( t );
+      return valid_helper< BTE< FirstTensor, SecondTensor, Enable > >::get_allocator( t );
     }
     else
     {
-      return invalid_helper< BTE< FirstTensor, SecondTensor > >::get_allocator( t );
+      return invalid_helper< BTE< FirstTensor, SecondTensor, Enable > >::get_allocator( t );
     }
   }
 };

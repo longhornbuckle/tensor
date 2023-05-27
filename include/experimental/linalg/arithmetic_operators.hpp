@@ -26,7 +26,7 @@ operator - ( const T& t ) noexcept
   requires ::std::is_constructible_v< LINALG_EXPRESSIONS::negate_tensor_expression< const T& >, const T& >
 #endif
 {
-  return LINALG_EXPRESSIONS::negate_tensor_expression( t );
+  return LINALG_EXPRESSIONS::negate_tensor_expression< const T& >( t );
 }
 
 //=================================================================================================

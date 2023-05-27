@@ -53,6 +53,6 @@ else()
 endif()
 
 # Add vector / matrix / tensor tests
-# tensor_add_test( vector_test )
-# tensor_add_test( matrix_test )
-tensor_add_test( tensor_test )
+tensor_add_test( dr_tensor_test )
+tensor_add_test( fs_tensor_test )
+tensor_add_test( unary_expressions_test )

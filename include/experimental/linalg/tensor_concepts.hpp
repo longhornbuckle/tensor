@@ -83,7 +83,7 @@ requires( const T& t, typename T::rank_type n ) // Functions
 {
   // Size functions
   { T::rank_dynamic() }         noexcept -> ::std::same_as< typename T::rank_type >;
-  { T::static_extent( n ) }     noexcept -> ::std::same_as< typename T::size_type >;
+  { T::static_extent( n ) }     noexcept -> ::std::same_as< ::std::size_t >;
   { t.size() }                           -> ::std::same_as< typename T::size_type >;
   // Layout functions
   { T::is_always_strided() }    noexcept -> ::std::same_as< bool >;
@@ -259,9 +259,9 @@ template < class T > struct has_rank_dynamic_func< T, ::std::enable_if_t< ::std:
 template < class T > inline constexpr bool has_rank_dynamic_func_v = has_rank_dynamic_func< T >::value;
 
 // Test for static_extents function
-template < class T, class = void > struct has_static_extents_func : public ::std::false_type { };
-template < class T > struct has_static_extents_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::static_extents( ::std::declval< typename T::rank_type >() ) ), typename T::size_type > > > : public ::std::true_type { };
-template < class T > inline constexpr bool has_static_extents_func_v = has_static_extents_func< T >::value;
+template < class T, class = void > struct has_static_extent_func : public ::std::false_type { };
+template < class T > struct has_static_extent_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::static_extent( ::std::declval< typename T::rank_type >() ) ), ::std::size_t > > > : public ::std::true_type { };
+template < class T > inline constexpr bool has_static_extent_func_v = has_static_extent_func< T >::value;
 
 // Test for size function
 template < class T, class = void > struct has_size_func : public ::std::false_type { };
@@ -290,32 +290,32 @@ template < class T > inline constexpr bool has_is_strided_func_v = has_is_stride
 
 // Test for is_exhaustive function
 template < class T, class = void > struct has_is_exhaustive_func : public ::std::false_type { };
-template < class T > struct has_is_exhaustive_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::is_exhaustive() ), bool > > > : public ::std::true_type { };
+template < class T > struct has_is_exhaustive_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< T >().is_exhaustive() ), bool > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_is_exhaustive_func_v = has_is_exhaustive_func< T >::value;
 
 // Test for is_unique function
 template < class T, class = void > struct has_is_unique_func : public ::std::false_type { };
-template < class T > struct has_is_unique_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::is_unique() ), bool > > > : public ::std::true_type { };
+template < class T > struct has_is_unique_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< T >().is_unique() ), bool > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_is_unique_func_v = has_is_unique_func< T >::value;
 
 // Test for stride function
 template < class T, class = void > struct has_stride_func : public ::std::false_type { };
-template < class T > struct has_stride_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::stride( ::std::declval< typename T::rank_type >() ) ), typename T::index_type > > > : public ::std::true_type { };
+template < class T > struct has_stride_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< T >().stride( ::std::declval< typename T::rank_type >() ) ), typename T::index_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_stride_func_v = has_stride_func< T >::value;
 
 // Test for accessor function
 template < class T, class = void > struct has_accessor_func : public ::std::false_type { };
-template < class T > struct has_accessor_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::remove_cv_t< decltype( T::accessor() ) >, typename T::accessor_type > > > : public ::std::true_type { };
+template < class T > struct has_accessor_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::remove_cv_t< decltype( ::std::declval< ::std::remove_cv_t< T > >().accessor() ) >, typename T::accessor_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_accessor_func_v = has_accessor_func< T >::value;
 
 // Test for data_handle function
 template < class T, class = void > struct has_data_handle_func : public ::std::false_type { };
-template < class T > struct has_data_handle_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::remove_cv_t< decltype( T::data_handle() ) >, typename T::data_handle_type > > > : public ::std::true_type { };
+template < class T > struct has_data_handle_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::remove_cv_t< decltype( ::std::declval< ::std::remove_cv_t< T > >().data_handle() ) >, typename T::data_handle_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_data_handle_func_v = has_data_handle_func< T >::value;
 
 // Test for mapping function
 template < class T, class = void > struct has_mapping_func : public ::std::false_type { };
-template < class T > struct has_mapping_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::remove_cv_t< decltype( T::mapping() ) >, typename T::mapping_type > > > : public ::std::true_type { };
+template < class T > struct has_mapping_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::decay_t< decltype( ::std::declval< const T >().mapping() ) >, typename T::mapping_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_mapping_func_v = has_mapping_func< T >::value;
 
 // Test for max_size function
@@ -377,6 +377,11 @@ template < class T > inline constexpr bool constructible_from_size_and_alloc_v =
 // template < class T, class = void > struct has_assignable_paren_operator : public ::std::false_type { };
 // template < class T > struct has_assignable_paren_operator< T, ::std::enable_if_t< ::std::is_convertible_v< decltype( ::std::declval< const T >().operator()( ::std::declval< auto ... >() ) = ::std::declval< typename T::value_type >() ), typename T::value_type > > > : public ::std::true_type { };
 // template < class T > inline constexpr bool has_assignable_paren_operator_v = has_assignable_paren_operator< T >::value;
+
+// Test for operator auto
+template < class T, class = void > struct has_operator_auto : public ::std::false_type { };
+template < class T > struct has_operator_auto< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< ::std::remove_reference_t< const T > >(). ::std::remove_reference_t< const T >::operator auto() ), decltype( ::std::declval< ::std::remove_reference_t< const T > >(). ::std::remove_reference_t< const T >::operator auto() ) > > > : public ::std::true_type { };
+template < class T > inline constexpr bool has_operator_auto_v = has_operator_auto< T >::value;
 
 // Test for underlying function
 template < class T, class = void > struct has_underlying_func : public ::std::false_type { };
@@ -469,7 +474,7 @@ template < class T > struct tensor_expression : public ::std::conditional_t<
 // #endif
   has_rank_func_v< T > &&
 #if LINALG_HAS_CXX_20
-  LINALG_DETAIL::is_constexpr( []{ [[maybe_unused]] decltype( T::rank() ) nodiscard_warning = T::rank(); } ) &&
+  LINALG_DETAIL::is_constexpr( []{ [[maybe_unused]] decltype( < T >::rank() ) nodiscard_warning = T::rank(); } ) &&
 #endif
   has_extents_func_v< T > &&
   has_extent_func_v< T >, ::std::true_type, ::std::false_type > { };
@@ -496,7 +501,7 @@ template < class T > struct readable_tensor : public ::std::conditional_t<
   has_reference_v< T > &&
   has_data_handle_type_v< T > &&
   has_rank_dynamic_func_v< T > &&
-  has_static_extents_func_v< T > &&
+  has_static_extent_func_v< T > &&
   has_size_func_v< T > &&
   has_is_always_strided_func_v< T > &&
   has_is_always_exhaustive_func_v< T > &&
@@ -550,12 +555,13 @@ template < class T > inline constexpr bool dynamic_tensor_v = dynamic_tensor< T 
 
 // Unevaluated tensor expression
 template < class T > struct unevaluated_tensor_expression : public ::std::conditional_t<
-  tensor_expression_v< T >, ::std::true_type, ::std::false_type > { };
+  tensor_expression_v< T > &&
+  has_operator_auto_v< T >, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool unevaluated_tensor_expression_v = unevaluated_tensor_expression< T >::value;
 
 // Unary tensor expression
 template < class T > struct unary_tensor_expression : public ::std::conditional_t<
-  unevaluated_tensor_expression_v< T > &&
+  tensor_expression_v< T > &&
   has_underlying_func_v< T >, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool unary_tensor_expression_v = unary_tensor_expression< T >::value;
 
