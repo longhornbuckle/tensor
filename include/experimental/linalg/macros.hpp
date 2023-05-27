@@ -45,6 +45,7 @@
 //- C++17 related macros
 
 // Support for concepts
+// Note, clang does not support non-inline concept function definitions until 16.
 #ifndef LINALG_ENABLE_CONCEPTS
 #  if defined( __cpp_lib_concepts ) && ( ( LINALG_COMPILER_GNU >= 10 ) || ( LINALG_COMPILER_CLANG >= 16 ) )
 #    define LINALG_ENABLE_CONCEPTS

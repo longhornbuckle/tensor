@@ -533,8 +533,8 @@ namespace
   
   TEST( FS_TENSOR, TEMPLATE_COPY_CONSTRUCTOR )
   {
-    using float_left_tensor_type   = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<float> >;
-    using double_right_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_left, ::std::experimental::default_accessor<double> >;
+    using float_left_tensor_type   = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_right, ::std::default_accessor<float> >;
+    using double_right_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_left, ::std::default_accessor<double> >;
     // Default construct
     float_left_tensor_type fs_tensor;
     // Populate via mutable index access
@@ -607,8 +607,8 @@ namespace
 
   TEST( FS_TENSOR, TEMPLATE_ASSIGNMENT_OPERATOR )
   {
-    using float_left_tensor_type   = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<float> >;
-    using double_right_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_left, ::std::experimental::default_accessor<double> >;
+    using float_left_tensor_type   = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_right, ::std::default_accessor<float> >;
+    using double_right_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_left, ::std::default_accessor<double> >;
     // Default construct
     float_left_tensor_type fs_tensor;
     // Populate via mutable index access
@@ -697,7 +697,7 @@ namespace
   TEST( FS_TENSOR, CONST_SUBVECTOR )
   {
     // Construct
-    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> > fs_tensor{ };
+    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> > fs_tensor{ };
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
     {
@@ -723,7 +723,7 @@ namespace
   TEST( FS_TENSOR, CONST_SUBMATRIX )
   {
     // Construct
-    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> > fs_tensor{ };
+    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> > fs_tensor{ };
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
     {
@@ -753,7 +753,7 @@ namespace
 
   TEST( FS_TENSOR, CONST_SUBTENSOR )
   {
-    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
+    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> >;
     // Default construct
     fs_tensor_type fs_tensor;
     double val = 1;
@@ -782,7 +782,7 @@ namespace
   TEST( FS_TENSOR, SUBVECTOR )
   {
     // Construct
-    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> > fs_tensor{ };
+    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> > fs_tensor{ };
     // Set values in tensor
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
@@ -813,7 +813,7 @@ namespace
   TEST( FS_TENSOR, SUBMATRIX )
   {
     // Construct
-    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> > fs_tensor{ };
+    LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> > fs_tensor{ };
     // Set values in tensor
     double val = 1;
     for ( auto i : { 0, 1, 2, 3, 4 } )
@@ -849,7 +849,7 @@ namespace
 
   TEST( FS_TENSOR, SUBTENSOR )
   {
-    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
+    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> >;
     // Default construct
     fs_tensor_type fs_tensor;
     // Set values in tensor tensor

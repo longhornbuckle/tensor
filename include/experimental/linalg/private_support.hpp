@@ -85,7 +85,7 @@ template < class T >
 struct is_extents : public ::std::false_type {};
 
 template < class size_type, ::std::size_t ... Extents >
-struct is_extents< ::std::experimental::extents<size_type,Extents...> > : public ::std::true_type {};
+struct is_extents< ::std::extents<size_type,Extents...> > : public ::std::true_type {};
 /// @brief True iff T is an extents
 /// @tparam T 
 template < class T >
@@ -111,7 +111,7 @@ template < class T >
 struct extents_is_static : public ::std::false_type {};
 
 template < class SizeType, ::std::size_t ... Extents >
-struct extents_is_static< ::std::experimental::extents<SizeType,Extents...> > : public
+struct extents_is_static< ::std::extents<SizeType,Extents...> > : public
   ::std::conditional_t< ( ( Extents != dynamic_extent ) && ... ), ::std::true_type, ::std::false_type > {};
 
 template < class T >
@@ -125,22 +125,22 @@ template < class T, class U, class Seq >
 struct extents_may_be_equal_impl;
 
 template < class SizeType, class OtherSizeType, auto ... Extents, auto ... OtherExtents, auto ... Indices >
-struct extents_may_be_equal_impl< ::std::experimental::extents<SizeType,Extents...>,
-                                  ::std::experimental::extents<OtherSizeType,OtherExtents...>,
+struct extents_may_be_equal_impl< ::std::extents<SizeType,Extents...>,
+                                  ::std::extents<OtherSizeType,OtherExtents...>,
                                   ::std::index_sequence<Indices...> > :
-  ::std::conditional_t< ( ( ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) ) ||
-                            ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::dynamic_extent ) ||
-                            ( ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::dynamic_extent ) ) && ... ),
+  ::std::conditional_t< ( ( ( ::std::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::extents<SizeType,OtherExtents...>::static_extent(Indices) ) ||
+                            ( ::std::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::dynamic_extent ) ||
+                            ( ::std::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::dynamic_extent ) ) && ... ),
                         ::std::true_type, ::std::false_type > {};
 
 template < class T, class U >
 struct extents_may_be_equal : public ::std::false_type {};
 
 template < class SizeType, class OtherSizeType, auto ... Extents, auto ... OtherExtents >
-struct extents_may_be_equal< ::std::experimental::extents<SizeType,Extents...>,
-                             ::std::experimental::extents<OtherSizeType,OtherExtents...> > : public
+struct extents_may_be_equal< ::std::extents<SizeType,Extents...>,
+                             ::std::extents<OtherSizeType,OtherExtents...> > : public
   ::std::conditional_t< ( sizeof...(Extents) == sizeof...(OtherExtents) ),
-                        extents_may_be_equal_impl< ::std::experimental::extents<SizeType,Extents...>, ::std::experimental::extents<OtherSizeType,OtherExtents...>, ::std::make_index_sequence<sizeof...(Extents)> >,
+                        extents_may_be_equal_impl< ::std::extents<SizeType,Extents...>, ::std::extents<OtherSizeType,OtherExtents...>, ::std::make_index_sequence<sizeof...(Extents)> >,
                         ::std::false_type > {};
 
 template < class T, class U >
@@ -174,13 +174,13 @@ inline constexpr ::std::size_t nondynamic_rank_v = nondynamic_rank<E>::value;
 //  Returns the number of dimensions for which the extent is greater than one
 //==================================================================================================
 template < class SizeType, ::std::size_t ... Extents, ::std::size_t ... Ints >
-[[nodiscard]] inline constexpr ::std::size_t current_rank_impl( const ::std::experimental::extents<SizeType,Extents...>& extents,
+[[nodiscard]] inline constexpr ::std::size_t current_rank_impl( const ::std::extents<SizeType,Extents...>& extents,
                                                                 [[maybe_unused]] ::std::index_sequence<Ints...> ) noexcept
 {
   return ( ( extents.extent(Ints) > 1 ) + ... );
 }
 template < class SizeType, ::std::size_t ... Extents >
-[[nodiscard]] inline constexpr ::std::size_t current_rank( const ::std::experimental::extents<SizeType,Extents...>& extents ) noexcept
+[[nodiscard]] inline constexpr ::std::size_t current_rank( const ::std::extents<SizeType,Extents...>& extents ) noexcept
 {
   return current_rank_impl( extents, ::std::make_index_sequence<sizeof...(Extents)>() );
 }
@@ -317,17 +317,17 @@ template < class View >
 struct stride_order;
 
 template < class ElementType, class Extents, class AccessorPolicy >
-struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_left, AccessorPolicy > >
+struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_left, AccessorPolicy > >
 {
   template < class IndexType >
   [[nodiscard]] static constexpr auto get_nth_largest_stride_index( IndexType index ) noexcept
   {
-    return ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_left, AccessorPolicy >::rank() - index - 1;
+    return ::std::experimental::mdspan< ElementType, Extents, ::std::layout_left, AccessorPolicy >::rank() - index - 1;
   }
 };
 
 template < class ElementType, class Extents, class AccessorPolicy >
-struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_right, AccessorPolicy > >
+struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_right, AccessorPolicy > >
 {
   template < class IndexType >
   [[nodiscard]] static constexpr auto get_nth_largest_stride_index( IndexType index ) noexcept
@@ -339,9 +339,9 @@ struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::e
 // DOESN'T WORK. ORDER MUST BE DETERMINED AT COMPILE TIME
 //
 // template < class ElementType, class Extents, class AccessorPolicy >
-// struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_stride, AccessorPolicy > >
+// struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_stride, AccessorPolicy > >
 // {
-//   constexpr stride_order( const ::std::experimental::layout_stride::mapping<Extents>& layout ) noexcept :
+//   constexpr stride_order( const ::std::layout_stride::mapping<Extents>& layout ) noexcept :
 //     order_( layout.strides() )
 //   {
 //     sort( this->order_.begin(),
@@ -355,7 +355,7 @@ struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::e
 //     return this->order_[index];
 //   }
 // private :
-//   decltype( declval< ::std::experimental::layout_stride::mapping<Extents> >().strides() ) order_;
+//   decltype( declval< ::std::layout_stride::mapping<Extents> >().strides() ) order_;
 // };
 
 template < class         View,
@@ -855,14 +855,14 @@ template<class T, class Tuple>
 //  Sufficient Extents tests if the first extents encompasses the second
 //==================================================================================================
 template < class SizeType, class OtherSizeType, ::std::size_t ... Extents, ::std::size_t ... OtherExtents >
-[[nodiscard]] constexpr bool sufficient_extents( const ::std::experimental::extents<SizeType,Extents...>&           extents,
-                                                 const ::std::experimental::extents<OtherSizeType,OtherExtents...>& other_extents ) noexcept
+[[nodiscard]] constexpr bool sufficient_extents( const ::std::extents<SizeType,Extents...>&           extents,
+                                                 const ::std::extents<OtherSizeType,OtherExtents...>& other_extents ) noexcept
 {
   if constexpr ( sizeof...(Extents) == sizeof...(OtherExtents) )
   {
     // Iterate over each dimension
     bool sufficient = true;
-    for( ::std::size_t dim = 0; ( dim < ::std::experimental::extents<SizeType,Extents...>::rank() ) && sufficient; ++dim )
+    for( ::std::size_t dim = 0; ( dim < ::std::extents<SizeType,Extents...>::rank() ) && sufficient; ++dim )
     {
       // Set to false if size is not large enough
       sufficient = ( extents.extent( dim ) >= other_extents.extent( dim ) );
@@ -991,7 +991,7 @@ class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
   private:
     static constexpr U dyn_ext( [[maybe_unused]] U index ) noexcept { return ::std::dynamic_extent; }
   public:
-    using extents_type = ::std::experimental::extents<U,dyn_ext(Indices)...>;
+    using extents_type = ::std::extents<U,dyn_ext(Indices)...>;
     using tuple_type   = ::std::tuple<decltype(Indices)...>;
     [[nodiscard]] static constexpr U size( const extents_type& e ) noexcept { return ( e.extent(Indices) * ... ); }
     [[nodiscard]] static constexpr extents_type zero() noexcept { return extents_type( U( 0 * Indices ) ... ); }

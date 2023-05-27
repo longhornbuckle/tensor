@@ -546,4 +546,23 @@ operator *= ( M1& m1, const M2& m2 ) noexcept
 
 LINALG_END // end linalg namespace
 
+// Bring operators into std namespace for use with mdspan
+namespace  std
+{
+  using LINALG::operator -;
+  using LINALG::operator +;
+  using LINALG::operator *;
+  using LINALG::operator /;
+  using LINALG::operator %;
+  using LINALG::operator -=;
+  using LINALG::operator +=;
+  using LINALG::operator *=;
+  using LINALG::operator /=;
+  using LINALG::operator %=;
+  using LINALG::trans;
+  using LINALG::conj;
+  using LINALG::inner_prod;
+  using LINALG::outer_prod;
+} // std namespace
+
 #endif  //- LINEAR_ALGEBRA_ARITHMETIC_OPERATORS_HPP

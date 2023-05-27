@@ -23,7 +23,7 @@ class negate_tensor_expression_base
     constexpr negate_tensor_expression_base& operator = ( const negate_tensor_expression_base& t ) noexcept { this->t_ = t.t_; }
     constexpr negate_tensor_expression_base& operator = ( negate_tensor_expression_base&& t ) noexcept { this->t_ = t.t_; }
     // Aliases
-    using value_type   = decltype( - ::std::declval< typename ::std::remove_reference_t< Tensor >::value_type >() );
+    using value_type   = ::std::remove_cv_t< decltype( - ::std::declval< typename ::std::remove_reference_t< Tensor >::value_type >() ) >;
     using index_type   = typename ::std::remove_reference_t< Tensor >::index_type;
     using size_type    = typename ::std::remove_reference_t< Tensor >::size_type;
     using extents_type = typename ::std::remove_reference_t< Tensor >::extents_type;
@@ -200,14 +200,14 @@ class transpose_helper< Extents, transpose_indices_v >
     template < class >
     struct extents_helper;
     template < class SizeType, ::std::size_t ... Indices >
-    struct extents_helper< ::std::experimental::extents< SizeType, Indices ... > >
+    struct extents_helper< ::std::extents< SizeType, Indices ... > >
     {
     private:
       [[nodiscard]] static inline constexpr auto val() noexcept { return ::std::get<0>( tuple( Indices ... ) ); }
       [[nodiscard]] static inline constexpr auto dval( [[maybe_unused]] ::std::size_t ) noexcept { return ::std::dynamic_extent; }
     public:
       static inline constexpr bool all_extents_equal_v = ( ( Indices == val() ) && ... );
-      using dtype = ::std::experimental::extents< SizeType, ( dval( Indices ) , ... ) >;
+      using dtype = ::std::extents< SizeType, ( dval( Indices ) , ... ) >;
     };
   public:
     using extents_type = ::std::conditional_t< extents_helper< Extents >::all_extents_equal_v,
@@ -277,7 +277,7 @@ class transpose_helper< Extents, transpose_indices_t<index1,index2> >
           return i;
         }
       }
-      using extents_type = ::std::experimental::extents< typename Extents::size_type, Extents::static_extent( index( Indices ) ) ... >;
+      using extents_type = ::std::extents< typename Extents::size_type, Extents::static_extent( index( Indices ) ) ... >;
       [[nodiscard]] constexpr extents_type extents( const Extents& e, const transpose_indices_v& transpose_indices ) noexcept
       {
         return extents_type( e.extent( index( Indices ) ) ... );

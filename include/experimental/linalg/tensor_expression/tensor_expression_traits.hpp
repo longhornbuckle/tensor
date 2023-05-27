@@ -123,7 +123,9 @@ private :
   template < class T >
   struct readable_helper
   {
-    using type = typename ::std::remove_reference_t< T >::layout_type;
+    using type = ::std::conditional_t< ::std::is_same_v< typename ::std::remove_reference_t< T >::layout_type, ::std::layout_stride >,
+                                       default_layout,
+                                       typename ::std::remove_reference_t< T >::layout_type >;
   };
   template < class T >
   struct unevaluated_helper
@@ -131,20 +133,24 @@ private :
     using type = typename decltype( ::std::declval< ::std::remove_reference< T > >().operator auto() )::layout_type;
   };
 public :
-  using type = typename ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< ::std::remove_reference_t< Tensor > >,
-                                              readable_helper< Tensor >,
-                                              ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< Tensor > >,
-                                                                    unevaluated_helper< Tensor >,
-                                                                    invalid_helper< Tensor > > >::type;
+  using type = typename ::std::conditional_t< ( ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_right > ||
+                                                ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_left > ||
+                                                ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_stride > ),
+                                              ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< Tensor >,
+                                                                    readable_helper< Tensor >,
+                                                                    ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< Tensor >,
+                                                                                          unevaluated_helper< Tensor >,
+                                                                                          readable_helper< Tensor > > >,
+                                              invalid_helper< Tensor > >::type;
 };
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::readable_tensor Tensor >
 struct layout_result< LINALG_EXPRESSIONS::transpose_tensor_expression< Tensor > >
-  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_right > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_left > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_stride > )
+  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
+             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
+             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > )
 {
   using type = default_layout;
 };
@@ -172,9 +178,9 @@ private :
     using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
   };
 public :
-  using type = ::std::conditional_t< ( ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_right > ||
-                                       ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_left > ||
-                                       ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_stride > ),
+  using type = ::std::conditional_t< ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
+                                       ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
+                                       ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > ),
                                      ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< Tensor >,
                                                            typename readable_helper< Tensor >::type,
                                                            ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< Tensor >,
@@ -187,9 +193,9 @@ public :
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::readable_tensor Tensor >
 struct layout_result< LINALG_EXPRESSIONS::conjugate_tensor_expression< Tensor > >
-  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_right > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_left > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_stride > )
+  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
+             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
+             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > )
 {
   using type = default_layout;
 };
@@ -217,9 +223,9 @@ private :
     using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
   };
 public :
-  using type = ::std::conditional_t< ( ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_right > ||
-                                       ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_left > ||
-                                       ::std::is_same_v< typename Tensor::layout_type, ::std::experimental::layout_stride > ),
+  using type = ::std::conditional_t< ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
+                                       ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
+                                       ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > ),
                                      ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< Tensor >,
                                                            typename readable_helper< Tensor >::type,
                                                            ::std::conditional_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< Tensor >,
@@ -234,15 +240,15 @@ template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression B
            LINALG_CONCEPTS::readable_tensor                                    FirstTensor,
            LINALG_CONCEPTS::readable_tensor                                    SecondTensor >
 struct layout_result< BTE< FirstTensor, SecondTensor > >
-  requires ( ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_right > ||
-               ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_left > ||
-               ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_stride > ) &&
-             ( ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_right > ||
-               ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_left > ||
-               ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_stride > ) )
+  requires ( ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_right > ||
+               ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_left > ||
+               ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_stride > ) &&
+             ( ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_right > ||
+               ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_left > ||
+               ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_stride > ) )
 {
   using type = ::std::conditional_t< ::std::is_same_v< typename FirstTensor::layout_type, typename SecondTensor::layout_type > &&
-                                       ! ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_stride >,
+                                       ! ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_stride >,
                                      typename FirstTensor::layout_type,
                                      default_layout >;
 };
@@ -284,7 +290,7 @@ private:
   struct readable_readable_helper
   {
     using type = ::std::conditional_t< ::std::is_same_v< typename T::layout_type, typename U::layout_type > &&
-                                         ! ::std::is_same_v< typename T::layout_type, ::std::experimental::layout_stride >,
+                                         ! ::std::is_same_v< typename T::layout_type, ::std::layout_stride >,
                                        typename T::layout_type,
                                        default_layout >;
   };
@@ -300,12 +306,12 @@ private:
   };
 public:
   using type = ::std::conditional_t< ( LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor > > &&
-                                       ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_right > ||
-                                         ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_left > ||
-                                         ::std::is_same_v< typename FirstTensor::layout_type, ::std::experimental::layout_stride > ) &&
-                                       ( ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_right > ||
-                                         ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_left > ||
-                                         ::std::is_same_v< typename SecondTensor::layout_type, ::std::experimental::layout_stride > ) ),
+                                       ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_right > ||
+                                         ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_left > ||
+                                         ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_stride > ) &&
+                                       ( ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_right > ||
+                                         ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_left > ||
+                                         ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_stride > ) ),
                                      ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< FirstTensor >,
                                                            ::std::conditional_t< LINALG_CONCEPTS::readable_tensor_v< SecondTensor >,
                                                                                  typename readable_readable_helper< FirstTensor, SecondTensor >::type,
@@ -340,7 +346,7 @@ template < class T >
 class is_default_accessor : public ::std::false_type { };
 
 template < class T >
-class is_default_accessor< ::std::experimental::default_accessor< T > > : public ::std::true_type { };
+class is_default_accessor< ::std::default_accessor< T > > : public ::std::true_type { };
 
 template < class T >
 inline constexpr bool is_default_accessor_v = is_default_accessor< T >::value;
@@ -371,7 +377,14 @@ private:
   template < class T >
   struct readable_helper
   {
-    using type = typename ::std::remove_reference_t< T >::accessor_type;
+    template < class U >
+    struct default_helper
+    {
+      using type = ::std::default_accessor< typename ::std::remove_cv_t< typename ::std::remove_reference_t< U >::value_type > >;
+    };
+    using type = typename ::std::conditional_t< is_default_accessor_v< typename ::std::remove_reference_t< T >::accessor_type >,
+                                                default_helper< T >,
+                                                invalid_helper< T > >::type;
   };
   template < class T >
   struct unevaluated_helper
@@ -397,7 +410,7 @@ struct accessor_result< BTE< FirstTensor, SecondTensor > >
   requires ( is_default_accessor_v< typename FirstTensor::accessor_type > &&
              is_default_accessor_v< typename SecondTensor::accessor_type > )
 {
-  using type = ::std::experimental::default_accessor< decltype( ::std::declval< typename FirstTensor::value_type >() + ::std::declval< typename SecondTensor::value_type >() ) >;
+  using type = ::std::default_accessor< decltype( ::std::declval< typename FirstTensor::value_type >() + ::std::declval< typename SecondTensor::value_type >() ) >;
 };
 #else
 template < template < class, class, class Enable > class BTE,
@@ -414,7 +427,7 @@ private:
   {
     using type = ::std::conditional_t< ( is_default_accessor_v< typename ::std::remove_reference_t< T >::accessor_type > &&
                                          is_default_accessor_v< typename ::std::remove_reference_t< U >::accessor_type > ),
-                                       ::std::experimental::default_accessor< decltype( ::std::declval< typename ::std::remove_reference_t< T >::value_type >() + ::std::declval< typename ::std::remove_reference_t< U >::value_type >() ) >,
+                                       ::std::default_accessor< decltype( ::std::declval< typename ::std::remove_reference_t< T >::value_type >() + ::std::declval< typename ::std::remove_reference_t< U >::value_type >() ) >,
                                        typename invalid_helper< T, U >::type >;
   };
 public:

@@ -21,7 +21,7 @@ namespace
     // Copy construct
     tensor_type tensor_copy{ tensor };
     // Negate the tensor
-    tensor_type negate_tensor { -tensor };
+    auto negate_tensor { -tensor };
     // Access elements from const tensor
     auto val1 = LINALG_DETAIL::access( negate_tensor, 0, 0, 0 );
     auto val2 = LINALG_DETAIL::access( negate_tensor, 0, 0, 1 );
@@ -44,7 +44,7 @@ namespace
 
   TEST( NEGATION, FS_TENSOR )
   {
-    using tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 3, 3, 3 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
+    using tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 3, 3, 3 >, ::std::layout_right, ::std::default_accessor<double> >;
     // Construct
     tensor_type tensor { };
     // Populate via mutable index access
@@ -59,7 +59,7 @@ namespace
     // Copy construct
     tensor_type tensor_copy{ tensor };
     // Negate the tensor
-    tensor_type negate_tensor { -tensor };
+    auto negate_tensor { -tensor };
     // Access elements from const tensor
     auto val1 = LINALG_DETAIL::access( negate_tensor, 0, 0, 0 );
     auto val2 = LINALG_DETAIL::access( negate_tensor, 0, 0, 1 );
@@ -80,11 +80,10 @@ namespace
     EXPECT_EQ( val8, -8.0 );
   }
 
-/*
   TEST( NEGATION, TENSOR_VIEW )
   {
     // Get a rank 3 subtensor
-    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
+    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 5, 5, 5 >, ::std::layout_right, ::std::default_accessor<double> >;
     // Default construct
     fs_tensor_type fs_tensor;
     double val = 1;
@@ -102,7 +101,7 @@ namespace
     const fs_tensor_type& const_fs_tensor( fs_tensor );
     auto subtensor = LINALG::subtensor( const_fs_tensor, ::std::tuple(2,5), ::std::tuple(2,4), ::std::tuple(2,4) );
     // Negate subtensor
-    auto negate_subtensor = -subtensor;
+    auto negate_subtensor = - subtensor;
 
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 0, 0, 0 ) ), ( -LINALG_DETAIL::access( subtensor, 0, 0, 0 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 1, 0, 0 ) ), ( -LINALG_DETAIL::access( subtensor, 1, 0, 0 ) ) );
@@ -117,5 +116,5 @@ namespace
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 1, 1, 1 ) ), ( -LINALG_DETAIL::access( subtensor, 1, 1, 1 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 2, 1, 1 ) ), ( -LINALG_DETAIL::access( subtensor, 2, 1, 1 ) ) );
   }
-*/
+
 }

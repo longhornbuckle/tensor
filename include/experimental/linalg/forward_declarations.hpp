@@ -21,7 +21,7 @@ LINALG_EXPRESSIONS_BEGIN LINALG_EXPRESSIONS_END
 
 // Default layout
 LINALG_BEGIN
-using default_layout = ::std::experimental::layout_right;
+using default_layout = ::std::layout_right;
 LINALG_END
 
 //-  Tensor Expressions
@@ -229,7 +229,7 @@ LINALG_BEGIN // linalg namespace
 template < class T,
            class Extents,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor< T > >
+           class AccessorPolicy = ::std::default_accessor< T > >
 class fs_tensor
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ( Extents::rank_dynamic() == 0 )
@@ -241,16 +241,16 @@ template < class T,
            class Extents,
            class LayoutPolicy   = default_layout,
            class CapExtents     = Extents,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor< T > >
+           class Allocator      = ::std::allocator< T >,
+           class AccessorPolicy = ::std::default_accessor< T > >
 class dr_tensor;
 
 // Dynamic Tensor
 template < class         T,
            ::std::size_t N,
            class LayoutPolicy   = default_layout,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor< T > >
+           class Allocator      = ::std::allocator< T >,
+           class AccessorPolicy = ::std::default_accessor< T > >
 using dyn_tensor = dr_tensor< T,
                               LINALG_DETAIL::dyn_extents< ::std::size_t, N >,
                               LayoutPolicy,
@@ -258,13 +258,11 @@ using dyn_tensor = dr_tensor< T,
                               Allocator,
                               AccessorPolicy >;
 
-
-
 // Alias mdspan
 template < class ElementType,
            class Extents,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
+           class AccessorPolicy = ::std::default_accessor< ElementType > >
 using tensor_view = ::std::experimental::mdspan< ElementType, Extents, LayoutPolicy, AccessorPolicy >;
 
 // Alias matrix view
@@ -272,15 +270,15 @@ template < class ElementType,
            auto  R,
            auto  C,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
-using matrix_view = tensor_view< ElementType, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, AccessorPolicy >;
+           class AccessorPolicy = ::std::default_accessor< ElementType > >
+using matrix_view = tensor_view< ElementType, ::std::extents< ::std::common_type_t< decltype(R), decltype(C) >,static_cast< ::std::size_t >(R), static_cast< ::std::size_t >(C)>, LayoutPolicy, AccessorPolicy >;
 
 // Alias matrix view
 template < class ElementType,
            auto  N,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor<ElementType> >
-using vector_view = tensor_view< ElementType, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
+           class AccessorPolicy = ::std::default_accessor<ElementType> >
+using vector_view = tensor_view< ElementType, ::std::extents< decltype(N) ,static_cast< ::std::size_t >(N) >, LayoutPolicy, AccessorPolicy >;
 
 // Alias for dr_matrix
 template < class T,
@@ -289,33 +287,33 @@ template < class T,
            class LayoutPolicy   = default_layout,
            auto  Rc             = R,
            auto  Cc             = C,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using dr_matrix = dr_tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, ::std::experimental::extents<::std::common_type_t<decltype(Rc),decltype(Cc)>,static_cast<::std::size_t>(Rc),static_cast<::std::size_t>(Cc)>, Allocator, AccessorPolicy >;
+           class Allocator      = ::std::allocator< T >,
+           class AccessorPolicy = ::std::default_accessor< T > >
+using dr_matrix = dr_tensor< T, ::std::extents< ::std::common_type_t< decltype(R), decltype(C) >, static_cast< ::std::size_t >(R), static_cast< ::std::size_t >(C) >, LayoutPolicy, ::std::extents< ::std::common_type_t< decltype(Rc), decltype(Cc) >, static_cast<::std::size_t>(Rc), static_cast<::std::size_t>(Cc) >, Allocator, AccessorPolicy >;
 
 // Alias for dr_vector
 template < class T,
            auto  N,
            class LayoutPolicy   = default_layout,
            auto  Nc             = N,
-           class Allocator      = ::std::allocator<T>,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using dr_vector = dr_tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, ::std::experimental::extents<decltype(Nc),static_cast<::std::size_t>(Nc)>, Allocator, AccessorPolicy >;
+           class Allocator      = ::std::allocator< T >,
+           class AccessorPolicy = ::std::default_accessor< T > >
+using dr_vector = dr_tensor< T, ::std::extents< decltype(N), static_cast< ::std::size_t >(N) >, LayoutPolicy, ::std::extents< decltype(Nc) ,static_cast< ::std::size_t >(Nc) >, Allocator, AccessorPolicy >;
 
 // Alias for fs_matrix
 template < class T,
            auto  R,
            auto  C,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using fs_matrix = fs_tensor< T, ::std::experimental::extents<::std::common_type_t<decltype(R),decltype(C)>,static_cast<::std::size_t>(R),static_cast<::std::size_t>(C)>, LayoutPolicy, AccessorPolicy >;
+           class AccessorPolicy = ::std::default_accessor< T > >
+using fs_matrix = fs_tensor< T, ::std::extents< ::std::common_type_t< decltype(R), decltype(C) >, static_cast< ::std::size_t >(R), static_cast< ::std::size_t >(C) >, LayoutPolicy, AccessorPolicy >;
 
 // Alias for fs_vector
 template < class T,
            auto  N,
            class LayoutPolicy   = default_layout,
-           class AccessorPolicy = ::std::experimental::default_accessor<T> >
-using fs_vector = fs_tensor< T, ::std::experimental::extents<decltype(N),static_cast<::std::size_t>(N)>, LayoutPolicy, AccessorPolicy >;
+           class AccessorPolicy = ::std::default_accessor< T > >
+using fs_vector = fs_tensor< T, ::std::extents< decltype(N), static_cast< ::std::size_t >(N) >, LayoutPolicy, AccessorPolicy >;
 
 LINALG_END // end linalg namespace
 

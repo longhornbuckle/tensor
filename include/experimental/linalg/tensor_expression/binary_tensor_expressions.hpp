@@ -643,9 +643,9 @@ class matrix_product_expression
     using value_type   = decltype( ::std::declval<typename FirstMatrix::value_type>() * ::std::declval<typename SecondMatrix::value_type>() );
     using index_type   = ::std::common_type_t< typename FirstMatrix::index_type, typename SecondMatrix::index_type >;
     using size_type    = ::std::common_type_t< typename FirstMatrix::size_type, typename SecondMatrix::size_type >;
-    using extents_type = ::std::experimental::extents< ::std::common_type_t< typename FirstMatrix::extents_type::size_type, typename SecondMatrix::extents_type::size_type >,
-                                                       FirstMatrix::extents_type::static_extent(0),
-                                                       SecondMatrix::extents_type::static_extent(1) >;
+    using extents_type = ::std::extents< ::std::common_type_t< typename FirstMatrix::extents_type::size_type, typename SecondMatrix::extents_type::size_type >,
+                                         FirstMatrix::extents_type::static_extent(0),
+                                         SecondMatrix::extents_type::static_extent(1) >;
     using rank_type    = ::std::common_type_t< typename FirstMatrix::rank_type, typename SecondMatrix::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return 2; }
@@ -771,8 +771,8 @@ class vector_matrix_product_expression
     using value_type   = decltype( ::std::declval<typename Vector::value_type>() * ::std::declval<typename Matrix::value_type>() );
     using index_type   = ::std::common_type_t< typename Vector::index_type, typename Matrix::index_type >;
     using size_type    = ::std::common_type_t< typename Vector::size_type, typename Matrix::size_type >;
-    using extents_type = ::std::experimental::extents< ::std::common_type_t< typename Vector::extents_type::size_type, typename Matrix::extents_type::size_type >,
-                                                       Matrix::extents_type::static_extent(1) >;
+    using extents_type = ::std::extents< ::std::common_type_t< typename Vector::extents_type::size_type, typename Matrix::extents_type::size_type >,
+                                         Matrix::extents_type::static_extent(1) >;
     using rank_type    = ::std::common_type_t< typename Vector::rank_type, typename Matrix::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return 1; }
@@ -898,8 +898,8 @@ class matrix_vector_product_expression
     using value_type   = decltype( ::std::declval<typename Matrix::value_type>() * ::std::declval<typename Vector::value_type>() );
     using index_type   = ::std::common_type_t< typename Vector::index_type, typename Matrix::index_type >;
     using size_type    = ::std::common_type_t< typename Vector::size_type, typename Matrix::size_type >;
-    using extents_type = ::std::experimental::extents< ::std::common_type_t< typename Vector::extents_type::size_type, typename Matrix::extents_type::size_type >,
-                                                       Matrix::extents_type::static_extent(0) >;
+    using extents_type = ::std::extents< ::std::common_type_t< typename Vector::extents_type::size_type, typename Matrix::extents_type::size_type >,
+                                         Matrix::extents_type::static_extent(0) >;
     using rank_type    = ::std::common_type_t< typename Vector::rank_type, typename Matrix::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return 1; }
@@ -1012,9 +1012,9 @@ class outer_product_expression
     using value_type   = decltype( ::std::declval<typename FirstVector::value_type>() * ::std::declval<typename SecondVector::value_type>() );
     using index_type   = ::std::common_type_t< typename FirstVector::index_type, typename SecondVector::index_type >;
     using size_type    = ::std::common_type_t< typename FirstVector::size_type, typename SecondVector::size_type >;
-    using extents_type = ::std::experimental::extents< ::std::common_type_t< typename FirstVector::extents_type::size_type, typename SecondVector::extents_type::size_type >,
-                                                       FirstVector::extents_type::static_extent(0),
-                                                       SecondVector::extents_type::static_extent(0) >;
+    using extents_type = ::std::extents< ::std::common_type_t< typename FirstVector::extents_type::size_type, typename SecondVector::extents_type::size_type >,
+                                         FirstVector::extents_type::static_extent(0),
+                                         SecondVector::extents_type::static_extent(0) >;
     using rank_type    = ::std::common_type_t< typename FirstVector::rank_type, typename SecondVector::rank_type >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return 2; }

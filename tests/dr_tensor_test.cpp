@@ -230,7 +230,7 @@ namespace
 
   TEST( DR_TENSOR, TENSOR_EXPRESSION_ASSIGNMENT_OPERATOR )
   {
-    using float_left_tensor_type = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<float> >;
+    using float_left_tensor_type = LINALG::fs_tensor< float, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_right, ::std::default_accessor<float> >;
     // Default construct
     float_left_tensor_type fs_tensor;
     // Populate via mutable index access
@@ -267,7 +267,7 @@ namespace
 
   TEST( DR_TENSOR, ASSIGN_FROM_VIEW )
   {
-    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::experimental::layout_right, ::std::experimental::default_accessor<double> >;
+    using fs_tensor_type = LINALG::fs_tensor< double, ::std::extents< ::std::size_t, 2, 2, 2 >, ::std::layout_right, ::std::default_accessor<double> >;
     // Default construct
     fs_tensor_type fs_tensor;
     // Populate via mutable index access
@@ -422,7 +422,7 @@ namespace
     LINALG_DETAIL::access( dyn_tensor, 1, 1, 0 ) = 7.0;
     LINALG_DETAIL::access( dyn_tensor, 1, 1, 1 ) = 8.0;
     // Resize
-    dyn_tensor.reserve( std::experimental::extents<size_t,4,4,4>() );
+    dyn_tensor.reserve( ::std::extents<size_t,4,4,4>() );
     // Get values
     auto val1  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 0 );
     auto val2  = LINALG_DETAIL::access( dyn_tensor, 0, 0, 1 );
