@@ -127,7 +127,7 @@ class dr_tensor
     /// @param il initializer list of elements to be copied
     /// @param alloc allocator to be used
     #ifdef LINALG_ENABLE_CONCEPTS
-    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() );
+    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() )
       requires ( extents_type::rank_dynamic() == 0 );
     #else
     template < typename Enable >
@@ -225,7 +225,7 @@ class dr_tensor
     /// @param tensor tensor expression to be performed on each element
     /// @param alloc allocator used to construct with
     #ifdef LINALG_ENABLE_CONCEPTS
-    template < LINALG_CONCEPTS::tensor_expression Tensor >
+    template < class Tensor >
     #else
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
@@ -235,7 +235,9 @@ class dr_tensor
     #endif
     explicit constexpr dr_tensor( Tensor&& t, const allocator_type& alloc = allocator_type() )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ( Tensor::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > )
+      requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+                 ( ::std::remove_reference_t< Tensor >::rank() == extents_type::rank() ) &&
+                 LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
     #endif
     ;
     /// @brief Move assignment
@@ -255,7 +257,7 @@ class dr_tensor
     /// @param dr_tensor_expression to be copied
     /// @return self
     #ifdef LINALG_ENABLE_CONCEPTS
-    template < LINALG_CONCEPTS::tensor_expression Tensor >
+    template < class Tensor >
     #else
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
@@ -264,7 +266,9 @@ class dr_tensor
     #endif
     constexpr dr_tensor& operator = ( Tensor&& rhs )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ( Tensor::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename Tensor::extents_type > )
+      requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+                 ( ::std::remove_reference_t< Tensor >::rank() == extents_type::rank() ) &&
+                 LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
     #endif
     ;
 
@@ -627,7 +631,7 @@ dr_tensor( const ::std::initializer_list<value_type>& il, const ::std::extents< 
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-template < ::std::input_iterator< InputIt > InputIt >
+template < ::std::input_iterator InputIt >
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
 dr_tensor( InputIt first, InputIt last, const allocator_type& alloc  )
   requires ( ( extents_type::rank_dynamic() == 0 ) )
@@ -786,14 +790,15 @@ dr_tensor( const ::std::extents< OtherSizeType, OtherExtents ... >& s, const all
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
 #else
 template < class Tensor, typename >
 #endif
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::dr_tensor( Tensor&& t, const allocator_type& alloc )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( Tensor::rank() == dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) &&
-             LINALG_DETAIL::extents_may_be_equal_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+              ( ::std::remove_reference_t< Tensor >::rank() == dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) &&
+              LINALG_DETAIL::extents_may_be_equal_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
   :
   accessor_(),
@@ -960,14 +965,16 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
 #else
 template < class Tensor, typename >
 #endif
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>&
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( Tensor&& rhs )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( Tensor::rank() == dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename Tensor::extents_type > )
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::remove_reference_t< Tensor >::rank() == dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
 {
   if constexpr ( ::std::is_trivially_destructible_v<element_type> )

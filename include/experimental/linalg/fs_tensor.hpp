@@ -20,10 +20,10 @@ template < class T,
            class Extents,
            class LayoutPolicy,
            class AccessorPolicy >
-class fs_tensor
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ( Extents::rank_dynamic() == 0 )
 #endif
+class fs_tensor
 {
   public:
     //- Types
@@ -110,7 +110,7 @@ class fs_tensor
     /// @tparam Tensor tensor expression with an operator[]( indices ... ) defined
     /// @param t tensor expression to be performed on each element
     #ifdef LINALG_ENABLE_CONCEPTS
-    template < LINALG_CONCEPTS::tensor_expression Tensor >
+    template < class Tensor >
     #else
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
@@ -119,7 +119,9 @@ class fs_tensor
     #endif
     explicit constexpr fs_tensor( Tensor&& t )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ( ::std::decay_t< Tensor >::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::decay_t< Tensor >::extents_type > )
+      requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+                 ( ::std::remove_reference_t< Tensor >::rank() == extents_type::rank() ) &&
+                 LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
     #endif
     ;
     /// @brief Copy assignment
@@ -134,7 +136,7 @@ class fs_tensor
     /// @param tensor_expression to be copied
     /// @return self
     #ifdef LINALG_ENABLE_CONCEPTS
-    template < LINALG_CONCEPTS::tensor_expression Tensor >
+    template < class Tensor >
     #else
     template < class Tensor,
                typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::decay_t< Tensor > > &&
@@ -143,7 +145,9 @@ class fs_tensor
     #endif
     constexpr fs_tensor& operator = ( Tensor&& rhs )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( ( ::std::decay_t< Tensor >::rank() == extents_type::rank() ) && LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::decay_t< Tensor >::extents_type > )
+      requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+                 ( ::std::remove_reference_t< Tensor >::rank() == extents_type::rank() ) &&
+                 LINALG_DETAIL::extents_may_be_equal_v< extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
     #endif
     ;
 
@@ -318,10 +322,10 @@ fs_tensor( const ::std::initializer_list<value_type>& il ) :
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-template < ::std::input_iterator InputIt InputIt >
+template < ::std::input_iterator InputIt >
 constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::
 fs_tensor( InputIt first, InputIt last ) :
-  acccessor_(),
+  accessor_(),
   size_map_(),
   elems_( )
 {
@@ -382,14 +386,15 @@ constexpr fs_tensor( [[maybe_unused]] ::std::from_range_t, R&& rg )
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
 #else
 template < class Tensor, typename >
 #endif
 constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::fs_tensor( Tensor&& t )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( ::std::decay_t< Tensor >::rank() == tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type::rank() ) &&
-             LINALG_DETAIL::extents_may_be_equal_v< typename tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename ::std::decay_t< Tensor >::extents_type > )
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::remove_reference_t< Tensor >::rank() == fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
   :
   accessor_(),
@@ -456,15 +461,16 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator = ( const initializer
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
 #else
 template < class Tensor, typename >
 #endif
 constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>&
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator = ( Tensor&& rhs )
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( ::std::decay_t< Tensor >::rank() == fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type::rank() ) &&
-             LINALG_DETAIL::extents_may_be_equal_v< typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename ::std::decay_t< Tensor >::extents_type > )
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::remove_reference_t< Tensor >::rank() == fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
 {
   if constexpr ( ! ::std::is_trivially_destructible_v< element_type > )

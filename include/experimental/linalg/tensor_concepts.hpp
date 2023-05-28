@@ -11,6 +11,46 @@ LINALG_CONCEPTS_BEGIN // concepts namespace
 //  Tensor Concepts
 //=================================================================================================
 
+template < class T, class IndexType, IndexType ... indices >
+concept has_readable_index_operator =
+requires( const T& t )
+{
+  // Index access
+  #if LINALG_USE_BRACKET_OPERATOR
+  { t.operator[]( indices ... ) } -> ::std::convertible_to< typename T::value_type >;
+  #endif
+  #if LINALG_USE_PAREN_OPERATOR
+  { t.operator()( indices ... ) } -> ::std::convertible_to< typename T::value_type >;
+  #endif
+};
+
+template < class T, class IntegerSequence >
+struct has_readable_index_operator_helper : public ::std::false_type { };
+
+template < class T, class IndexType, IndexType ... indices >
+struct has_readable_index_operator_helper< T, ::std::integer_sequence< IndexType, indices ... > >
+  : public ::std::conditional_t< has_readable_index_operator< T, IndexType, indices ... >, ::std::true_type, ::std::false_type > { };
+
+template < class T, class IndexType, IndexType ... indices >
+concept has_writable_index_operator =
+requires( const T& t )
+{
+  // Index access
+  #if LINALG_USE_BRACKET_OPERATOR
+  { t.operator[]( indices ... ) } -> ::std::same_as< typename T::reference >;
+  #endif
+  #if LINALG_USE_PAREN_OPERATOR
+  { t.operator()( indices ... ) } -> ::std::same_as< typename T::reference >;
+  #endif
+};
+
+template < class T, class IntegerSequence >
+struct has_writable_index_operator_helper : public ::std::false_type { };
+
+template < class T, class IndexType, IndexType ... indices >
+struct has_writable_index_operator_helper< T, ::std::integer_sequence< IndexType, indices ... > >
+  : public ::std::conditional_t< has_writable_index_operator< T, IndexType, indices ... >, ::std::true_type, ::std::false_type > { };
+
 // The tensor concept.
 template < class T >
 concept tensor_expression = requires
@@ -32,28 +72,7 @@ requires( const T& t, typename T::rank_type n ) // Functions
   // Constexpr functions
   ::std::integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
-requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce index_type ... instead of auto ... using C++17 style enable_if */
-{
-  // Index access
-  #if LINALG_USE_BRACKET_OPERATOR
-  { t.operator[]( indices ... ) } -> ::std::convertible_to< typename T::value_type >;
-  #endif
-  #if LINALG_USE_PAREN_OPERATOR
-  { t.operator()( indices ... ) } -> ::std::convertible_to< typename T::value_type >;
-  #endif
-};
-
-// Unevaluated tensor expression
-template < class T >
-concept unevaluated_tensor_expression =
-tensor_expression< T > &&
-requires( T t )
-{
-  { t.operator auto() };
-} &&
-tensor_expression< decltype( auto( ::std::declval< T >() ) ) > &&
-( static_tensor< decltype( ::std::declval< T >().operator auto() ) > ||
-  dynamic_tensor< decltype( ::std::declval< T >().operator auto() ) > );
+has_readable_index_operator_helper< T, ::std::make_integer_sequence< typename T::size_type, T::rank() > >::value;
 
 // Matrix expression concept
 template < class T >
@@ -79,7 +98,7 @@ requires
   typename T::reference;
   typename T::data_handle_type;
 } &&
-requires( const T& t, typename T::rank_type n ) // Functions
+requires( T& t, typename T::rank_type n ) // Functions
 {
   // Size functions
   { T::rank_dynamic() }         noexcept -> ::std::same_as< typename T::rank_type >;
@@ -94,31 +113,22 @@ requires( const T& t, typename T::rank_type n ) // Functions
   { t.is_unique() }                      -> ::std::same_as< bool >;
   { t.stride( n ) }                      -> ::std::same_as< typename T::index_type >;
   // Member accessors
-  { t.accessor() }                       -> ::std::convertible_to< typename T::accessor_type >;
-  { t.data_handle() }                    -> ::std::convertible_to< typename T::data_handle_type >;
-  { t.mapping() }                        -> ::std::convertible_to< typename T::mapping_type >;
+  //{ t.accessor() }                       -> ::std::convertible_to< ::std::remove_cv_t< ::std::decay_t< typename T::accessor_type > > >;
+  // { t.data_handle() }                    -> ::std::convertible_to< typename T::data_handle_type >;
+  // { t.mapping() }                        -> ::std::convertible_to< typename T::mapping_type >;
   // Constexpr functions
-  ::std::integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
-  ::std::integral_constant< typename T::size_type, T::static_extent( n ) >::value;
-  ::std::bool_constant< T::is_always_strided() >::value;
-  ::std::bool_constant< T::is_always_exhaustive() >::value;
-  ::std::bool_constant< T::is_always_unique() >::value;
+  // ::std::integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
+  // ::std::integral_constant< typename T::size_type, T::static_extent( T::rank_dynamic() ) >::value;
+  // ::std::bool_constant< T::is_always_strided() >::value;
+  // ::std::bool_constant< T::is_always_exhaustive() >::value;
+  // ::std::bool_constant< T::is_always_unique() >::value;
 };
 
 // Writable tensor concept
 template < class T >
 concept writable_tensor =
 readable_tensor< T > &&
-requires( T& t, auto ... indices ) /* NOTE: there might be a way to enforce index_type ... instead of auto ... using C++17 style enable_if */
-{
-  // Index access
-  #if LINALG_USE_BRACKET_OPERATOR
-  { t.operator[]( indices ... ) } -> ::std::same_as< typename T::reference >;
-  #endif
-  #if LINALG_USE_PAREN_OPERATOR
-  { t.operator()( indices ... ) } -> ::std::same_as< typename T::reference >;
-  #endif
-};
+has_writable_index_operator_helper< T, ::std::make_integer_sequence< typename T::size_type, T::rank() > >::value;
 
 // Static tensor concept
 template < class T >
@@ -126,11 +136,11 @@ concept static_tensor =
 writable_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
 ::std::default_initializable< T > &&
-requires ( const T& t )
+// Constexpr functions
+LINALG_DETAIL::is_constexpr( []{ T { }; } ) &&
+requires
 {
-  // Constexpr functions
-  LINALG_DETAIL::is_constexpr( []{ [[maybe_unused]] T { }; } ) &&
-  integral_constant< typename T::size_type, t.size() >::value;
+  integral_constant< typename T::size_type, T { }.size() >::value;
 };
 
 // Dynamic tensor concept
@@ -140,7 +150,7 @@ writable_tensor< T > &&
 requires
 {
   // Types
-  typename T::allocator_type
+  typename T::allocator_type;
 } &&
 requires( const T& t, typename T::extents_type s, typename T::allocator_type alloc ) // Functions
 {
@@ -155,6 +165,18 @@ requires( const T& t, typename T::extents_type s, typename T::allocator_type all
 } &&
 constructible_from< T, typename T::allocator_type > &&
 constructible_from< T, const typename T::extents_type&, typename T::allocator_type >;
+
+// Unevaluated tensor expression
+template < class T >
+concept unevaluated_tensor_expression =
+tensor_expression< T > &&
+requires( T t )
+{
+  { t.operator auto() };
+} &&
+tensor_expression< decltype( ::std::declval< T >().operator auto() ) > &&
+( static_tensor< decltype( ::std::declval< T >().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval< T >().operator auto() ) > );
 
 // Unary tensor expression concept
 template < class T >

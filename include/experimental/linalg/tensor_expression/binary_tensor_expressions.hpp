@@ -24,15 +24,13 @@ LINALG_EXPRESSIONS_BEGIN // expressions namespace
 // Addition tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
+  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
+             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2; } )
 #else
 template < class FirstTensor, class SecondTensor, typename Enable >
 #endif
 class addition_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
-             LINALG_DETAIL::extents_maybe_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
-             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2 }; )
-#endif
 {
   private:
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -130,15 +128,13 @@ class addition_tensor_expression
 // Subtraction tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
+  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
+             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 - v2; } )
 #else
 template < class FirstTensor, class SecondTensor, typename Enable >
 #endif
 class subtraction_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
-             LINALG_DETAIL::extents_maybe_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
-             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 - v2 }; )
-#endif
 {
   private:
     #ifdef LINALG_ENABLE_CONCEPTS
@@ -234,13 +230,11 @@ class subtraction_tensor_expression
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { s * v; }
 #else
 template < class S, class Tensor, typename Enable >
 #endif
 class scalar_preprod_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { { s * v; } }
-#endif
 {
   private:
     // Alias for self
@@ -326,14 +320,12 @@ class scalar_preprod_tensor_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
+template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { v * s; }
 #else
-template < class Tensor, class S, typename Enable >
+template < class S, class Tensor, typename Enable >
 #endif
 class scalar_postprod_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v * s; } }
-#endif
 {
   private:
     // Alias for self
@@ -420,13 +412,11 @@ class scalar_postprod_tensor_expression
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { v / s; }
 #else
 template < class Tensor, class S, typename Enable >
 #endif
 class scalar_division_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v / s; } }
-#endif
 {
   private:
     // Alias for self
@@ -513,13 +503,11 @@ class scalar_division_tensor_expression
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
+  requires requires ( const S& s, const typename Tensor::value_type& v ) { v % s; }
 #else
 template < class Tensor, class S, typename Enable >
 #endif
 class scalar_modulo_tensor_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { { v % s; } }
-#endif
 {
   private:
     // Alias for self
@@ -605,17 +593,15 @@ class scalar_modulo_tensor_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < matrix_expression FirstMatrix, matrix_expression SecondMatrix >
+template < LINALG_CONCEPTS::matrix_expression FirstMatrix, LINALG_CONCEPTS::matrix_expression SecondMatrix >
+  requires ( ( requires ( const typename FirstMatrix::value_type& v1, const typename SecondMatrix::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( FirstMatrix::extents_type::static_extent(1) == SecondMatrix::extents_type::static_extent(0) ) ||
+               ( FirstMatrix::extents_type::static_extent(1) == ::std::dynamic_extent ) ||
+               ( SecondMatrix::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
 #else
 template < class FirstMatrix, class SecondMatrix, typename Enable >
 #endif
 class matrix_product_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( requires ( const typename FirstMatrix::value_type& v1, const typename SecondMatrix::value_type& v2 ) { { v1 * v2; } } ) &&
-             ( ( FirstMatrix::extents_type::static_extent(1) == SecondMatrix::extents_type::static_extent(0) ) ||
-               ( FirstMatrix::extents_type::static_extent(1) == ::std::experimental::dynamic_extent ) ||
-               ( SecondMatrix::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) ) )
-#endif
 {
   private:
     // Alias for self
@@ -733,17 +719,15 @@ class matrix_product_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < vector_expression Vector, matrix_expression Matrix >
+template < LINALG_CONCEPTS::vector_expression Vector, LINALG_CONCEPTS::matrix_expression Matrix >
+  requires ( ( requires ( const typename Vector::value_type& v1, const typename Matrix::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(0) ) ||
+               ( Vector::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
+               ( Matrix::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
 #else
 template < class Vector, class Matrix, typename Enable >
 #endif
 class vector_matrix_product_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( requires ( const typename Vector::value_type& v1, const typename Matrix::value_type& v2 ) { { v1 * v2; } } ) &&
-             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(0) ) ||
-               ( Vector::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) ||
-               ( Matrix::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) ) )
-#endif
 {
   private:
     // Alias for self
@@ -860,17 +844,15 @@ class vector_matrix_product_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < matrix_expression Matrix, vector_expression Vector >
+template < LINALG_CONCEPTS::matrix_expression Matrix, LINALG_CONCEPTS::vector_expression Vector >
+  requires ( ( requires ( const typename Matrix::value_type& v1, const typename Vector::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(1) ) ||
+               ( Vector::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
+               ( Matrix::extents_type::static_extent(1) == ::std::dynamic_extent ) ) )
 #else
 template < class Matrix, class Vector, typename Enable >
 #endif
 class matrix_vector_product_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ( requires ( const typename Matrix::value_type& v1, const typename Vector::value_type& v2 ) { { v1 * v2; } } ) &&
-             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(1) ) ||
-               ( Vector::extents_type::static_extent(0) == ::std::experimental::dynamic_extent ) ||
-               ( Matrix::extents_type::static_extent(1) == ::std::experimental::dynamic_extent ) ) )
-#endif
 {
   private:
     // Alias for self
@@ -987,14 +969,12 @@ class matrix_vector_product_expression
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < vector_expression FirstVector, vector_expression SecondVector >
+template < LINALG_CONCEPTS::vector_expression FirstVector, LINALG_CONCEPTS::vector_expression SecondVector >
+  requires ( requires ( const typename FirstVector::value_type& v1, const typename SecondVector::value_type& v2 ) { v1 * v2; } )
 #else
 template < class FirstVector, class SecondVector, typename Enable >
 #endif
 class outer_product_expression
-#ifdef LINALG_ENABLE_CONCEPTS
-  requires ( requires ( const typename FirstVector::value_type& v1, const typename SecondVector::value_type& v2 ) { { v1 * v2; } } )
-#endif
 {
   private:
     // Alias for self

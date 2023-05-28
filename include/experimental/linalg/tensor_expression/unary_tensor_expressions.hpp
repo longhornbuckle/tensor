@@ -57,7 +57,8 @@ class negate_tensor_expression_base
 
 // Negation tensor expression
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor, typename Enable >
 #endif
@@ -105,20 +106,20 @@ class negate_tensor_expression
     #endif
     // Implicit conversion
     [[nodiscard]] constexpr operator auto() const
-      noexcept( ( extents_type::rank_dynamic() == 0 ) ?
-                ::std::is_nothrow_constructible_v< fs_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   negate_tensor_expression_base<Tensor> > :
-                ::std::is_nothrow_constructible_v< dr_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              extents_type,
-                                                              typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   negate_tensor_expression_base<Tensor>,
-                                                   decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
+      // noexcept( ( extents_type::rank_dynamic() == 0 ) ?
+      //           ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+      //                                                         extents_type,
+      //                                                         layout_result_t< self_type >,
+      //                                                         accessor_result_t< self_type > >,
+      //                                              negate_tensor_expression_base< Tensor > > :
+      //           ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+      //                                                         extents_type,
+      //                                                         layout_result_t< self_type >,
+      //                                                         extents_type,
+      //                                                         typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
+      //                                                         accessor_result_t< self_type > >,
+      //                                              negate_tensor_expression_base< Tensor >,
+      //                                              decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
 
     {
       if constexpr ( extents_type::rank_dynamic() == 0 )
@@ -326,7 +327,8 @@ class transpose_helper< Extents, transpose_indices_t<index1,index2> >
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose >
+template < class Tensor, class Transpose >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor, class Transpose, typename Enable >
 #endif
@@ -432,7 +434,8 @@ private:
 
 // Conjugate
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class Transpose >
+template < class Tensor, class Transpose >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor, class Transpose, typename Enable >
 #endif

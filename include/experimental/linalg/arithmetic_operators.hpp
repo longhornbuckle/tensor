@@ -429,7 +429,7 @@ template < class V1, class V2,
 [[nodiscard]] inline constexpr decltype(auto)
 outer_prod( const V1& v1, const V2& v2 ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::outer_product_expression< const V1&, const V2& >, const V1&, const V2& > > >
+  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::outer_product_expression< const V1&, const V2& >, const V1&, const V2& >
 #endif
 {
   return LINALG_EXPRESSIONS::outer_product_expression( v1, v2 );
@@ -537,8 +537,8 @@ template < class M1, class M2,
 [[nodiscard]] inline constexpr M1&
 operator *= ( M1& m1, const M2& m2 ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( ::std::is_constructible_v< LINALG_EXPRESSIONS::vector_matrix_product_expression< M1&, const M2& >, M1&, const M2& > &&
-             ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::vector_matrix_product_expression< M1&, const M2& > > )
+  requires ( ::std::is_constructible_v< LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& >, M1&, const M2& > &&
+             ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > )
 #endif
 {
   return m1 = LINALG_EXPRESSIONS::matrix_product_expression( m1, m2 );

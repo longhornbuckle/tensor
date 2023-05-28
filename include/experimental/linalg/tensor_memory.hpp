@@ -45,7 +45,7 @@ class tensor_memory
     constexpr tensor_memory( const tensor_memory<U,Alloc>& tm, const MappingType& mapping );
     // Template move construction
     template < class MappingType >
-    constexpr tensor_memory( tensor_memory&& tm, const MappingType& mapping ) noexcept;
+    constexpr tensor_memory( tensor_memory&& tm, [[maybe_unused]] const MappingType& ) noexcept;
     // Construct from allocator (no allocation)
     template < class Alloc >
     constexpr tensor_memory( const Alloc& alloc ) noexcept;
@@ -110,7 +110,7 @@ tensor_memory( const tensor_memory<U,Alloc>& tm, const MappingType& mapping ) :
 template < class T, class Allocator >
 template < class MappingType >
 constexpr tensor_memory<T,Allocator>::
-tensor_memory( tensor_memory&& tm, const MappingType& mapping ) noexcept :
+tensor_memory( tensor_memory&& tm, [[maybe_unused]] const MappingType& ) noexcept :
   // Move or construct allocator
   alloc_( ::std::move( tm.alloc_ ) ),
   // Move pointer

@@ -102,13 +102,20 @@ template < class Tensor >
 struct layout_result;
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::readable_tensor Tensor >
-struct layout_result< negate_tensor_expression< Tensor > >
+template < class Tensor >
+  requires ( LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_right > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_left > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_stride > ) )
+struct layout_result< LINALG_EXPRESSIONS::negate_tensor_expression< Tensor > >
 {
-  using type = typename ::std::remove_reference_t< Tensor >::layout_type;
+  using type = ::std::conditional_t< ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_stride >,
+                                     default_layout,
+                                     typename ::std::remove_reference_t< Tensor >::layout_type >;
 };
 
-template < LINALG_CONCEPTS::unevaluated_tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > >
 struct layout_result< LINALG_EXPRESSIONS::negate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
@@ -146,17 +153,19 @@ public :
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::readable_tensor Tensor >
+template < class Tensor >
+  requires ( LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_right > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_left > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_stride > ) )
 struct layout_result< LINALG_EXPRESSIONS::transpose_tensor_expression< Tensor > >
-  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > )
 {
   using type = default_layout;
 };
 
-template < LINALG_CONCEPTS::unevaluated_tensor_expression Tensor >
-struct layout_result< transpose_tensor_expression< Tensor > >
+template < class Tensor >
+  requires LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > >
+struct layout_result< LINALG_EXPRESSIONS::transpose_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
 };
@@ -192,15 +201,17 @@ public :
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < LINALG_CONCEPTS::readable_tensor Tensor >
+  requires ( LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< Tensor > > &&
+             ( ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_right > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_left > ||
+               ::std::is_same_v< typename ::std::remove_reference_t< Tensor >::layout_type, ::std::layout_stride > ) )
 struct layout_result< LINALG_EXPRESSIONS::conjugate_tensor_expression< Tensor > >
-  requires ( ::std::is_same_v< typename Tensor::layout_type, ::std::layout_right > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_left > ||
-             ::std::is_same_v< typename Tensor::layout_type, ::std::layout_stride > )
 {
   using type = default_layout;
 };
 
-template < LINALG_CONCEPTS::unevaluated_tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > >
 struct layout_result< LINALG_EXPRESSIONS::conjugate_tensor_expression< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::layout_type;
@@ -236,16 +247,18 @@ public :
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::readable_tensor                                    FirstTensor,
-           LINALG_CONCEPTS::readable_tensor                                    SecondTensor >
-struct layout_result< BTE< FirstTensor, SecondTensor > >
-  requires ( ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_right > ||
+template < template < class, class > class  BTE,
+           LINALG_CONCEPTS::readable_tensor FirstTensor,
+           LINALG_CONCEPTS::readable_tensor SecondTensor >
+  requires ( LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< SecondTensor > > &&
+             ( ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_right > ||
                ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_left > ||
                ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_stride > ) &&
              ( ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_right > ||
                ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_left > ||
                ::std::is_same_v< typename SecondTensor::layout_type, ::std::layout_stride > ) )
+struct layout_result< BTE< FirstTensor, SecondTensor > >
 {
   using type = ::std::conditional_t< ::std::is_same_v< typename FirstTensor::layout_type, typename SecondTensor::layout_type > &&
                                        ! ::std::is_same_v< typename FirstTensor::layout_type, ::std::layout_stride >,
@@ -253,28 +266,34 @@ struct layout_result< BTE< FirstTensor, SecondTensor > >
                                      default_layout >;
 };
 
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::unevaluated_tensor_expression                      FirstTensor,
-           LINALG_CONCEPTS::readable_tensor                                    SecondTensor >
+template < template < class, class > class BTE,
+           class                           FirstTensor,
+           class                           SecondTensor >
+  requires ( LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< SecondTensor > > )
 struct layout_result< BTE< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< BTE< decltype( ::std::declval< FirstTensor >().operator auto() ), SecondTensor > >::type;
+  using type = typename layout_result< ::std::remove_reference_t< BTE< decltype( ::std::declval< FirstTensor >().operator auto() ), SecondTensor > > >::type;
 };
 
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::readable_tensor                                    FirstTensor,
-           LINALG_CONCEPTS::unevaluated_tensor_expression                      SecondTensor >
+template < template < class, class > class BTE,
+           class                           FirstTensor,
+           class                           SecondTensor >
+  requires ( LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< SecondTensor > > )
 struct layout_result< BTE< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< BTE< FirstTensor, decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
+  using type = typename layout_result< ::std::remove_reference_t< BTE< FirstTensor, decltype( ::std::declval< SecondTensor >().operator auto() ) > > >::type;
 };
 
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::unevaluated_tensor_expression                      FirstTensor,
-           LINALG_CONCEPTS::unevaluated_tensor_expression                      SecondTensor >
+template < template < class, class > class BTE,
+           class                           FirstTensor,
+           class                           SecondTensor >
+  requires ( LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< SecondTensor > > )
 struct layout_result< BTE< FirstTensor, SecondTensor > >
 {
-  using type = typename layout_result< BTE< decltype( ::std::declval< FirstTensor >().operator auto() ), decltype( ::std::declval< SecondTensor >().operator auto() ) > >::type;
+  using type = typename layout_result< ::std::remove_reference_t< BTE< decltype( ::std::declval< FirstTensor >().operator auto() ), decltype( ::std::declval< SecondTensor >().operator auto() ) > > >::type;
 };
 #else
 
@@ -352,16 +371,18 @@ template < class T >
 inline constexpr bool is_default_accessor_v = is_default_accessor< T >::value;
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < template < class > LINALG_CONCEPTS::unary_tensor_expression UTE,
-           LINALG_CONCEPTS::readable_tensor                            Tensor >
-struct accessor_result< UTA< Tensor > >
+template < template < class > class UTE,
+           class                    Tensor >
+  requires LINALG_CONCEPTS::readable_tensor< ::std::remove_reference_t< Tensor > >
+struct accessor_result< UTE< Tensor > >
 {
-  using type = typename Tensor::accessor_type;
+  using type = typename ::std::remove_reference_t< Tensor >::accessor_type;
 };
 
-template < template < class > LINALG_CONCEPTS::unary_tensor_expression UTE,
-           LINALG_CONCEPTS::unevaluated_tensor_expression              Tensor >
-struct accessor_result< UTA< Tensor > >
+template < template < class > class UTE,
+           class                    Tensor >
+  requires LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > >
+struct accessor_result< UTE< Tensor > >
 {
   using type = typename decltype( ::std::declval< Tensor >().operator auto() )::accessor_type;
 };
@@ -403,14 +424,16 @@ public:
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::tensor_expression                                  FirstTensor,
-           LINALG_CONCEPTS::tensor_expression                                  SecondTensor >
-struct accessor_result< BTE< FirstTensor, SecondTensor > >
-  requires ( is_default_accessor_v< typename FirstTensor::accessor_type > &&
+template < template < class, class > class BTE,
+           class                           FirstTensor,
+           class                           SecondTensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > &&
+             is_default_accessor_v< typename FirstTensor::accessor_type > &&
              is_default_accessor_v< typename SecondTensor::accessor_type > )
+struct accessor_result< BTE< FirstTensor, SecondTensor > >
 {
-  using type = ::std::default_accessor< decltype( ::std::declval< typename FirstTensor::value_type >() + ::std::declval< typename SecondTensor::value_type >() ) >;
+  using type = ::std::default_accessor< typename ::std::remove_reference_t< BTE< FirstTensor, SecondTensor > >::value_type >;
 };
 #else
 template < template < class, class, class Enable > class BTE,
@@ -425,10 +448,16 @@ private:
   template < class T, class U >
   struct default_helper
   {
-    using type = ::std::conditional_t< ( is_default_accessor_v< typename ::std::remove_reference_t< T >::accessor_type > &&
-                                         is_default_accessor_v< typename ::std::remove_reference_t< U >::accessor_type > ),
-                                       ::std::default_accessor< decltype( ::std::declval< typename ::std::remove_reference_t< T >::value_type >() + ::std::declval< typename ::std::remove_reference_t< U >::value_type >() ) >,
-                                       typename invalid_helper< T, U >::type >;
+    template < class V >
+    struct helper
+    {
+      using type = ::std::default_accessor< ::std::remove_reference_t< V > >;
+    };
+    
+    using type = typename ::std::conditional_t< ( is_default_accessor_v< typename ::std::remove_reference_t< T >::accessor_type > &&
+                                                  is_default_accessor_v< typename ::std::remove_reference_t< U >::accessor_type > ),
+                                                helper< BTE< FirstTensor, SecondTensor, Enable > >,
+                                                invalid_helper< T, U > >::type;
   };
 public:
   using type = typename ::std::conditional_t< ( LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< FirstTensor > > &&
@@ -439,7 +468,8 @@ public:
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
@@ -449,22 +479,25 @@ using accessor_result_t = typename accessor_result< Tensor >::type;
 // Allocator result defines the resultant allocator of an unevaluated tensor expression.
 // It must be defined for any given unevaluated tensor expression.
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 struct allocator_result
 {
-  using type = ::std::allocator< typename Tensor::value_type >;
+  using type = ::std::allocator< typename ::std::remove_reference_t< Tensor >::value_type >;
   [[nodiscard]] static inline constexpr type get_allocator( Tensor&& ) noexcept { return type(); }
 };
 
-template < LINALG_CONCEPTS::dynamic_tensor Tensor >
+template < class Tensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< Tensor > > )
 struct allocator_result< Tensor >
 {
-  using type = typename Tensor::allocator_type;
+  using type = typename ::std::remove_reference_t< Tensor >::allocator_type;
   [[nodiscard]] static inline constexpr type get_allocator( Tensor&& t ) noexcept
   {
     if constexpr ( ! ::std::is_rvalue_reference_v<Tensor> )
     {
-      return ::std::allocator_traits< typename Tensor::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
+      return ::std::allocator_traits< typename ::std::remove_reference_t< Tensor >::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
     }
     else
     {
@@ -526,12 +559,14 @@ public:
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < template < class > LINALG_CONCEPTS::unary_tensor_expression UTE,
-           LINALG_CONCEPTS::tensor_expression                          Tensor >
+template < template < class > class UTE,
+           class                    Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 struct allocator_result< UTE< Tensor > >
 {
-  using type = typename allocator_result< decltype( ::std::declval< UTE< Tensor > >.underlying() ) >::allocator_type;
-  [[nodiscard]] static inline constexpr type get_allocator( UTE< Tensor >&& t ) noexcept { return allocator_result< decltype( ::std::declval< UTE< Tensor > >.underlying() ) >::get_allocator( t.underlying(); ) }
+  using type = typename allocator_result< decltype( ::std::declval< UTE< Tensor > >().underlying() ) >::type;
+  [[nodiscard]] static inline constexpr type get_allocator( const UTE< Tensor >& t ) noexcept
+    { return allocator_result< decltype( ::std::declval< UTE< Tensor > >().underlying() ) >::get_allocator( t.underlying() ); }
 };
 #else
 template < template < class, class > class UTE,
@@ -567,19 +602,21 @@ public:
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < template < class, class > LINALG_CONCEPTS::binary_tensor_expression BTE,
-           LINALG_CONCEPTS::tensor_expression                                  FirstTensor,
-           LINALG_CONCEPTS::tensor_expression                                  SecondTensor >
+template < template < class, class > class BTE,
+           class                           FirstTensor,
+           class                           SecondTensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > )
 struct allocator_result< BTE< FirstTensor, SecondTensor > >
 {
-  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::remove_cv_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >.first() ) > > ||
-                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_cv_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >.second() ) > >,
+  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().first() ) > > ||
+                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().second() ) > >,
                                                                 decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().first() ),
                                                                 decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().second() ) > >::type;
-  [[nodiscard]] static inline constexpr type get_allocator( BTE< FirstTensor, SecondTensor >&& t ) noexcept
+  [[nodiscard]] static inline constexpr type get_allocator( const BTE< FirstTensor, SecondTensor >& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::remove_cv_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().first() ) > > ||
-                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_cv_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().second() ) > > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().first() ) > > ||
+                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().second() ) > > )
     {
       return allocator_result< decltype( ::std::declval< BTE< FirstTensor, SecondTensor > >().first() ) >::get_allocator( t.first() );
     }
@@ -623,7 +660,7 @@ public:
   using type = ::std::conditional_t< LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor, Enable > >,
                                      typename valid_helper< BTE< FirstTensor, SecondTensor, Enable > >::type,
                                      typename invalid_helper< BTE< FirstTensor, SecondTensor, Enable > >::type >;
-  [[nodiscard]] static inline constexpr type get_allocator( BTE< FirstTensor, SecondTensor, Enable >&& t ) noexcept
+  [[nodiscard]] static inline constexpr type get_allocator( const BTE< FirstTensor, SecondTensor, Enable >& t ) noexcept
   {
     if constexpr ( LINALG_CONCEPTS::binary_tensor_expression_v< BTE< FirstTensor, SecondTensor, Enable > > )
     {
@@ -638,7 +675,8 @@ public:
 #endif
 
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor >
+template < class Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< Tensor > > >
 #endif
