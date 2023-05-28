@@ -14,16 +14,65 @@
 
 LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
+template < class Tensor, class Traits >
+class unary_tensor_expression_base;
+
+#ifdef LINALG_ENABLE_CONCEPTS
+template < template < class > class UTE, class Tensor, class Traits >
+class unary_tensor_expression_base< UTE< Tensor >, Traits >
+#else
+template < template < class, class > class UTE, class Tensor, typename Enable, class Traits >
+class unary_tensor_expression_base< UTE< Tensor, Enable >, Traits >
+#endif
+{
+  private :
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using expression_type = UTE< Tensor >;
+    #else
+    using expression_type = UTE< Tensor, Enable >;
+    #endif
+  public:
+    // Aliases
+    using value_type   = typename Traits::value_type;
+    using index_type   = typename Traits::index_type;
+    using size_type    = typename Traits::size_type;
+    using extents_type = typename Traits::extents_type;
+    using rank_type    = typename Traits::rank_type;
+    // Tensor expression functions
+    [[nodiscard]] static constexpr rank_type rank() noexcept { return expression_type::rank(); }
+    [[nodiscard]] constexpr extents_type extents() const noexcept { return static_cast< const expression_type* >(this)->extents(); }
+    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return static_cast< const expression_type* >(this)->extent( n ); }
+    // Unary tensor expression function
+    [[nodiscard]] constexpr decltype(auto) underlying() const noexcept { return static_cast< const expression_type* >(this)->underlying(); }
+    // Index access
+    #if LINALG_USE_BRACKET_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( static_cast< const expression_type* >(this)->operator[]( indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return static_cast< const expression_type* >(this)->operator[]( indices ... ); }
+    #endif
+    #if LINALG_USE_PAREN_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( static_cast< const expression_type* >(this)->operator()( indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return static_cast< const expression_type* >(this)->operator()( indices ... ); }
+    #endif
+};
+
 template < class Tensor >
-class negate_tensor_expression_base
+class binary_tensor_expression_base
 {
   public:
     // Special member functions
-    constexpr negate_tensor_expression_base( Tensor&& t ) noexcept : t_(t) { }
-    constexpr negate_tensor_expression_base& operator = ( const negate_tensor_expression_base& t ) noexcept { this->t_ = t.t_; }
-    constexpr negate_tensor_expression_base& operator = ( negate_tensor_expression_base&& t ) noexcept { this->t_ = t.t_; }
+    constexpr binary_tensor_expression_base( Tensor&& t ) noexcept : t_(t) { }
+    constexpr binary_tensor_expression_base& operator = ( const binary_tensor_expression_base& t ) noexcept { this->t_ = t.t_; }
+    constexpr binary_tensor_expression_base& operator = ( binary_tensor_expression_base&& t ) noexcept { this->t_ = t.t_; }
     // Aliases
-    using value_type   = ::std::remove_cv_t< decltype( - ::std::declval< typename ::std::remove_reference_t< Tensor >::value_type >() ) >;
+    using value_type   = typename ::std::remove_reference_t< Tensor >::value_type;
     using index_type   = typename ::std::remove_reference_t< Tensor >::index_type;
     using size_type    = typename ::std::remove_reference_t< Tensor >::size_type;
     using extents_type = typename ::std::remove_reference_t< Tensor >::extents_type;
@@ -32,8 +81,109 @@ class negate_tensor_expression_base
     [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< Tensor >::rank(); }
     [[nodiscard]] constexpr extents_type extents() const noexcept { return t_.extents(); }
     [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return t_.extent(n); }
+    // Binary tensor expression function
+    [[nodiscard]] constexpr decltype(auto) first() const noexcept { return this->t_.first(); }
+    [[nodiscard]] constexpr decltype(auto) second() const noexcept { return this->t_.second(); }
+    // Index access
+    #if LINALG_USE_BRACKET_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( ::std::declval<Tensor&&>(), indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return LINALG_DETAIL::access( this->t_, indices ... ); }
+    #endif
+    #if LINALG_USE_PAREN_OPERATOR
+    template < class ... OtherIndexType >
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( ::std::declval<Tensor&&>(), indices ... ) ) )
+    #ifdef LINALG_ENABLE_CONCEPTS
+      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+    #endif
+      { return LINALG_DETAIL::access( this->t_, indices ... ); }
+    #endif
+    // Implicit conversion
+    [[nodiscard]] constexpr operator auto() const
+      // noexcept( ( extents_type::rank_dynamic() == 0 ) ?
+      //           ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+      //                                                         extents_type,
+      //                                                         layout_result_t< Tensor >,
+      //                                                         accessor_result_t< Tensor > >,
+      //                                              Tensor&& > :
+      //           ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+      //                                                         extents_type,
+      //                                                         layout_result_t< Tensor >,
+      //                                                         extents_type,
+      //                                                         typename ::std::allocator_traits< allocator_result_t< Tensor > >::template rebind_alloc< value_type >,
+      //                                                         accessor_result_t< Tensor > >,
+      //                                              Tensor&&,
+      //                                              decltype( allocator_result< Tensor >::get_allocator( ::std::declval< Tensor >() ) ) > )
+    {
+      if constexpr ( extents_type::rank_dynamic() == 0 )
+      {
+        return fs_tensor< value_type,
+                          extents_type,
+                          layout_result_t< Tensor >,
+                          accessor_result_t< Tensor > >
+          ( this->t_ );
+      }
+      else
+      {
+        return dr_tensor< value_type,
+                          extents_type,
+                          layout_result_t< Tensor >,
+                          extents_type,
+                          typename ::std::allocator_traits< allocator_result_t< Tensor > >::template rebind_alloc< value_type >,
+                          accessor_result_t< Tensor > >
+          ( this->t_, allocator_result< Tensor >::get_allocator( this->t_ ) );
+      }
+    }
+  private:
+    Tensor&& t_;
+};
+
+template < class Tensor >
+class negate_tensor_expression_traits
+{
+  public:
+    using value_type   = ::std::remove_cv_t< decltype( - ::std::declval< typename ::std::remove_reference_t< Tensor >::value_type >() ) >;
+    using index_type   = typename ::std::remove_reference_t< Tensor >::index_type;
+    using size_type    = typename ::std::remove_reference_t< Tensor >::size_type;
+    using extents_type = typename ::std::remove_reference_t< Tensor >::extents_type;
+    using rank_type    = typename ::std::remove_reference_t< Tensor >::rank_type;
+};
+
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class Tensor >
+  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
+class negate_tensor_expression : public unary_tensor_expression_base< negate_tensor_expression< Tensor >, negate_tensor_expression_traits< Tensor > >
+#else
+template < class Tensor, typename Enable >
+class negate_tensor_expression : public unary_tensor_expression_base< negate_tensor_expression< Tensor, Enable >, negate_tensor_expression_traits< Tensor > >
+#endif
+{
+  private:
+    #ifdef LINALG_ENABLE_CONCEPTS
+    using self_type = negate_tensor_expression< Tensor >;
+    #else
+    using self_type = negate_tensor_expression< Tensor, Enable >;
+    #endif
+  public:
+    // Special member functions
+    constexpr negate_tensor_expression( Tensor&& t ) noexcept : t_(t) { }
+    constexpr negate_tensor_expression& operator = ( const negate_tensor_expression& t ) noexcept { this->t_ = t.t_; }
+    constexpr negate_tensor_expression& operator = ( negate_tensor_expression&& t ) noexcept { this->t_ = t.t_; }
+    // Aliases
+    using value_type   = typename negate_tensor_expression_traits< Tensor >::value_type;
+    using index_type   = typename negate_tensor_expression_traits< Tensor >::index_type;
+    using size_type    = typename negate_tensor_expression_traits< Tensor >::size_type;
+    using extents_type = typename negate_tensor_expression_traits< Tensor >::extents_type;
+    using rank_type    = typename negate_tensor_expression_traits< Tensor >::rank_type;
+    // Tensor expression functions
+    [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< Tensor >::rank(); }
+    [[nodiscard]] constexpr extents_type extents() const noexcept { return t_.extents(); }
+    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return t_.extent(n); }
     // Unary tensor expression function
-    [[nodiscard]] constexpr const Tensor& underlying() const noexcept { return this->t_; }
+    [[nodiscard]] constexpr decltype(auto) underlying() const noexcept { return this->t_; }
     // Negate
     #if LINALG_USE_BRACKET_OPERATOR
     template < class ... OtherIndexType >
@@ -51,59 +201,6 @@ class negate_tensor_expression_base
     #endif
       { return - LINALG_DETAIL::access( this->t_, indices ... ); }
     #endif
-  private:
-    Tensor&& t_;
-};
-
-// Negation tensor expression
-#ifdef LINALG_ENABLE_CONCEPTS
-template < class Tensor >
-  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
-#else
-template < class Tensor, typename Enable >
-#endif
-class negate_tensor_expression
-{
-  private:
-    #ifdef LINALG_ENABLE_CONCEPTS
-    using self_type = negate_tensor_expression< Tensor >;
-    #else
-    using self_type = negate_tensor_expression< Tensor, Enable >;
-    #endif
-  public:
-    // Special member functions
-    constexpr negate_tensor_expression( Tensor&& t ) noexcept : t_(t) { }
-    constexpr negate_tensor_expression& operator = ( const negate_tensor_expression& t ) noexcept { this->t_ = t.t_; }
-    constexpr negate_tensor_expression& operator = ( negate_tensor_expression&& t ) noexcept { this->t_ = t.t_; }
-    // Aliases
-    using value_type   = typename negate_tensor_expression_base< Tensor >::value_type;
-    using index_type   = typename negate_tensor_expression_base< Tensor >::index_type;
-    using size_type    = typename negate_tensor_expression_base< Tensor >::size_type;
-    using extents_type = typename negate_tensor_expression_base< Tensor >::extents_type;
-    using rank_type    = typename negate_tensor_expression_base< Tensor >::rank_type;
-    // Tensor expression functions
-    [[nodiscard]] static constexpr rank_type rank() noexcept { return negate_tensor_expression_base< Tensor >::rank(); }
-    [[nodiscard]] constexpr extents_type extents() const noexcept { return t_.extents(); }
-    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return t_.extent(n); }
-    // Unary tensor expression function
-    [[nodiscard]] constexpr const Tensor& underlying() const noexcept { return this->t_.underlying(); }
-    // Negate
-    #if LINALG_USE_BRACKET_OPERATOR
-    template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( ::std::declval< negate_tensor_expression_base<Tensor> >(), indices ... ) ) )
-    #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
-    #endif
-      { return LINALG_DETAIL::access( this->t_, indices ... ); }
-    #endif
-    #if LINALG_USE_PAREN_OPERATOR
-    template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( LINALG_DETAIL::access( ::std::declval< negate_tensor_expression_base<Tensor> >(), indices ... ) ) )
-    #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
-    #endif
-      { return LINALG_DETAIL::access( this->t_, indices ... ); }
-    #endif
     // Implicit conversion
     [[nodiscard]] constexpr operator auto() const
       // noexcept( ( extents_type::rank_dynamic() == 0 ) ?
@@ -111,16 +208,15 @@ class negate_tensor_expression
       //                                                         extents_type,
       //                                                         layout_result_t< self_type >,
       //                                                         accessor_result_t< self_type > >,
-      //                                              negate_tensor_expression_base< Tensor > > :
+      //                                              Tensor&& > :
       //           ::std::is_nothrow_constructible_v< dr_tensor< value_type,
       //                                                         extents_type,
       //                                                         layout_result_t< self_type >,
       //                                                         extents_type,
       //                                                         typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
       //                                                         accessor_result_t< self_type > >,
-      //                                              negate_tensor_expression_base< Tensor >,
+      //                                              Tensor&&,
       //                                              decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
-
     {
       if constexpr ( extents_type::rank_dynamic() == 0 )
       {
@@ -128,7 +224,7 @@ class negate_tensor_expression
                           extents_type,
                           layout_result_t< self_type >,
                           accessor_result_t< self_type > >
-          ( this->t_ );
+          ( *static_cast< const unary_tensor_expression_base< self_type, negate_tensor_expression_traits< Tensor > >* >( this ) );
       }
       else
       {
@@ -138,12 +234,11 @@ class negate_tensor_expression
                           extents_type,
                           typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
                           accessor_result_t< self_type > >
-          ( this->t_, allocator_result< self_type >::get_allocator( *this ) );
+          ( *static_cast< const unary_tensor_expression_base< self_type, negate_tensor_expression_traits< Tensor > >* >( this ), allocator_result< self_type >::get_allocator( *this ) );
       }
     }
   private:
-    // Data
-    negate_tensor_expression_base<Tensor> t_;
+    Tensor&& t_;
 };
 
 // Transpose

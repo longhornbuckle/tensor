@@ -28,6 +28,12 @@ LINALG_END
 
 LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
+template < class Tensor, class Traits >
+class unary_tensor_expression_base;
+
+template < class Tensor >
+class binary_tensor_expression_base;
+
 // Unary Tensor Expressions
 
 // Negate
