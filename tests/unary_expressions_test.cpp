@@ -98,7 +98,7 @@ namespace
     auto subtensor = LINALG::subtensor( const_fs_tensor, ::std::tuple(2,5), ::std::tuple(2,4), ::std::tuple(2,4) );
     // Negate subtensor
     auto negate_subtensor = - subtensor;
-
+    // Check negated values
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 0, 0, 0 ) ), ( -LINALG_DETAIL::access( subtensor, 0, 0, 0 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 1, 0, 0 ) ), ( -LINALG_DETAIL::access( subtensor, 1, 0, 0 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 2, 0, 0 ) ), ( -LINALG_DETAIL::access( subtensor, 2, 0, 0 ) ) );
@@ -111,6 +111,13 @@ namespace
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 0, 1, 1 ) ), ( -LINALG_DETAIL::access( subtensor, 0, 1, 1 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 1, 1, 1 ) ), ( -LINALG_DETAIL::access( subtensor, 1, 1, 1 ) ) );
     EXPECT_EQ( ( LINALG_DETAIL::access( negate_subtensor, 2, 1, 1 ) ), ( -LINALG_DETAIL::access( subtensor, 2, 1, 1 ) ) );
+    // Check the extents
+    EXPECT_EQ( ( negate_subtensor.extent( 0 ) ), 3 );
+    EXPECT_EQ( ( negate_subtensor.extent( 1 ) ), 2 );
+    EXPECT_EQ( ( negate_subtensor.extent( 2 ) ), 2 );
+    EXPECT_EQ( ( negate_subtensor.extents().extent( 0 ) ), 3 );
+    EXPECT_EQ( ( negate_subtensor.extents().extent( 1 ) ), 2 );
+    EXPECT_EQ( ( negate_subtensor.extents().extent( 2 ) ), 2 );
   }
 
   TEST( TRANSPOSE, DR_TENSOR )
@@ -221,6 +228,27 @@ namespace
     EXPECT_EQ( ( transpose_tensor.extent( 1 ) ), 2 );
     EXPECT_EQ( ( transpose_tensor.extents().extent( 0 ) ), 1 );
     EXPECT_EQ( ( transpose_tensor.extents().extent( 1 ) ), 2 );
+  }
+
+  TEST( TRANSPOSE, DR_VECTOR )
+  {
+    using tensor_type = LINALG::dyn_vector< double >;
+    // Construct
+    tensor_type tensor{ 2 };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( tensor, 0 ) = 1.0;
+    LINALG_DETAIL::access( tensor, 1 ) = 2.0;
+    // Transpose the tensor
+    auto transpose_tensor = trans( tensor );
+    // Access elements from const tensor
+    auto val1 = LINALG_DETAIL::access( transpose_tensor, 0 );
+    auto val2 = LINALG_DETAIL::access( transpose_tensor, 1 );
+    // Check the tensor copy was populated correctly and provided the correct values
+    EXPECT_EQ( val1, 1.0 );
+    EXPECT_EQ( val2, 2.0 );
+    // Check the extents
+    EXPECT_EQ( ( transpose_tensor.extent( 0 ) ), 2 );
+    EXPECT_EQ( ( transpose_tensor.extents().extent( 0 ) ), 2 );
   }
 
 }

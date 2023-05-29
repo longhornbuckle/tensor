@@ -144,6 +144,7 @@ class negate_tensor_expression : public unary_tensor_expression_base< negate_ten
 #endif
 {
   private:
+    // Aliases
     #ifdef LINALG_ENABLE_CONCEPTS
     using self_type   = negate_tensor_expression< Tensor >;
     #else
@@ -185,22 +186,33 @@ class negate_tensor_expression : public unary_tensor_expression_base< negate_ten
     #endif
       { return - LINALG_DETAIL::access( this->t_, indices ... ); }
     #endif
+  private:
+    // Define noexcept specification of conversion operator
+    [[nodiscard]] static inline constexpr bool conversion_is_noexcept() noexcept
+    {
+      if constexpr( extents_type::rank_dynamic() == 0 )
+      {
+        return ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type& >;
+      }
+      else
+      {
+        return ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             extents_type,
+                                                             typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type&,
+                                                  decltype( allocator_result< const self_type >::get_allocator( ::std::forward< const self_type >( ::std::declval< const self_type >() ) ) ) >;
+      }
+    }
+  public:
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() const
-      noexcept( ( extents_type::rank_dynamic() == 0 ) ?
-                ::std::is_nothrow_constructible_v< fs_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&> :
-                ::std::is_nothrow_constructible_v< dr_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              extents_type,
-                                                              typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&,
-                                                   decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
+    [[nodiscard]] constexpr operator auto() const noexcept( conversion_is_noexcept() )
     {
       if constexpr ( extents_type::rank_dynamic() == 0 )
       {
@@ -218,7 +230,7 @@ class negate_tensor_expression : public unary_tensor_expression_base< negate_ten
                           extents_type,
                           typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
                           accessor_result_t< self_type > >
-          ( *static_cast< const base_type* >( this ), allocator_result< self_type >::get_allocator( *this ) );
+          ( *static_cast< const base_type* >( this ), allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
     }
   private:
@@ -270,7 +282,7 @@ class transpose_helper< Extents, transpose_indices_v< IndexType1, IndexType2 > >
     template < class R, auto ... Indices >
     struct helper< ::std::integer_sequence< R, Indices ... > >
     {
-      template < auto Index, class OtherIndexType1, class OtherIndexType2, class ... OtherIndexType >
+      template < class OtherIndexType1, class OtherIndexType2, auto Index, class ... OtherIndexType >
       [[nodiscard]] static inline constexpr auto index( const transpose_indices_v< OtherIndexType1, OtherIndexType2 >& transpose_indices, OtherIndexType ... indices ) noexcept
       {
         using array_type = ::std::array< ::std::reference_wrapper< ::std::remove_reference_t< decltype( ::std::get< 0 >( ::std::forward_as_tuple( indices ... ) ) ) > >, sizeof...(indices) >;
@@ -290,12 +302,12 @@ class transpose_helper< Extents, transpose_indices_v< IndexType1, IndexType2 > >
       template < class Tensor, class OtherIndexType1, class OtherIndexType2, class ... OtherIndexType >
       [[nodiscard]] static inline constexpr decltype(auto) access( Tensor&& t, const transpose_indices_v< OtherIndexType1, OtherIndexType2 >& transpose_indices, OtherIndexType ... indices ) noexcept
       {
-        return LINALG_DETAIL::access( t, index< Indices, OtherIndexType1, OtherIndexType2, OtherIndexType ... >( transpose_indices, indices ... ) ... );
+        return LINALG_DETAIL::access( t, index< OtherIndexType1, OtherIndexType2, Indices, OtherIndexType ... >( transpose_indices, indices ... ) ... );
       }
       template < class OtherIndexType1, class OtherIndexType2 >
       [[nodiscard]] static inline constexpr Extents extents( const Extents& e, const transpose_indices_v< OtherIndexType1, OtherIndexType2 >& transpose_indices ) noexcept
       {
-        return Extents( e.extent( index( Indices, transpose_indices ) ) ... );
+        return Extents( e.extent( index< OtherIndexType1, OtherIndexType2, Indices, decltype(Indices) ... >( transpose_indices, Indices ... ) ) ... );
       }
     };
   public:
@@ -311,7 +323,7 @@ class transpose_helper< Extents, transpose_indices_v< IndexType1, IndexType2 > >
       }
       else
       {
-        return helper< ::std::integer_sequence< typename extents_type::rank_type, Extents::rank() > >::extents( e, transpose_indices );
+        return helper< ::std::make_integer_sequence< typename extents_type::rank_type, Extents::rank() > >::extents( e, transpose_indices );
       }
     }
     template < class OtherIndexType1, class OtherIndexType2 >
@@ -355,17 +367,24 @@ class transpose_helper< Extents, transpose_indices_t<index1,index2> >
       template < auto Index, class ... OtherIndexType >
       [[nodiscard]] static inline constexpr auto index( OtherIndexType ... indices ) noexcept
       {
-        if constexpr ( Index == index1 )
+        if constexpr ( Extents::rank() == 1 )
         {
-          return ::std::get< index2 >( ::std::forward_as_tuple( indices ... ) );
-        }
-        else if constexpr ( Index == index2 )
-        {
-          return ::std::get< index1 >( ::std::forward_as_tuple( indices ... ) );
+          return ::std::get< Index >( ::std::forward_as_tuple( indices ... ) );
         }
         else
         {
-          return ::std::get< Index >( ::std::forward_as_tuple( indices ... ) );
+          if constexpr ( Index == index1 )
+          {
+            return ::std::get< index2 >( ::std::forward_as_tuple( indices ... ) );
+          }
+          else if constexpr ( Index == index2 )
+          {
+            return ::std::get< index1 >( ::std::forward_as_tuple( indices ... ) );
+          }
+          else
+          {
+            return ::std::get< Index >( ::std::forward_as_tuple( indices ... ) );
+          }
         }
       }
       template < class Tensor, class ... OtherIndexType >
@@ -373,7 +392,18 @@ class transpose_helper< Extents, transpose_indices_t<index1,index2> >
       {
         return LINALG_DETAIL::access( t, index< Indices, OtherIndexType ... >( indices ... ) ... );
       }
-      using extents_type = ::std::extents< typename Extents::size_type, Extents::static_extent( index< Indices >( Indices ... ) ) ... >;
+      template < auto Rank >
+      struct extents_helper
+      {
+        using type = ::std::extents< typename Extents::size_type, Extents::static_extent( index< Indices >( Indices ... ) ) ... >;
+      };
+      struct vector_extents_helper
+      {
+        using type = Extents;
+      };
+      using extents_type = typename ::std::conditional_t< ( Extents::rank() > 1 ),
+                                                          extents_helper< Extents::rank() >,
+                                                          vector_extents_helper >::type;
       [[nodiscard]] static inline constexpr extents_type extents( const Extents& e ) noexcept
       {
         return extents_type( e.extent( index< Indices >( Indices ... ) ) ... );
@@ -501,22 +531,33 @@ class transpose_tensor_expression : public unary_tensor_expression_base< transpo
       }
     }
     #endif
+  private:
+    // Define noexcept specification of conversion operator
+    [[nodiscard]] static inline constexpr bool conversion_is_noexcept() noexcept
+    {
+      if constexpr( extents_type::rank_dynamic() == 0 )
+      {
+        return ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type& >;
+      }
+      else
+      {
+        return ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             extents_type,
+                                                             typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type&,
+                                                  decltype( allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( ::std::declval< const self_type >() ) ) ) >;
+      }
+    }
+  public:
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() const
-      noexcept( ( extents_type::rank_dynamic() == 0 ) ?
-                ::std::is_nothrow_constructible_v< fs_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&> :
-                ::std::is_nothrow_constructible_v< dr_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              extents_type,
-                                                              typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&,
-                                                   decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
+    [[nodiscard]] constexpr operator auto() const noexcept( conversion_is_noexcept() )
     {
       if constexpr ( extents_type::rank_dynamic() == 0 )
       {
@@ -534,7 +575,7 @@ class transpose_tensor_expression : public unary_tensor_expression_base< transpo
                           extents_type,
                           typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
                           accessor_result_t< self_type > >
-          ( *static_cast< const base_type* >( this ), allocator_result< self_type >::get_allocator( *this ) );
+          ( *static_cast< const base_type* >( this ), allocator_result< const self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
     }
 private:
@@ -612,22 +653,33 @@ class conjugate_tensor_expression : public unary_tensor_expression_base< conjuga
       }
     }
     #endif
+  private:
+    // Define noexcept specification of conversion operator
+    [[nodiscard]] static inline constexpr bool conversion_is_noexcept() noexcept
+    {
+      if constexpr( extents_type::rank_dynamic() == 0 )
+      {
+        return ::std::is_nothrow_constructible_v< fs_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type& >;
+      }
+      else
+      {
+        return ::std::is_nothrow_constructible_v< dr_tensor< value_type,
+                                                             extents_type,
+                                                             layout_result_t< self_type >,
+                                                             extents_type,
+                                                             typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
+                                                             accessor_result_t< self_type > >,
+                                                  const base_type&,
+                                                  decltype( allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( ::std::declval< const self_type >() ) ) ) >;
+      }
+    }
+  public:
     // Implicit conversion
-    [[nodiscard]] constexpr operator auto() const
-      noexcept( ( extents_type::rank_dynamic() == 0 ) ?
-                ::std::is_nothrow_constructible_v< fs_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&> :
-                ::std::is_nothrow_constructible_v< dr_tensor< value_type,
-                                                              extents_type,
-                                                              layout_result_t< self_type >,
-                                                              extents_type,
-                                                              typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                              accessor_result_t< self_type > >,
-                                                   const base_type&,
-                                                   decltype( allocator_result< self_type >::get_allocator( ::std::declval< self_type >() ) ) > )
+    [[nodiscard]] constexpr operator auto() const noexcept( conversion_is_noexcept() )
     {
       if constexpr ( extents_type::rank_dynamic() == 0 )
       {
@@ -645,7 +697,7 @@ class conjugate_tensor_expression : public unary_tensor_expression_base< conjuga
                           extents_type,
                           typename ::std::allocator_traits< allocator_result_t< self_type > >::template rebind_alloc< value_type >,
                           accessor_result_t< self_type > >
-          ( *static_cast< const base_type* >( this ), allocator_result< self_type >::get_allocator( *this ) );
+          ( *static_cast< const base_type* >( this ), allocator_result< const self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
     }
 private:

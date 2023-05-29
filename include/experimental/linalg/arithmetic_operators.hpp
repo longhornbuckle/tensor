@@ -33,14 +33,14 @@ operator - ( const T& t ) noexcept
 //  Unary transpose operator
 //=================================================================================================
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression T >
+template < class T >
 #else
 template < class T,
            typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >,
                                                                                                                       const T&,
                                                                                                                       LINALG_EXPRESSIONS::transpose_indices_t<> > &&
-                                          ( LINALG_CONCEPTS::vector_expression_v< T > ||
-                                            LINALG_CONCEPTS::matrix_expression_v< T > ) > >
+                                          ( LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< T > > ||
+                                            LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< T > > ) > >
 #endif
 [[nodiscard]] inline constexpr decltype(auto)
 trans( const T& t ) noexcept
@@ -48,7 +48,7 @@ trans( const T& t ) noexcept
   requires ( ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >,
                                                                                          const T&,
                                                                                          LINALG_EXPRESSIONS::transpose_indices_t<> > &&
-  ( T::rank() < 3 ) )
+             ( ::std::remove_reference_t< T >::rank() < 3 ) )
 #endif
 {
   return LINALG_EXPRESSIONS::transpose_tensor_expression< const T& >( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );
@@ -86,7 +86,7 @@ trans( const T& t, IndexType index1, IndexType index2 ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
   requires ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >,
                                                                                        const T&,
-                                                                                       LINALG_EXPRESSIONS::transpose_indices_v >
+                                                                                       LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >
 #endif
 {
   return LINALG_EXPRESSIONS::transpose_tensor_expression< const T&,LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >
@@ -97,14 +97,14 @@ trans( const T& t, IndexType index1, IndexType index2 ) noexcept
 //  Unary conjugate transpose operators
 //=================================================================================================
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression T >
+template < class T >
 #else
 template < class T,
            typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >,
                                                                                                                       const T&,
                                                                                                                       LINALG_EXPRESSIONS::transpose_indices_t<> > &&
-                                          ( LINALG_CONCEPTS::vector_expression_v< T > ||
-                                            LINALG_CONCEPTS::matrix_expression_v< T > ) > >
+                                          ( LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< T > > ||
+                                            LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< T > > ) > >
 #endif
 [[nodiscard]] inline constexpr decltype(auto)
 conj( const T& t ) noexcept
@@ -112,7 +112,7 @@ conj( const T& t ) noexcept
   requires ( ::std::is_constructible_v< LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >,
                                                                                          const T&,
                                                                                          LINALG_EXPRESSIONS::transpose_indices_t<> > &&
-  ( T::rank() < 3 ) )
+             ( ::std::remove_reference_t< T >::rank() < 3 ) )
 #endif
 {
   return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );

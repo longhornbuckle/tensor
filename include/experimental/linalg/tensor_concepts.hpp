@@ -548,26 +548,26 @@ template < class T > struct readable_tensor : public ::std::conditional_t<
   has_layout_type_v< T > &&
   has_mapping_type_v< T > &&
   has_accessor_type_v< T > &&
-  has_reference_v< T > &&
-  has_data_handle_type_v< T > &&
-  has_rank_dynamic_func_v< T > &&
-  has_static_extent_func_v< T > &&
-  has_size_func_v< T > &&
-  has_is_always_strided_func_v< T > &&
-  has_is_always_exhaustive_func_v< T > &&
-  has_is_always_unique_func_v< T > &&
-  has_is_strided_func_v< T > &&
-  has_is_exhaustive_func_v< T > &&
-  has_is_unique_func_v< T > &&
-  has_constexpr_rank_dynamic_func_v< T > &&
-  has_constexpr_static_extent_func_v< T > &&
-  has_constexpr_is_always_strided_func_v< T > &&
-  has_constexpr_is_always_exhaustive_func_v< T > &&
-  has_constexpr_is_always_unique_func_v< T > &&
-  has_stride_func_v< T > &&
-  has_accessor_func_v< T > &&
-  has_data_handle_func_v< T > &&
-  has_mapping_func_v< T >
+  has_reference_v< T > // &&
+  // has_data_handle_type_v< T > &&
+  // has_rank_dynamic_func_v< T > &&
+  // has_static_extent_func_v< T > &&
+  // has_size_func_v< T > &&
+  // has_is_always_strided_func_v< T > &&
+  // has_is_always_exhaustive_func_v< T > &&
+  // has_is_always_unique_func_v< T > &&
+  // has_is_strided_func_v< T > &&
+  // has_is_exhaustive_func_v< T > &&
+  // has_is_unique_func_v< T > &&
+  // has_constexpr_rank_dynamic_func_v< T > &&
+  // has_constexpr_static_extent_func_v< T > &&
+  // has_constexpr_is_always_strided_func_v< T > &&
+  // has_constexpr_is_always_exhaustive_func_v< T > &&
+  // has_constexpr_is_always_unique_func_v< T > &&
+  // has_stride_func_v< T > &&
+  // has_accessor_func_v< T > &&
+  // has_data_handle_func_v< T > &&
+  // has_mapping_func_v< T >
   , ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool readable_tensor_v = readable_tensor< T >::value;
 

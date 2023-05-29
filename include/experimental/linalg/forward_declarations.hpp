@@ -58,8 +58,7 @@ template < class Tensor, class Transpose = transpose_indices_t<> >
 #else
 template < class Tensor,
            class Transpose = transpose_indices_t<>,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
-                                          !LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Tensor > > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class transpose_tensor_expression;
 
@@ -70,8 +69,7 @@ template < class Tensor, class Transpose = transpose_indices_t<> >
 #else
 template < class Tensor,
            class Transpose = transpose_indices_t<>,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
-                                          !LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Tensor > > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class conjugate_tensor_expression;
 
@@ -85,7 +83,6 @@ template < class FirstTensor, class SecondTensor >
              ( FirstTensor::rank() == SecondTensor::rank() ) &&
              LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
              requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2; } )
-class addition_tensor_expression : public binary_tensor_expression_base< addition_tensor_expression< Tensor >, addition_tensor_expression_traits< FirstTensor, SecondTensor > >
 #else
 template < class FirstTensor, class SecondTensor,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< FirstTensor > &&
@@ -272,6 +269,8 @@ template < class T,
            class Allocator      = ::std::allocator< T >,
            class AccessorPolicy = ::std::default_accessor< T > >
 using dr_matrix = dr_tensor< T, ::std::extents< ::std::common_type_t< decltype(R), decltype(C) >, static_cast< ::std::size_t >(R), static_cast< ::std::size_t >(C) >, LayoutPolicy, ::std::extents< ::std::common_type_t< decltype(Rc), decltype(Cc) >, static_cast<::std::size_t>(Rc), static_cast<::std::size_t>(Cc) >, Allocator, AccessorPolicy >;
+template < class T >
+using dyn_matrix = dr_matrix< T, ::std::dynamic_extent, ::std::dynamic_extent >;
 
 // Alias for dr_vector
 template < class T,
@@ -281,6 +280,8 @@ template < class T,
            class Allocator      = ::std::allocator< T >,
            class AccessorPolicy = ::std::default_accessor< T > >
 using dr_vector = dr_tensor< T, ::std::extents< decltype(N), static_cast< ::std::size_t >(N) >, LayoutPolicy, ::std::extents< decltype(Nc) ,static_cast< ::std::size_t >(Nc) >, Allocator, AccessorPolicy >;
+template < class T >
+using dyn_vector = dr_vector< T, ::std::dynamic_extent >;
 
 // Alias for fs_matrix
 template < class T,

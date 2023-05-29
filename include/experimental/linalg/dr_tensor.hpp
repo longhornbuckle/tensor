@@ -206,6 +206,10 @@ class dr_tensor
     /// @param alloc allocator to construct with
     explicit constexpr dr_tensor( const allocator_type& alloc ) noexcept( extents_type::rank_dynamic() != 0 );
     /// @brief Attempt to allocate sufficient resources for a size dr_tensor and construct
+    /// @param  s defines the length of each dimension of the dr_tensor
+    /// @param  alloc allocator used to construct with
+    explicit constexpr dr_tensor( const extents_type& s, const allocator_type& alloc = allocator_type() );
+    /// @brief Attempt to allocate sufficient resources for a size dr_tensor and construct
     /// @tparam OtherSizeType size_type of input size
     /// @tparam OtherExtents extents of the input size
     /// @param  s defines the length of each dimension of the dr_tensor
@@ -754,9 +758,26 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
   tm_( alloc, this->cap_map_ )
 {
   if constexpr ( LINALG_DETAIL::extents_is_static_v<extents_type> &&
-                 !( ::std::is_trivially_default_constructible_v<element_type> &&
-                    ::std::is_trivially_copy_assignable_v<element_type> &&
-                    ::std::is_trivially_destructible_v<element_type> ) )
+                 !( ::std::is_trivially_default_constructible_v< element_type > &&
+                    ::std::is_trivially_copy_assignable_v< element_type > &&
+                    ::std::is_trivially_destructible_v< element_type > ) )
+  {
+    this->construct_all();
+  }
+}
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::
+dr_tensor( const extents_type& s, const allocator_type& alloc ) :
+  accessor_(),
+  cap_map_( s ),
+  size_map_( this->cap_map_ ),
+  tm_( alloc, this->cap_map_ )
+{
+  // If construct, assign, and destruct are not trivial, then initialize data
+  if constexpr ( !( ::std::is_trivially_default_constructible_v< element_type > &&
+                    ::std::is_trivially_copy_assignable_v< element_type > &&
+                    ::std::is_trivially_destructible_v< element_type > ) )
   {
     this->construct_all();
   }
@@ -780,9 +801,9 @@ dr_tensor( const ::std::extents< OtherSizeType, OtherExtents ... >& s, const all
   tm_( alloc, this->cap_map_ )
 {
   // If construct, assign, and destruct are not trivial, then initialize data
-  if constexpr ( !( ::std::is_trivially_default_constructible_v<element_type> &&
-                    ::std::is_trivially_copy_assignable_v<element_type> &&
-                    ::std::is_trivially_destructible_v<element_type> ) )
+  if constexpr ( !( ::std::is_trivially_default_constructible_v< element_type > &&
+                    ::std::is_trivially_copy_assignable_v< element_type > &&
+                    ::std::is_trivially_destructible_v< element_type > ) )
   {
     this->construct_all();
   }

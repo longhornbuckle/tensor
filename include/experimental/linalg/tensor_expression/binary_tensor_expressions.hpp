@@ -22,12 +22,12 @@
 LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
 template < class Tensor, class Traits >
-class binaary_tensor_expression_base;
+class binary_tensor_expression_base;
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < template < class, class > class BTE,
                                      class FirstTensor,
-                                     class SecondTensoe
+                                     class SecondTensor,
            class Traits >
 class binary_tensor_expression_base< BTE< FirstTensor, SecondTensor >, Traits >
 #else
@@ -99,7 +99,7 @@ template < class FirstTensor, class SecondTensor >
              ( FirstTensor::rank() == SecondTensor::rank() ) &&
              LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
              requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2; } )
-class addition_tensor_expression : public binary_tensor_expression_base< addition_tensor_expression< Tensor >, addition_tensor_expression_traits< FirstTensor, SecondTensor > >
+class addition_tensor_expression : public binary_tensor_expression_base< addition_tensor_expression< FirstTensor, SecondTensor >, addition_tensor_expression_traits< FirstTensor, SecondTensor > >
 #else
 template < class FirstTensor, class SecondTensor, typename Enable >
 class addition_tensor_expression : public binary_tensor_expression_base< addition_tensor_expression< FirstTensor, SecondTensor, Enable >, addition_tensor_expression_traits< FirstTensor, SecondTensor > >
