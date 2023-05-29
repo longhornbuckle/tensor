@@ -51,7 +51,7 @@ trans( const T& t ) noexcept
   ( T::rank() < 3 ) )
 #endif
 {
-  return LINALG_EXPRESSIONS::transpose_tensor_expression( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );
+  return LINALG_EXPRESSIONS::transpose_tensor_expression< const T& >( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );
 }
 
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -70,26 +70,27 @@ trans( const T& t, const LINALG_EXPRESSIONS::transpose_indices_t< index1, index2
                                                                                        LINALG_EXPRESSIONS::transpose_indices_t< index1, index2 > >
 #endif
 {
-  return LINALG_EXPRESSIONS::transpose_tensor_expression( t, indices );
+  return LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t< index1, index2 > >( t, indices );
 }
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class IndexType >
 #else
 template < class T, class IndexType,
-           typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v >,
+           typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >,
                                                                      const T&,
-                                                                     LINALG_EXPRESSIONS::transpose_indices_v > > >
+                                                                     LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > > > >
 #endif
 [[nodiscard]] inline constexpr decltype(auto)
 trans( const T& t, IndexType index1, IndexType index2 ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v >,
+  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >,
                                                                                        const T&,
                                                                                        LINALG_EXPRESSIONS::transpose_indices_v >
 #endif
 {
-  return LINALG_EXPRESSIONS::transpose_tensor_expression( t, LINALG_EXPRESSIONS::transpose_indices_v { index1, index2 } );
+  return LINALG_EXPRESSIONS::transpose_tensor_expression< const T&,LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >
+    ( t, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > { index1, index2 } );
 }
 
 //=================================================================================================
@@ -114,7 +115,7 @@ conj( const T& t ) noexcept
   ( T::rank() < 3 ) )
 #endif
 {
-  return LINALG_EXPRESSIONS::conjugate_tensor_expression( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );
+  return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >( t, LINALG_EXPRESSIONS::transpose_indices_t<> {} );
 }
 
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -133,26 +134,26 @@ conj( const T& t, const LINALG_EXPRESSIONS::transpose_indices_t< index1, index2 
                                                                                        LINALG_EXPRESSIONS::transpose_indices_t< index1, index2 > >
 #endif
 {
-  return LINALG_EXPRESSIONS::conjugate_tensor_expression( t, indices );
+  return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t< index1, index2 > >( t, indices );
 }
 
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class T, class IndexType >
 #else
 template < class T, class IndexType,
-           typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v >,
+           typename = ::std::enable_if_t< ::std::is_constructible_v< LINALG_EXPRESSIONS::transpose_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >,
                                                                      const T&,
-                                                                     LINALG_EXPRESSIONS::transpose_indices_v > > >
+                                                                     LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > > > >
 #endif
 [[nodiscard]] inline constexpr decltype(auto)
 conj( const T& t, IndexType index1, IndexType index2 ) noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v >,
+  requires ::std::is_constructible_v< LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >,
                                                                                        const T&,
-                                                                                       LINALG_EXPRESSIONS::transpose_indices_v >
+                                                                                       LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >
 #endif
 {
-  return LINALG_EXPRESSIONS::conjugate_tensor_expression( t, LINALG_EXPRESSIONS::transpose_indices_v { index1, index2 } );
+  return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >( t, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > { index1, index2 } );
 }
 
 //=================================================================================================

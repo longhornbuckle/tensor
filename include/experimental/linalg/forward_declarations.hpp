@@ -31,7 +31,7 @@ LINALG_EXPRESSIONS_BEGIN // expressions namespace
 template < class Tensor, class Traits >
 class unary_tensor_expression_base;
 
-template < class Tensor >
+template < class Tensor, class Traits >
 class binary_tensor_expression_base;
 
 // Unary Tensor Expressions
@@ -48,6 +48,7 @@ class negate_tensor_expression;
 // Transpose indices
 template < ::std::size_t index1 = 0, ::std::size_t index2 = 1 >
 struct transpose_indices_t;
+template < class IndexType1 = ::std::size_t, class IndexType2 = ::std::size_t >
 struct transpose_indices_v;
 
 // Transpose
@@ -78,10 +79,13 @@ class conjugate_tensor_expression;
 
 // Addition
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
-  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
+template < class FirstTensor, class SecondTensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > &&
+             ( FirstTensor::rank() == SecondTensor::rank() ) &&
              LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
              requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2; } )
+class addition_tensor_expression : public binary_tensor_expression_base< addition_tensor_expression< Tensor >, addition_tensor_expression_traits< FirstTensor, SecondTensor > >
 #else
 template < class FirstTensor, class SecondTensor,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< FirstTensor > &&

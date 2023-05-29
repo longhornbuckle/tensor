@@ -931,7 +931,7 @@ copy_view( ToView& to_view, const FromView& from_view )
   {
     if ( sufficient_extents( to_view.extents(), from_view.extents() ) ) LINALG_LIKELY
     {
-      apply_all( forward<ToView>( to_view ),
+      apply_all( ::std::forward<ToView>( to_view ),
                 [ &to_view, &from_view ]( auto ... indices )
                   constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference,typename ::std::decay_t< ToView >::reference > )
                   { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
