@@ -24,6 +24,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <memory>
+#include <new>
 #if __has_include( <ranges> )
 #include <ranges>
 #endif

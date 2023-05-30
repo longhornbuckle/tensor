@@ -153,7 +153,7 @@ conj( const T& t, IndexType index1, IndexType index2 ) noexcept
                                                                                        LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >
 #endif
 {
-  return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_t<> >( t, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > { index1, index2 } );
+  return LINALG_EXPRESSIONS::conjugate_tensor_expression< const T&, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > >( t, LINALG_EXPRESSIONS::transpose_indices_v< IndexType, IndexType > { index1, index2 } );
 }
 
 //=================================================================================================

@@ -584,13 +584,25 @@ private:
 };
 
 // Conjugate
+
+template < class Tensor, class Transpose >
+class conjugate_tensor_expression_traits
+{
+  public:
+    using value_type   = decltype( ::std::conj( ::std::declval< typename ::std::remove_reference_t< Tensor >::value_type >() ) );
+    using index_type   = typename ::std::remove_reference_t< Tensor >::index_type;
+    using size_type    = typename ::std::remove_reference_t< Tensor >::size_type;
+    using extents_type = typename transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::extents_type;
+    using rank_type    = typename ::std::remove_reference_t< Tensor >::rank_type;
+};
+
 #ifdef LINALG_ENABLE_CONCEPTS
 template < class Tensor, class Transpose >
   requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
-class conjugate_tensor_expression : public unary_tensor_expression_base< conjugate_tensor_expression< Tensor, Transpose >, transpose_tensor_expression_traits< Tensor, Transpose > >
+class conjugate_tensor_expression : public unary_tensor_expression_base< conjugate_tensor_expression< Tensor, Transpose >, conjugate_tensor_expression_traits< Tensor, Transpose > >
 #else
 template < class Tensor, class Transpose, typename Enable >
-class conjugate_tensor_expression : public unary_tensor_expression_base< conjugate_tensor_expression< Tensor, Transpose, Enable >, transpose_tensor_expression_traits< Tensor, Transpose > >
+class conjugate_tensor_expression : public unary_tensor_expression_base< conjugate_tensor_expression< Tensor, Transpose, Enable >, conjugate_tensor_expression_traits< Tensor, Transpose > >
 #endif
 {
   private:
@@ -599,7 +611,7 @@ class conjugate_tensor_expression : public unary_tensor_expression_base< conjuga
     #else
     using self_type   = conjugate_tensor_expression< Tensor, Transpose, Enable >;
     #endif
-    using traits_type = transpose_tensor_expression_traits< Tensor, Transpose >;
+    using traits_type = conjugate_tensor_expression_traits< Tensor, Transpose >;
     using base_type   = unary_tensor_expression_base< self_type, traits_type >;
   public:
     // Special member functions
@@ -613,43 +625,43 @@ class conjugate_tensor_expression : public unary_tensor_expression_base< conjuga
     using extents_type = typename traits_type::extents_type;
     using rank_type    = typename traits_type::rank_type;
     // Tensor expression functions
-    [[nodiscard]] static constexpr rank_type rank() noexcept { return Tensor::rank(); }
-    [[nodiscard]] constexpr extents_type extents() const noexcept { return transpose_helper< typename Tensor::extents_type, Transpose >::extents( this->t_.extents() ); }
-    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return transpose_helper< typename Tensor::extents_type, Transpose >::extent( this->t_.extents(), n ); }
+    [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< Tensor >::rank(); }
+    [[nodiscard]] constexpr extents_type extents() const noexcept { return transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::extents( this->t_.extents(), this->indices_ ); }
+    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept { return transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::extent( this->t_.extents(), this->indices_, n ); }
     // Unary tensor expression function
     [[nodiscard]] constexpr const Tensor& underlying() const noexcept { return this->t_; }
     // Conjugate
     #if LINALG_USE_BRACKET_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( ::std::conj( transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ) ) ) )
+    [[nodiscard]] constexpr value_type operator[]( OtherIndexType ... indices ) const noexcept( noexcept( ::std::conj( transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::access( this->t_, this->indices_, indices ) ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+      requires ( sizeof...( OtherIndexType ) == rank() ) && ( ::std::is_convertible_v< OtherIndexType, index_type > && ... )
     #endif
     {
-      if constexpr ( Tensor::rank() == 1 )
+      if constexpr ( ::std::remove_reference_t< Tensor >::rank() == 1 )
       {
         return ::std::conj( LINALG_DETAIL::access( this->t_, indices ... ) );
       }
       else
       {
-        return ::std::conj( transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) );
+        return ::std::conj( transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) );
       }
     }
     #endif
     #if LINALG_USE_PAREN_OPERATOR
     template < class ... OtherIndexType >
-    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( ::std::conj( transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) ) ) )
+    [[nodiscard]] constexpr value_type operator()( OtherIndexType ... indices ) const noexcept( noexcept( ::std::conj( transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) ) ) )
     #ifdef LINALG_ENABLE_CONCEPTS
-      requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,index_type> && ... )
+      requires ( sizeof...( OtherIndexType ) == rank() ) && ( ::std::is_convertible_v< OtherIndexType, index_type > && ... )
     #endif
     {
-      if constexpr ( Tensor::rank() == 1 )
+      if constexpr ( ::std::remove_reference_t< Tensor >::rank() == 1 )
       {
         return ::std::conj( LINALG_DETAIL::access( this->t_, indices ... ) );
       }
       else
       {
-        return ::std::conj( transpose_helper< typename Tensor::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) );
+        return ::std::conj( transpose_helper< typename ::std::remove_reference_t< Tensor >::extents_type, Transpose >::access( this->t_, this->indices_, indices ... ) );
       }
     }
     #endif

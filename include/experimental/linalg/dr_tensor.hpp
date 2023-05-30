@@ -1349,9 +1349,9 @@ constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPol
       {
         // If elements are contiguous, then just iterate over each in linear fashion.
         LINALG_DETAIL::for_each( LINALG_EXECUTION_UNSEQ,
-                                 this->data(),
-                                 this->data() + this->size_map_.required_span_size(),
-                                 []( const element_type& elem ) constexpr noexcept { elem.~element_type(); } );
+                                 this->data_handle(),
+                                 this->data_handle() + this->size_map_.required_span_size(),
+                                 []( element_type& elem ) constexpr noexcept { elem.~element_type(); } );
       }
       else
       {
@@ -1380,9 +1380,9 @@ inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
   {
     // Attempt to destruct in linear fashion
     LINALG_DETAIL::for_each( LINALG_EXECUTION_UNSEQ,
-                            this->data(),
-                            this->data() + this->size_map_.required_span_size(),
-                            [this,&eptr]( const element_type& elem ) { try { elem.~element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } } );
+                            this->data_handle(),
+                            this->data_handle() + this->size_map_.required_span_size(),
+                            [this,&eptr]( element_type& elem ) { try { elem.~element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } } );
   }
   else
   {
@@ -1412,16 +1412,16 @@ constexpr void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPol
     {
         // If elements are contiguous, then just iterate over each in linear fashion.
         LINALG_DETAIL::for_each( LINALG_EXECUTION_UNSEQ,
-                                 this->data(),
-                                 this->data() + this->size_map_.required_span_size(),
-                                 []( const element_type& elem ) constexpr noexcept { elem.element_type(); } );
+                                 this->data_handle(),
+                                 this->data_handle() + this->size_map_.required_span_size(),
+                                 []( element_type& elem ) constexpr noexcept { ::new ( ::std::addressof( elem ) ) element_type {}; } );
     }
     else
     {
       // Iterate over the multi-index operator
       apply_all( *this,
                  [&]( auto ... indices ) constexpr noexcept
-                   { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type(); },
+                   { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type {}; },
                  LINALG_EXECUTION_UNSEQ );
     }
   }
@@ -1441,16 +1441,16 @@ inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy
   {
     // Attempt to construct in linear fashion
     LINALG_DETAIL::for_each( LINALG_EXECUTION_UNSEQ,
-                             this->data(),
-                             this->data() + this->size_map_.required_span_size(),
-                             [this,&eptr]( const element_type& elem ) { try { elem.element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } } );
+                             this->data_handle(),
+                             this->data_handle() + this->size_map_.required_span_size(),
+                             [this,&eptr]( element_type& elem ) { try { ::new ( ::std::addressof( elem ) ) element_type {}; } catch ( ... ) { eptr = ::std::current_exception(); } } );
   }
   else
   {
     // Attempt to construct via iteration over multi-index operator
     apply_all( *this,
                 [&]( auto ... indices ) noexcept
-                  { try { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type(); } catch ( ... ) { eptr = ::std::current_exception(); } },
+                  { try { ::new ( ::std::addressof( access( *this, indices ... ) ) ) element_type {}; } catch ( ... ) { eptr = ::std::current_exception(); } },
                 LINALG_EXECUTION_UNSEQ );
   }
   // If exceptions were thrown, rethrow the last
