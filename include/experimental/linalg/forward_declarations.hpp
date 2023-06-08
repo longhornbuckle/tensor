@@ -18,6 +18,8 @@ LINALG_DETAIL_BEGIN LINALG_DETAIL_END
 LINALG_CONCEPTS_BEGIN LINALG_CONCEPTS_END
 // LINALG_EXPRESSIONS
 LINALG_EXPRESSIONS_BEGIN LINALG_EXPRESSIONS_END
+// LINALG_EXPRESSIONS_DETAIL
+LINALG_EXPRESSIONS_DETAIL_BEGIN LINALG_EXPRESSIONS_DETAIL_END
 
 // Default layout
 LINALG_BEGIN
@@ -26,13 +28,23 @@ LINALG_END
 
 //-  Tensor Expressions
 
-LINALG_EXPRESSIONS_BEGIN // expressions namespace
+LINALG_EXPRESSIONS_DETAIL_BEGIN // expressions detail namespace
 
 template < class Tensor, class Traits >
 class unary_tensor_expression_base;
 
 template < class Tensor, class Traits >
 class binary_tensor_expression_base;
+
+// Transpose indices
+template < ::std::size_t index1 = 0, ::std::size_t index2 = 1 >
+struct transpose_indices_t;
+template < class IndexType1 = ::std::size_t, class IndexType2 = ::std::size_t >
+struct transpose_indices_v;
+
+LINALG_EXPRESSIONS_DETAIL_END // expressions detail namesapce
+
+LINALG_EXPRESSIONS_BEGIN // expressions namespace
 
 // Unary Tensor Expressions
 
@@ -45,30 +57,24 @@ template < class Tensor, typename Enable = ::std::enable_if_t< LINALG_CONCEPTS::
 #endif
 class negate_tensor_expression;
 
-// Transpose indices
-template < ::std::size_t index1 = 0, ::std::size_t index2 = 1 >
-struct transpose_indices_t;
-template < class IndexType1 = ::std::size_t, class IndexType2 = ::std::size_t >
-struct transpose_indices_v;
-
 // Transpose
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class Tensor, class Transpose = transpose_indices_t<> >
+template < class Tensor, class Transpose = LINALG_EXPRESSIONS_DETAIL::transpose_indices_t<> >
   requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor,
-           class Transpose = transpose_indices_t<>,
+           class Transpose = LINALG_EXPRESSIONS_DETAIL::transpose_indices_t<>,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class transpose_tensor_expression;
 
 // Conjugate
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class Tensor, class Transpose = transpose_indices_t<> >
+template < class Tensor, class Transpose = LINALG_EXPRESSIONS_DETAIL::transpose_indices_t<> >
   requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
 #else
 template < class Tensor,
-           class Transpose = transpose_indices_t<>,
+           class Transpose = LINALG_EXPRESSIONS_DETAIL::transpose_indices_t<>,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > > >
 #endif
 class conjugate_tensor_expression;
@@ -80,83 +86,99 @@ class conjugate_tensor_expression;
 template < class FirstTensor, class SecondTensor >
   requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
              LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > &&
-             ( FirstTensor::rank() == SecondTensor::rank() ) &&
-             LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
-             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 + v2; } )
+             ( ::std::remove_reference_t< FirstTensor >::rank() == ::std::remove_reference_t< SecondTensor >::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename ::std::remove_reference_t< FirstTensor >::extents_type, typename ::std::remove_reference_t< SecondTensor >::extents_type > &&
+             requires ( typename ::std::remove_reference_t< FirstTensor >::value_type v1, typename ::std::remove_reference_t< SecondTensor >::value_type v2 ) { v1 + v2; } )
 #else
 template < class FirstTensor, class SecondTensor,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< FirstTensor > &&
-                                          LINALG_CONCEPTS::tensor_expression_v< SecondTensor > &&
-                                          LINALG_CONCEPTS::has_equal_ranks_v< FirstTensor, SecondTensor > &&
-                                          LINALG_CONCEPTS::may_have_equal_extents_v< FirstTensor, SecondTensor > &&
-                                          LINALG_CONCEPTS::elements_are_additive_v< FirstTensor, SecondTensor > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< FirstTensor > > &&
+                                          LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::has_equal_ranks_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::may_have_equal_extents_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::elements_are_additive_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > > >
 #endif
 class addition_tensor_expression;
 
 // Subtraction
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression FirstTensor, LINALG_CONCEPTS::tensor_expression SecondTensor >
-  requires ( ( FirstTensor::rank() == SecondTensor::rank() ) &&
-             LINALG_DETAIL::extents_may_be_equal_v< typename FirstTensor::extents_type, typename SecondTensor::extents_type > &&
-             requires ( typename FirstTensor::value_type v1, typename SecondTensor::value_type v2 ) { v1 - v2; } )
+template < class FirstTensor, class SecondTensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< FirstTensor > > &&
+             LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > &&
+             ( ::std::remove_reference_t< FirstTensor >::rank() == ::std::remove_reference_t< SecondTensor >::rank() ) &&
+             LINALG_DETAIL::extents_may_be_equal_v< typename ::std::remove_reference_t< FirstTensor >::extents_type, typename ::std::remove_reference_t< SecondTensor >::extents_type > &&
+             requires ( typename ::std::remove_reference_t< FirstTensor >::value_type v1, typename ::std::remove_reference_t< SecondTensor >::value_type v2 ) { v1 - v2; } )
 #else
 template < class FirstTensor, class SecondTensor,
-           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< FirstTensor > &&
-                                          LINALG_CONCEPTS::tensor_expression_v< SecondTensor > &&
-                                          LINALG_CONCEPTS::has_equal_ranks_v< FirstTensor, SecondTensor > &&
-                                          LINALG_CONCEPTS::may_have_equal_extents_v< FirstTensor, SecondTensor > &&
-                                          LINALG_CONCEPTS::elements_are_subtractive_v< FirstTensor, SecondTensor > > >
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< FirstTensor > > &&
+                                          LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::has_equal_ranks_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::may_have_equal_extents_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > &&
+                                          LINALG_CONCEPTS::elements_are_subtractive_v< ::std::remove_reference_t< FirstTensor >, ::std::remove_reference_t< SecondTensor > > > >
 #endif
 class subtraction_tensor_expression;
 
 // Scalar Pre-Multiply
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { s * v; }
+template < class Scalar, class Tensor >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             ! LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Scalar > > &&
+             requires ( Scalar s, typename ::std::remove_reference_t< Tensor >::value_type v ) { s * v; } )
 #else
-template < class S, class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_premultiplicative_v< S, Tensor > > >
+template < class Scalar, class Tensor,
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
+                                          ! LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Scalar > > &&
+                                          LINALG_CONCEPTS::tensor_is_scalar_premultiplicative_v< Scalar, Tensor > > >
 #endif
 class scalar_preprod_tensor_expression;
 
 // Scalar Post-Multiply
 #ifdef LINALG_ENABLE_CONCEPTS
-template < class S, LINALG_CONCEPTS::tensor_expression Tensor >
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { v * s; }
+template < class Tensor, class Scalar >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             ! LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Scalar > > &&
+             requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v * s; } )
 #else
-template < class S, class Tensor, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_postmultiplicative_v< S, Tensor > > >
+template < class Tensor, class Scalar,
+           typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
+                                          ! LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Scalar > > &&
+                                          LINALG_CONCEPTS::tensor_is_scalar_postmultiplicative_v< Tensor, Scalar > > >
 #endif
 class scalar_postprod_tensor_expression;
 
 // Scalar Division
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { v / s; }
+template < class Tensor, class Scalar >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v / s; } )
 #else
-template < class Tensor, class S, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisible_v< S, Tensor > > >
+template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisable_v< Tensor, Scalar > > >
 #endif
 class scalar_division_tensor_expression;
 
 // Scalar Modulo
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::tensor_expression Tensor, class S >
-  requires requires ( const S& s, const typename Tensor::value_type& v ) { v % s; }
+template < class Tensor, class Scalar >
+  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
+             requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v % s; } )
 #else
-template < class Tensor, class S, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_modulo_v< S, Tensor > > >
+template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_modulo_v< Tensor, Scalar > > >
 #endif
 class scalar_modulo_tensor_expression;
 
 // Matrix Product
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::matrix_expression FirstMatrix, LINALG_CONCEPTS::matrix_expression SecondMatrix >
-  requires ( ( requires ( const typename FirstMatrix::value_type& v1, const typename SecondMatrix::value_type& v2 ) { v1 * v2; } ) &&
-             ( ( FirstMatrix::extents_type::static_extent(1) == SecondMatrix::extents_type::static_extent(0) ) ||
-               ( FirstMatrix::extents_type::static_extent(1) == ::std::dynamic_extent ) ||
-               ( SecondMatrix::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
+template < class FirstMatrix, class SecondMatrix >
+  requires ( LINALG_CONCEPTS::matrix_expression< ::std::remove_reference_t< FirstMatrix > > &&
+             LINALG_CONCEPTS::matrix_expression< ::std::remove_reference_t< SecondMatrix > > &&
+            ( requires ( const typename ::std::remove_reference_t< FirstMatrix >::value_type& v1, const typename ::std::remove_reference_t< SecondMatrix >::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( ::std::remove_reference_t< FirstMatrix >::extents_type::static_extent(1) == ::std::remove_reference_t< SecondMatrix >::extents_type::static_extent(0) ) ||
+               ( ::std::remove_reference_t< FirstMatrix >::extents_type::static_extent(1) == ::std::dynamic_extent ) ||
+               ( ::std::remove_reference_t< SecondMatrix >::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
 #else
-template < class FirstMatrix, class SecondMatrix, typename = ::std::enable_if_t< LINALG_CONCEPTS::matrix_expression_v< FirstMatrix > &&
-                                                                                 LINALG_CONCEPTS::matrix_expression_v< SecondMatrix > &&
-                                                                                 LINALG_CONCEPTS::elements_are_multiplicative_v< FirstMatrix, SecondMatrix > &&
-                                                                                 LINALG_CONCEPTS::matrices_may_be_multiplicative_v< FirstMatrix, SecondMatrix > > >
+template < class FirstMatrix, class SecondMatrix, typename = ::std::enable_if_t< LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< FirstMatrix > > &&
+                                                                                 LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< SecondMatrix > > &&
+                                                                                 LINALG_CONCEPTS::elements_are_multiplicative_v< ::std::remove_reference_t< FirstMatrix >, ::std::remove_reference_t< SecondMatrix > > &&
+                                                                                 LINALG_CONCEPTS::matrices_may_be_multiplicative_v< ::std::remove_reference_t< FirstMatrix >, ::std::remove_reference_t< SecondMatrix > > > >
 #endif
 class matrix_product_expression;
 

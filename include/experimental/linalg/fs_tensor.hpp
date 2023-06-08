@@ -45,7 +45,7 @@ class fs_tensor
     /// @brief Type returned by mutable index access
     using reference                = typename accessor_type::reference;
     /// @brief Type returned by const index access
-    using const_reference          = ::std::add_const_t<typename accessor_type::reference>;
+    using const_reference          = ::std::add_const_t< typename accessor_type::reference >;
     /// @brief Type used to point to th beginning of the element buffer
     using data_handle_type         = typename accessor_type::data_handle_type;
     /// @brief Const type used to point to the beginning of the element buffer
@@ -161,13 +161,13 @@ class fs_tensor
     [[nodiscard]] constexpr const extents_type& extents() const noexcept;
     /// @brief Returns the length of the tensor along the input dimension
     /// @return the length of the tensor along the input dimension
-    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept;
+    [[nodiscard]] constexpr index_type extent( rank_type n ) const noexcept;
     /// @brief Returns the length of the tensor along the input dimension as known at compile time
     /// @return the length of the tensor along the input dimension as known at compile time
-    [[nodiscard]] static constexpr size_type static_extent( rank_type n ) noexcept;
+    [[nodiscard]] static constexpr ::std::size_t static_extent( rank_type n ) noexcept;
     /// @brief Returns the total number of elements contained
     /// @return the total number of elements contained
-    [[nodiscard]] constexpr size_type size() const noexcept;
+    [[nodiscard]] constexpr ::std::size_t size() const noexcept;
     /// @brief Returns the total number of elements the buffer may contain
     /// @return the total number of elements the buffer may contain
     [[nodiscard]] constexpr size_type max_size() const noexcept;
@@ -200,7 +200,7 @@ class fs_tensor
     [[nodiscard]] static constexpr rank_type rank_dynamic() noexcept;
     /// @brief Returns the stride of the mapping along the input dimension
     /// @return the stride of the mapping along the input dimension
-    [[nodiscard]] constexpr size_type stride( rank_type n ) const noexcept;
+    [[nodiscard]] constexpr index_type stride( rank_type n ) const noexcept;
     /// @brief Returns the mapping object responsible for mapping indices into the memory buffer
     /// @return const reference to the mapping object
     [[nodiscard]] constexpr const mapping_type& mapping() const noexcept;
@@ -398,9 +398,17 @@ constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::fs_tensor( Tensor&& 
 #endif
   :
   accessor_(),
-  size_map_( t.extents() ),
+  size_map_(),
   elems_()
 {
+  // Check the extents are equal
+  if constexpr ( ! LINALG_DETAIL::extents_are_equal_v< extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
+  {
+    if ( this->extents() != t.extents() )
+    {
+      throw ::std::length_error("Extents must be equal");
+    }
+  }
   // Construct all elements from tensor expression
   auto tensor_ctor = [this,&t]( auto ... indices ) constexpr noexcept( ::std::is_nothrow_copy_constructible_v<element_type> )
   {
@@ -473,11 +481,6 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator = ( Tensor&& rhs )
              LINALG_DETAIL::extents_may_be_equal_v< typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
 {
-  if constexpr ( ! ::std::is_trivially_destructible_v< element_type > )
-  {
-    // Destroy all
-    this->destroy_all();
-  }
   if constexpr ( !LINALG_DETAIL::extents_are_equal_v< extents_type, typename ::std::decay_t< Tensor >::extents_type > )
   {
     if ( this->size_map_.extents() != rhs.extents() )
@@ -485,9 +488,30 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator = ( Tensor&& rhs )
       throw ::std::length_error("Extents must be equal");
     }
   }
-  // Copy construct all elements
-  LINALG_DETAIL::copy_view( *this, rhs );
-  
+  #ifdef LINALG_ENABLE_CONCEPTS
+  if constexpr ( LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > > )
+  #else
+  if constexpr ( LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< Tensor > > )
+  #endif
+  {
+    if constexpr ( ! is_alias_assignable_v< Tensor > )
+    {
+      // Create a temporary to assign from
+      fs_tensor temp { rhs };
+      // Copy construct all elements
+      LINALG_DETAIL::copy_view( *this, temp );
+    }
+    else
+    {
+      // Copy construct all elements
+      LINALG_DETAIL::copy_view( *this, rhs );
+    }
+  }
+  else
+  {
+    // Copy construct all elements
+    LINALG_DETAIL::copy_view( *this, rhs );
+  }
   return *this;
 }
 
@@ -508,21 +532,21 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extents() const noexcept
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::extent( rank_type n ) const noexcept
 {
   return this->size_map_.extents().extent( n );
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr ::std::size_t
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::static_extent( rank_type n ) noexcept
 {
   return extents_type::static_extent( n );
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr ::std::size_t
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size() const noexcept
 {
   return this->size_map_.required_span_size();
@@ -543,10 +567,11 @@ template < class ... OtherIndexType >
 [[nodiscard]] constexpr fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::const_reference
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator[]( OtherIndexType ... indices ) const noexcept
 #ifdef LINALG_ENABLE_CONCEPTS
-  requires ( sizeof...(OtherIndexType) == rank() ) &&
-           ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
+  requires ( sizeof...( OtherIndexType ) == rank() ) &&
+           ( ::std::is_convertible_v< OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type > && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( const_cast< data_handle_type >( this->elems_.data() ), this->size_map_( indices ... ) );
 }
 #endif
@@ -560,6 +585,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator()( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( const_cast< data_handle_type >( this->elems_.data() ), this->size_map_( indices ... ) );
 }
 #endif
@@ -575,6 +601,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator[]( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( this->elems_.data(), this->size_map_( indices ... ) );
 }
 #endif
@@ -588,6 +615,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::operator()( OtherIndexType ...
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type> && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( this->elems_.data(), this->size_map_( indices ... ) );
 }
 #endif
@@ -651,7 +679,7 @@ fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::rank_dynamic() noexcept
 }
 
 template < class T, class Extents, class LayoutPolicy, class AccessorPolicy >
-[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::index_type
 fs_tensor<T,Extents,LayoutPolicy,AccessorPolicy>::stride( rank_type n ) const noexcept
 {
   return this->size_map_.stride( n );

@@ -92,6 +92,18 @@ template < class T >
 inline constexpr bool is_extents_v = is_extents<T>::value;
 
 //==================================================================================================
+//  Test if type is a default_accessor
+//==================================================================================================
+template < class T >
+class is_default_accessor : public ::std::false_type { };
+
+template < class T >
+class is_default_accessor< ::std::default_accessor< T > > : public ::std::true_type { };
+
+template < class T >
+inline constexpr bool is_default_accessor_v = is_default_accessor< T >::value;
+
+//==================================================================================================
 //  Test if type is a tuple of all same type
 //==================================================================================================
 template < class T >
@@ -105,17 +117,26 @@ template < class T >
 inline constexpr bool is_homogeneous_tuple_v = is_homogeneous_tuple<T>::value;
 
 //==================================================================================================
-//  Test if type extents is not dynamic
+//  Test if indices is within extents
 //==================================================================================================
 template < class T >
-struct extents_is_static : public ::std::false_type {};
-
-template < class SizeType, ::std::size_t ... Extents >
-struct extents_is_static< ::std::extents<SizeType,Extents...> > : public
-  ::std::conditional_t< ( ( Extents != dynamic_extent ) && ... ), ::std::true_type, ::std::false_type > {};
+struct Bounded_indices_impl;
+template < class IndexType, auto ... Ranks >
+struct Bounded_indices_impl< ::std::integer_sequence< IndexType, Ranks ... > >
+{
+  template < ::std::size_t ... Extents >
+  [[nodiscard]] static inline constexpr bool bounded( const ::std::extents< IndexType, Extents ... >& extents, auto ... indices ) noexcept
+  {
+    return ( ( ( indices >= 0 ) && ( static_cast< IndexType >( indices ) < extents.extent( Ranks ) ) ) && ... );
+  }
+};
 
 template < class T >
-inline constexpr bool extents_is_static_v = extents_is_static<T>::value;
+[[nodiscard]] inline constexpr bool bounded_indices( const T& extents, auto ... indices ) noexcept
+{
+  return Bounded_indices_impl< ::std::make_integer_sequence< typename T::index_type, T::rank() > >::bounded( extents, indices ... );
+}
+
 
 //==================================================================================================
 //  Test if type extents may be equal
@@ -151,7 +172,7 @@ inline constexpr bool extents_may_be_equal_v = extents_may_be_equal<T,U>::value;
 //==================================================================================================
 template < class T, class U >
 struct extents_are_equal : public
-  ::std::conditional_t< extents_may_be_equal_v<T,U> && extents_is_static_v<T> && extents_is_static_v<U>,
+  ::std::conditional_t< extents_may_be_equal_v<T,U> && ( T::rank_dynamic() == 0 ) && ( U::rank_dynamic() == 0 ),
                         ::std::true_type,
                         ::std::false_type > {};
 
@@ -917,13 +938,13 @@ template < class ToView, class FromView >
 constexpr void
 copy_view( ToView& to_view, const FromView& from_view )
   noexcept( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > &&
-            is_nothrow_convertible_v< typename FromView::reference, typename ToView::value_type > )
+            is_nothrow_convertible_v< typename FromView::value_type, typename ToView::value_type > )
 {
   if constexpr ( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > )
   {
     apply_all( ::std::forward<ToView>( to_view ),
               [ &to_view, &from_view ]( auto ... indices )
-                constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference, typename ::std::decay_t< ToView >::reference > )
+                constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::value_type, typename ::std::decay_t< ToView >::reference > )
                 { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
               LINALG_EXECUTION_UNSEQ );
   }
@@ -933,7 +954,7 @@ copy_view( ToView& to_view, const FromView& from_view )
     {
       apply_all( ::std::forward<ToView>( to_view ),
                 [ &to_view, &from_view ]( auto ... indices )
-                  constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference,typename ::std::decay_t< ToView >::reference > )
+                  constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::value_type,typename ::std::decay_t< ToView >::reference > )
                   { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
                 LINALG_EXECUTION_UNSEQ );
     }

@@ -65,8 +65,10 @@ concept tensor_expression = requires
 requires( const T& t, typename T::rank_type n ) // Functions
 {
   // Size functions
-  { t.extent( n ) }          -> ::std::same_as< typename T::size_type >;
-  { T::rank() }     noexcept -> ::std::same_as< typename T::rank_type >;
+  // NOTE: P0009r18 lists return type of extent(n) as size_type. Implementation returns index_type (for both mdspan and extents).
+  { t.extent( n ) }          -> ::std::same_as< typename T::index_type >; // ::std::same_as< typename T::size_type >;
+  // NOTE: POOO9r18 lists return type of rank() as rank_type. Implementation returns size_t (for mdspan only).
+  { T::rank() }     noexcept -> ::std::convertible_to< typename T::rank_type >; // ::std::same_as< typename T::rank_type >;
   // Member accessors
   { t.extents() }            -> ::std::convertible_to< typename T::extents_type >;
   // Constexpr functions
@@ -98,12 +100,14 @@ requires
   typename T::reference;
   typename T::data_handle_type;
 } &&
-requires( T& t, typename T::rank_type n ) // Functions
+requires( ::std::remove_cv_t< T >& t, typename T::rank_type n ) // Functions
 {
   // Size functions
-  { T::rank_dynamic() }         noexcept -> ::std::same_as< typename T::rank_type >;
+  // NOTE: POOO9r18 lists return type of rank() as rank_type. Implementation returns size_t (for mdspan only).
+  { T::rank_dynamic() }         noexcept -> ::std::convertible_to< typename T::rank_type >; // ::std::same_as< typename T::rank_type >;
   { T::static_extent( n ) }     noexcept -> ::std::same_as< ::std::size_t >;
-  { t.size() }                           -> ::std::same_as< typename T::size_type >;
+  // NOTE: POOO9r18 lists return type of size() as size_type. Implementation returns size_t.
+  { t.size() }                           -> ::std::same_as< ::std::size_t >; // ::std::same_as< typename T::size_type >;
   // Layout functions
   { T::is_always_strided() }    noexcept -> ::std::same_as< bool >;
   { T::is_always_exhaustive() } noexcept -> ::std::same_as< bool >;
@@ -111,17 +115,18 @@ requires( T& t, typename T::rank_type n ) // Functions
   { t.is_strided() }                     -> ::std::same_as< bool >;
   { t.is_exhaustive() }                  -> ::std::same_as< bool >;
   { t.is_unique() }                      -> ::std::same_as< bool >;
-  { t.stride( n ) }                      -> ::std::same_as< typename T::index_type >;
+  // NOTE: POOO9r18 lists return type of stride(n) as size_type. Implementation returns index_type (for mdspan and mapping types).
+  { t.stride( n ) }                      -> ::std::same_as< typename T::index_type >; // ::std::same_as< typename T::size_type >;
   // Member accessors
-  //{ t.accessor() }                       -> ::std::convertible_to< ::std::remove_cv_t< ::std::decay_t< typename T::accessor_type > > >;
-  // { t.data_handle() }                    -> ::std::convertible_to< typename T::data_handle_type >;
-  // { t.mapping() }                        -> ::std::convertible_to< typename T::mapping_type >;
+  { t.accessor() }                       -> ::std::convertible_to< typename T::accessor_type >;
+  { t.data_handle() }                    -> ::std::convertible_to< typename T::data_handle_type >;
+  { t.mapping() }                        -> ::std::convertible_to< typename T::mapping_type >;
   // Constexpr functions
-  // ::std::integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
-  // ::std::integral_constant< typename T::size_type, T::static_extent( T::rank_dynamic() ) >::value;
-  // ::std::bool_constant< T::is_always_strided() >::value;
-  // ::std::bool_constant< T::is_always_exhaustive() >::value;
-  // ::std::bool_constant< T::is_always_unique() >::value;
+  ::std::integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
+  ::std::integral_constant< ::std::size_t, T::static_extent( T::rank_dynamic() ) >::value;
+  ::std::bool_constant< T::is_always_strided() >::value;
+  ::std::bool_constant< T::is_always_exhaustive() >::value;
+  ::std::bool_constant< T::is_always_unique() >::value;
 };
 
 // Writable tensor concept
@@ -170,13 +175,18 @@ constructible_from< T, const typename T::extents_type&, typename T::allocator_ty
 template < class T >
 concept unevaluated_tensor_expression =
 tensor_expression< T > &&
+requires
+{
+  // Types
+  typename T::evaluated_type;
+} &&
 requires( T t )
 {
-  { t.operator auto() };
+  { t.operator T::evaluated_type() };
 } &&
-tensor_expression< decltype( ::std::declval< T >().operator auto() ) > &&
-( static_tensor< decltype( ::std::declval< T >().operator auto() ) > ||
-  dynamic_tensor< decltype( ::std::declval< T >().operator auto() ) > );
+tensor_expression< decltype( ::std::declval< T >().operator T::evaluated_type() ) > &&
+( static_tensor< decltype( ::std::declval< T >().operator T::evaluated_type() ) > ||
+  dynamic_tensor< decltype( ::std::declval< T >().operator T::evaluated_type() ) > );
 
 // Unary tensor expression concept
 template < class T >
@@ -262,7 +272,7 @@ template < class T > inline constexpr bool has_allocator_type_v = has_allocator_
 
 // Test for extent function
 template < class T, class = void > struct has_extent_func : public ::std::false_type { };
-template < class T > struct has_extent_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().extent( ::std::declval< typename T::rank_type >() ) ), typename T::size_type > > > : public ::std::true_type { };
+template < class T > struct has_extent_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().extent( ::std::declval< typename T::rank_type >() ) ), typename T::index_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_extent_func_v = has_extent_func< T >::value;
 
 // Test for extents function
@@ -272,37 +282,37 @@ template < class T > inline constexpr bool has_extents_func_v = has_extents_func
 
 // Test for rank function
 template < class T, class = void > struct has_rank_func : public ::std::false_type { };
-template < class T > struct has_rank_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::rank() ), typename T::rank_type > > > : public ::std::true_type { };
+template < class T > struct has_rank_func< T, ::std::enable_if_t< ::std::is_convertible_v< decltype( T::rank() ), typename T::rank_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_rank_func_v = has_rank_func< T >::value;
 
 // Test for constexpr rank function
 template < class T, class = void > struct has_constexpr_rank_func : public ::std::false_type { };
-template < class T > struct has_constexpr_rank_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::integral_constant< typename T::rank_type, T::rank() >, ::std::integral_constant< typename T::rank_type, T::rank() > > > > : public ::std::true_type { };
+template < class T > struct has_constexpr_rank_func< T, ::std::enable_if_t< ::std::is_convertible_v< ::std::integral_constant< typename T::rank_type, T::rank() >, ::std::integral_constant< typename T::rank_type, T::rank() > > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_constexpr_rank_func_v = has_constexpr_rank_func< T >::value;
 
 // Test for rank_dynamic function
 template < class T, class = void > struct has_rank_dynamic_func : public ::std::false_type { };
-template < class T > struct has_rank_dynamic_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::rank_dynamic() ), typename T::rank_type > > > : public ::std::true_type { };
+template < class T > struct has_rank_dynamic_func< T, ::std::enable_if_t< ::std::is_convertible_v< decltype( T::rank_dynamic() ), typename T::rank_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_rank_dynamic_func_v = has_rank_dynamic_func< T >::value;
 
 // Test for constexpr rank_dynamic function
 template < class T, class = void > struct has_constexpr_rank_dynamic_func : public ::std::false_type { };
-template < class T > struct has_constexpr_rank_dynamic_func< T, ::std::enable_if_t< ::std::is_same_v< integral_constant< typename T::rank_type, T::rank_dynamic() >, integral_constant< typename T::rank_type, T::rank_dynamic() > > > > : public ::std::true_type { };
+template < class T > struct has_constexpr_rank_dynamic_func< T, ::std::enable_if_t< ::std::is_convertible_v< integral_constant< typename T::rank_type, T::rank_dynamic() >, integral_constant< typename T::rank_type, T::rank_dynamic() > > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_constexpr_rank_dynamic_func_v = has_constexpr_rank_dynamic_func< T >::value;
 
-// Test for static_extents function
+// Test for static_extent function
 template < class T, class = void > struct has_static_extent_func : public ::std::false_type { };
 template < class T > struct has_static_extent_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( T::static_extent( ::std::declval< typename T::rank_type >() ) ), ::std::size_t > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_static_extent_func_v = has_static_extent_func< T >::value;
 
-// Test for constexpr static_extents function
+// Test for constexpr static_extent function
 template < class T, class = void > struct has_constexpr_static_extent_func : public ::std::false_type { };
-template < class T > struct has_constexpr_static_extent_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::integral_constant< typename T::size_type, T::static_extent( typename T::rank_type() ) >, ::std::integral_constant< typename T::size_type, T::static_extent( typename T::rank_type() ) > > > > : public ::std::true_type { };
+template < class T > struct has_constexpr_static_extent_func< T, ::std::enable_if_t< ::std::is_same_v< ::std::integral_constant< ::std::size_t, T::static_extent( typename T::rank_type() ) >, ::std::integral_constant< ::std::size_t, T::static_extent( typename T::rank_type() ) > > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_constexpr_static_extent_func_v = has_constexpr_static_extent_func< T >::value;
 
 // Test for size function
 template < class T, class = void > struct has_size_func : public ::std::false_type { };
-template < class T > struct has_size_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().size() ), typename T::size_type > > > : public ::std::true_type { };
+template < class T > struct has_size_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().size() ), ::std::size_t > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_size_func_v = has_size_func< T >::value;
 
 // Test for is_always_strided function
@@ -548,26 +558,26 @@ template < class T > struct readable_tensor : public ::std::conditional_t<
   has_layout_type_v< T > &&
   has_mapping_type_v< T > &&
   has_accessor_type_v< T > &&
-  has_reference_v< T > // &&
-  // has_data_handle_type_v< T > &&
-  // has_rank_dynamic_func_v< T > &&
-  // has_static_extent_func_v< T > &&
-  // has_size_func_v< T > &&
-  // has_is_always_strided_func_v< T > &&
-  // has_is_always_exhaustive_func_v< T > &&
-  // has_is_always_unique_func_v< T > &&
-  // has_is_strided_func_v< T > &&
-  // has_is_exhaustive_func_v< T > &&
-  // has_is_unique_func_v< T > &&
-  // has_constexpr_rank_dynamic_func_v< T > &&
-  // has_constexpr_static_extent_func_v< T > &&
-  // has_constexpr_is_always_strided_func_v< T > &&
-  // has_constexpr_is_always_exhaustive_func_v< T > &&
-  // has_constexpr_is_always_unique_func_v< T > &&
-  // has_stride_func_v< T > &&
-  // has_accessor_func_v< T > &&
-  // has_data_handle_func_v< T > &&
-  // has_mapping_func_v< T >
+  has_reference_v< T > &&
+  has_data_handle_type_v< T > &&
+  has_rank_dynamic_func_v< T > &&
+  has_static_extent_func_v< T > &&
+  has_size_func_v< T > &&
+  has_is_always_strided_func_v< T > &&
+  has_is_always_exhaustive_func_v< T > &&
+  has_is_always_unique_func_v< T > &&
+  has_is_strided_func_v< T > &&
+  has_is_exhaustive_func_v< T > &&
+  has_is_unique_func_v< T > &&
+  has_constexpr_rank_dynamic_func_v< T > &&
+  has_constexpr_static_extent_func_v< T > &&
+  has_constexpr_is_always_strided_func_v< T > &&
+  has_constexpr_is_always_exhaustive_func_v< T > &&
+  has_constexpr_is_always_unique_func_v< T > &&
+  has_stride_func_v< T > &&
+  has_accessor_func_v< T > &&
+  has_data_handle_func_v< T > &&
+  has_mapping_func_v< T >
   , ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool readable_tensor_v = readable_tensor< T >::value;
 

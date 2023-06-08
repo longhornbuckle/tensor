@@ -27,6 +27,11 @@ template < class T,
            class AccessorPolicy >
 class dr_tensor
 {
+  private:
+    //- Types
+
+    /// @brief Alias to this type
+    using self_type                = dr_tensor< T, Extents, LayoutPolicy, CapExtents, Allocator, AccessorPolicy >;
   public:
     //- Types
 
@@ -51,7 +56,7 @@ class dr_tensor
     /// @brief Type returned by mutable index access
     using reference                = typename accessor_type::reference;
     /// @brief Type returned by const index access
-    using const_reference          = ::std::add_const_t<typename accessor_type::reference>;
+    using const_reference          = ::std::add_const_t< typename accessor_type::reference >;
     /// @brief Type used to point to the beginning of the element buffer
     using data_handle_type         = typename accessor_type::data_handle_type;
     /// @brief Const type used to point to the beginning of the element buffer
@@ -286,13 +291,13 @@ class dr_tensor
     [[nodiscard]] constexpr const extents_type& extents() const noexcept;
     /// @brief Returns the length of the dr_tensor along the input dimension
     /// @return the length of the dr_tensor along the input dimension
-    [[nodiscard]] constexpr size_type extent( rank_type n ) const noexcept;
+    [[nodiscard]] constexpr index_type extent( rank_type n ) const noexcept;
     /// @brief Returns the length of the dr_tensor along the input dimension as known at compile time
     /// @return the length of the dr_tensor along the input dimension as known at compile time
-    [[nodiscard]] static constexpr size_type static_extent( rank_type n ) noexcept;
+    [[nodiscard]] static constexpr ::std::size_t static_extent( rank_type n ) noexcept;
     /// @brief Returns the total number of elements contained
     /// @return the total number of elements contained
-    [[nodiscard]] constexpr size_type size() const noexcept;
+    [[nodiscard]] constexpr ::std::size_t size() const noexcept;
     /// @brief Returns the total number of elements the buffer may contain
     /// @return the total number of elements the buffer may contain
     [[nodiscard]] constexpr size_type max_size() const noexcept;
@@ -356,7 +361,7 @@ class dr_tensor
     [[nodiscard]] static constexpr rank_type rank_dynamic() noexcept;
     /// @brief Returns the stride of the mapping along the input dimension
     /// @return the stride of the mapping along the input dimension
-    [[nodiscard]] constexpr size_type stride( rank_type n ) const noexcept;
+    [[nodiscard]] constexpr index_type stride( rank_type n ) const noexcept;
     /// @brief Returns the mapping object responsible for mapping indices into the memory buffer
     /// @return const reference to the mapping object
     [[nodiscard]] constexpr const mapping_type& mapping() const noexcept;
@@ -448,6 +453,12 @@ class dr_tensor
     
     // Construct given size mapping and capacity mapping
     constexpr dr_tensor( const mapping_type& size_map, const capacity_mapping_type& cap_map, const allocator_type& alloc, const accessor_type& accessor );
+
+    // Move does not check allocator traits
+    constexpr void move( dr_tensor&& t ) noexcept;
+    // Assign assumes sufficent extents and does not check allocator traits
+    template < class Tensor >
+    constexpr void assign( const Tensor& t );
 
     // Attempts to copy view. If an exception is thrown, deallocates and rethrows
     template < class MDS >
@@ -757,7 +768,7 @@ constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>:
   size_map_( this->cap_map_ ),
   tm_( alloc, this->cap_map_ )
 {
-  if constexpr ( LINALG_DETAIL::extents_is_static_v<extents_type> &&
+  if constexpr ( ( extents_type::rank_dynamic() == 0 ) &&
                  !( ::std::is_trivially_default_constructible_v< element_type > &&
                     ::std::is_trivially_copy_assignable_v< element_type > &&
                     ::std::is_trivially_destructible_v< element_type > ) )
@@ -855,53 +866,18 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
   // If the allocator is moved, then move everything
   if constexpr ( typename ::std::allocator_traits<allocator_type>::propagate_on_container_move_assignment {} )
   {
-    // Destroy everything currently allocated
-    if ( this->tm_.data() ) LINALG_LIKELY
-    {
-      this->destroy_all();
-    }
-    // Move
-    this->cap_map_  = ::std::move( rhs.cap_map_ );
-    this->size_map_ = ::std::move( rhs.size_map_ );
-    this->tm_       = ::std::move( rhs.tm_ );
+    this->move( ::std::move( rhs ) );
   }
   else
   {
-    if constexpr ( ::std::is_trivially_destructible_v<element_type> )
+    if ( LINALG_DETAIL::sufficient_extents( this->cap_map_.extents(), rhs.extents() ) )
     {
-      if ( this->capacity() != rhs.capacity() )
-      {
-        // Deallocate
-        this->tm_.deallocate( this->cap_map_ );
-        // Set new capacity
-        this->cap_map_  = rhs.cap_map_;
-        // Set new size
-        this->size_map_ = rhs.size_map_;
-        // Set memory
-        this->tm_.alloocate( this->cap_ );
-        // Copy construct all elements
-        LINALG_DETAIL::copy_view( *this, rhs );
-      }
-      else
-      {
-        // Set new size
-        this->size_map_ = rhs.size_map_;
-        // Copy construct all elements
-        LINALG_DETAIL::copy_view( *this, rhs );
-      }
+      this->assign( rhs );
     }
     else
     {
-      // Destroy all elements
-      this->destroy_all();
-      // Set new capacity
-      this->cap_map_  = rhs.cap_map_;
-      // Set new size
-      this->size_map_ = rhs.size_map_;
-      // Set memory
-      this->tm_.alloocate( this->cap_map_ );
-      // Copy construct all elements
-      LINALG_DETAIL::copy_view( *this, rhs );
+      self_type temp { rhs };
+      this->move( ::std::move( rhs ) );
     }
   }
   return *this;
@@ -911,48 +887,35 @@ template < class T, class Extents, class LayoutPolicy, class CapExtents, class A
 constexpr dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>&
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator = ( const dr_tensor& rhs )
 {
-  if constexpr ( ::std::is_trivially_destructible_v<element_type> )
+  if constexpr ( typename ::std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment{} )
   {
-    if ( this->cap_map_ != rhs.cap_map_ )
+    if constexpr ( ! ::std::is_trivially_destructible_v<element_type> )
     {
-      // Deallocate
-      this->tm_.deallocate( this->cap_map_ );
-      // Propogate allocator
-      tm_.assign_allocator( rhs.tm_ );
-      // Set new capacity
-      this->cap_map_ = rhs.cap_map_;
-      // Set new size
-      this->size_map_ = rhs.size_map_;
-      // Copy construct all elements
-      LINALG_DETAIL::copy_view( *this, rhs );
+      // Destroy all
+      this->destroy_all();
     }
-    else
-    {
-      if constexpr ( typename ::std::allocator_traits<allocator_type>::propagate_on_container_copy_assignment{} )
-      {
-        // Deallocate
-        this->tm_.deallocate( this->cap_map_ );
-        // Propogate allocator
-        tm_.assign_allocator( rhs.tm_ );
-      }
-      // Set new size
-      this->size_map_ = rhs.size_map_;
-      // Copy construct all elements
-      LINALG_DETAIL::copy_view( *this, rhs );
-    }
-  }
-  else
-  {
-    // Destroy all
-    this->destroy_all();
+    // Deallocate
+    this->tm_.deallocate( this->cap_map_ );
     // Propogate allocator
     tm_.assign_allocator( rhs.tm_ );
     // Set new capacity
-    this->cap_map_  = rhs.cap_map_;
+    this->cap_map_ = rhs.cap_map_;
     // Set new size
     this->size_map_ = rhs.size_map_;
     // Copy construct all elements
     LINALG_DETAIL::copy_view( *this, rhs );
+  }
+  else
+  {
+    if ( LINALG_DETAIL::sufficient_extents( this->cap_map_.extents(), rhs.extents() ) )
+    {
+      this->assign( rhs );
+    }
+    else
+    {
+      self_type temp { rhs };
+      this->move( ::std::move( rhs ) );
+    }
   }
   return *this;
 }
@@ -998,34 +961,49 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator 
              LINALG_DETAIL::extents_may_be_equal_v< dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type, typename ::std::remove_reference_t< Tensor >::extents_type > )
 #endif
 {
-  if constexpr ( ::std::is_trivially_destructible_v<element_type> )
+  #ifdef LINALG_ENABLE_CONCEPTS
+  if constexpr ( LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< Tensor > > )
+  #else
+  if constexpr ( LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< Tensor > > )
+  #endif
   {
-    if ( this->cap_map_.extents() != rhs.extents() )
+    if constexpr ( ! is_alias_assignable_v< Tensor > )
     {
-      // Deallocate
-      this->tm_.deallocate( this->cap_map_ );
-      // Set new capacity
-      this->cap_map_ = capacity_mapping_type( rhs.extents() );
-      // Allocate
-      this->tm_.allocate( this->cap_map_ );
+      self_type temp { rhs };
+      this->move( ::std::move( temp ) );
     }
-    // Set new size
-    this->size_map_ = mapping_type( rhs.extents() );
-    // Copy construct all elements
-    LINALG_DETAIL::copy_view( *this, rhs );
+    else
+    {
+      if ( this->extents() == rhs.extents() )
+      {
+        // Copy construct all elements
+        LINALG_DETAIL::copy_view( *this, rhs );
+      }
+      else
+      {
+        if ( LINALG_DETAIL::sufficient_extents( this->cap_map_.extents(), rhs.extents() ) )
+        {
+          this->assign( rhs );
+        }
+        else
+        {
+          self_type temp { rhs };
+          this->move( ::std::move( temp ) );
+        }
+      }
+    }
   }
   else
   {
-    // Destroy all
-    this->destroy_all();
-    // Set new capacity
-    this->cap_map_ = capacity_mapping_type( rhs.extents() );
-    // Allocate
-    this->tm_.allocate( this->cap_map_ );
-    // Set new size
-    this->size_map_ = mapping_type( rhs.extents() );
-    // Copy construct all elements
-    LINALG_DETAIL::copy_view( *this, rhs );
+    if ( LINALG_DETAIL::sufficient_extents( this->cap_map_.extents(), rhs.extents() ) )
+    {
+      this->assign( rhs );
+    }
+    else
+    {
+      self_type temp { rhs };
+      this->move( ::std::move( temp ) );
+    }
   }
   return *this;
 }
@@ -1047,21 +1025,21 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents()
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extent( rank_type n ) const noexcept
 {
   return this->size_map_.extents().extent( n );
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
+[[nodiscard]] constexpr ::std::size_t
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::static_extent( rank_type n ) noexcept
 {
   return extents_type::static_extent( n );
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
+[[nodiscard]] constexpr ::std::size_t
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size() const noexcept
 {
   return this->size_map_.required_span_size();
@@ -1156,6 +1134,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[
            ( ::std::is_convertible_v< OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type > && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( const_cast< data_handle_type >( this->tm_.data() ), this->size_map_( indices ... ) );
 }
 #endif
@@ -1169,6 +1148,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator(
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( const_cast< data_handle_type >( this->tm_.data() ), this->size_map_( indices ... ) );
 }
 #endif
@@ -1184,6 +1164,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator[
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v< OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type > && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( this->tm_.data(), this->size_map_( indices ... ) );
 }
 #endif
@@ -1197,6 +1178,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::operator(
   requires ( sizeof...(OtherIndexType) == rank() ) && ( ::std::is_convertible_v<OtherIndexType,typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type> && ... )
 #endif
 {
+  assert( LINALG_DETAIL::bounded_indices( this->extents(), indices ... ) );
   return this->accessor_.access( this->tm_.data(), this->size_map_( indices ... ) );
 }
 #endif
@@ -1260,7 +1242,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::rank_dyna
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::size_type
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::index_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::stride( rank_type n ) const noexcept
 {
   return this->size_map_.stride( n );
@@ -1298,7 +1280,6 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::accessor(
 
 //- Implementation detail
 
-
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
 template < class MDS >
 inline void dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::copy_view_except( MDS&& span )
@@ -1329,6 +1310,40 @@ template < class T, class Extents, class LayoutPolicy, class CapExtents, class A
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::data_handle() noexcept
 {
   return this->tm_.data();
+}
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+constexpr void
+dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::move( dr_tensor&& t ) noexcept
+{
+  if constexpr ( ! ::std::is_trivially_destructible_v<element_type> )
+  {
+    // Destroy everything currently allocated
+    if ( this->tm_.data() ) LINALG_LIKELY
+    {
+      this->destroy_all();
+    }
+  }
+  // Move
+  this->cap_map_  = ::std::move( t.cap_map_ );
+  this->size_map_ = ::std::move( t.size_map_ );
+  this->tm_       = ::std::move( t.tm_ );
+}
+
+template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
+template < class Tensor >
+constexpr void
+dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::assign( const Tensor& t )
+{
+  if constexpr ( ! ::std::is_trivially_destructible_v<element_type> )
+  {
+    // Destroy all elements
+    this->destroy_all();
+  }
+  // Set new size
+  this->size_map_ = mapping_type( t.extents() );
+  // Copy construct all elements
+  LINALG_DETAIL::copy_view( *this, t );
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
