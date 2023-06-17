@@ -151,7 +151,7 @@ template < class Tensor, class Scalar >
   requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
              requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v / s; } )
 #else
-template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisable_v< Tensor, Scalar > > >
+template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisible_v< Tensor, Scalar > > >
 #endif
 class scalar_division_tensor_expression;
 

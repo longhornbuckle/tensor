@@ -402,7 +402,7 @@ template < class M1, class M2 >
 #else
 template < class M1, class M2,
            typename = ::std::enable_if_t< ( ::std::is_constructible_v< LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& >, M1&, const M2& > &&
-                                            ::std::is_assignable_v< TM&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > ) >,
+                                            ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > ) >,
            typename = ::std::enable_if_t< true >,
            typename = ::std::enable_if_t< true > >
 #endif
@@ -413,7 +413,6 @@ operator *= ( M1& m1, const M2& m2 ) noexcept
              ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > )
 #endif
 {
-  static_assert( LINALG_CONCEPTS::unevaluated_tensor_expression< LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > );
   return m1 = LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& >( m1, m2 );
 }
 
