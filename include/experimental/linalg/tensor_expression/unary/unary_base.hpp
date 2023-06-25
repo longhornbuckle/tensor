@@ -78,9 +78,9 @@ class unary_tensor_expression_base< UTE< Tensor, Enable >, Traits >
       { return static_cast< const expression_type* >(this)->operator()( indices ... ); }
     #endif
     // Evaluated expression
-    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( this->UTE< Tensor >::conversion_is_noexcept() )
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( this->expression_type::conversion_is_noexcept() )
     {
-      return this->UTE< Tensor >::evaluate();
+      return this->expression_type::evaluate();
     }
 };
 
