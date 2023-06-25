@@ -8,14 +8,35 @@
 #ifndef LINEAR_ALGEBRA_MACROS_HPP
 #define LINEAR_ALGEBRA_MACROS_HPP
 
-
 // namespaces
-#ifndef LINALG_DETAIL
-  #define LINALG_DETAIL ::std::experimental::detail
+#if ! ( defined( LINALG ) || defined( LINALG_BEGIN ) || defined( LINALG_END ) )
+  #define LINALG                 ::std::experimental
+  #define LINALG_BEGIN namespace std { namespace experimental {
+  #define LINALG_END             } }
 #endif
 
-#ifndef LINALG_CONCEPTS
-  #define LINALG_CONCEPTS ::std::experimental::math::concepts
+#if ! ( defined( LINALG_DETAIL ) || defined( LINALG_DETAIL_BEGIN ) || defined( LINALG_DETAIL_END ) )
+  #define LINALG_DETAIL       LINALG::detail
+  #define LINALG_DETAIL_BEGIN LINALG_BEGIN namespace detail {
+  #define LINALG_DETAIL_END   LINALG_END }
+#endif
+
+#if ! ( defined( LINALG_CONCEPTS ) || defined( LINALG_CONCEPTS_BEGIN ) || defined( LINALG_CONCEPTS_END ) )
+  #define LINALG_CONCEPTS       LINALG::concepts
+  #define LINALG_CONCEPTS_BEGIN LINALG_BEGIN namespace concepts {
+  #define LINALG_CONCEPTS_END   LINALG_END }
+#endif
+
+#if ! ( defined( LINALG_EXPRESSIONS ) || defined( LINALG_EXPRESSIONS_BEGIN ) || defined( LINALG_EXPRESSIONS_END ) )
+  #define LINALG_EXPRESSIONS       LINALG::expressions
+  #define LINALG_EXPRESSIONS_BEGIN LINALG_BEGIN namespace expressions {
+  #define LINALG_EXPRESSIONS_END   LINALG_END }
+#endif
+
+#if ! ( defined( LINALG_EXPRESSIONS_DETAIL ) || defined( LINALG_EXPRESSIONS_DETAIL_BEGIN ) || defined( LINALG_EXPRESSIONS_DETAIL_END ) )
+  #define LINALG_EXPRESSIONS_DETAIL       LINALG_EXPRESSIONS::detail
+  #define LINALG_EXPRESSIONS_DETAIL_BEGIN LINALG_EXPRESSIONS_BEGIN namespace detail {
+  #define LINALG_EXPRESSIONS_DETAIL_END   LINALG_EXPRESSIONS_END }
 #endif
 
 // Force compiler to inline function
@@ -30,6 +51,7 @@
 //- C++17 related macros
 
 // Support for concepts
+// Note, clang does not support non-inline concept function definitions until 16.
 #ifndef LINALG_ENABLE_CONCEPTS
 #  if defined( __cpp_lib_concepts ) && ( ( LINALG_COMPILER_GNU >= 10 ) || ( LINALG_COMPILER_CLANG >= 16 ) )
 #    define LINALG_ENABLE_CONCEPTS
@@ -100,7 +122,7 @@
 // Define execution::unseq if available.
 // If not, then just use execution::seq instead.
 #ifndef LINALG_EXECUTION_UNSEQ
-#  if ( __cpp_lib_execution >= 201902L ) && ( ( LINALG_COMPILER_GNU >= 9 ) || ( LINALG_COMPILER_MSVC >= 1928 ) )
+#  if LINALG_EXECTUION_POLICY && ( __cpp_lib_execution >= 201902L ) && ( ( LINALG_COMPILER_GNU >= 9 ) || ( LINALG_COMPILER_MSVC >= 1928 ) )
 #    define LINALG_EXECUTION_UNSEQ ::std::execution::unseq
 #  else
 #    define LINALG_EXECUTION_UNSEQ LINALG_EXECUTION_SEQ

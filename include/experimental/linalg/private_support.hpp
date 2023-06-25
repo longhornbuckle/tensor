@@ -10,12 +10,7 @@
 
 #include <experimental/linear_algebra.hpp>
 
-namespace std
-{
-namespace experimental
-{
-namespace detail
-{
+LINALG_DETAIL_BEGIN // detail namespace
 
 //==================================================================================================
 //  Helper class for encapsulating macro dependent multidimensional access
@@ -90,11 +85,23 @@ template < class T >
 struct is_extents : public ::std::false_type {};
 
 template < class size_type, ::std::size_t ... Extents >
-struct is_extents< ::std::experimental::extents<size_type,Extents...> > : public ::std::true_type {};
+struct is_extents< ::std::extents<size_type,Extents...> > : public ::std::true_type {};
 /// @brief True iff T is an extents
 /// @tparam T 
 template < class T >
 inline constexpr bool is_extents_v = is_extents<T>::value;
+
+//==================================================================================================
+//  Test if type is a default_accessor
+//==================================================================================================
+template < class T >
+class is_default_accessor : public ::std::false_type { };
+
+template < class T >
+class is_default_accessor< ::std::default_accessor< T > > : public ::std::true_type { };
+
+template < class T >
+inline constexpr bool is_default_accessor_v = is_default_accessor< T >::value;
 
 //==================================================================================================
 //  Test if type is a tuple of all same type
@@ -110,17 +117,26 @@ template < class T >
 inline constexpr bool is_homogeneous_tuple_v = is_homogeneous_tuple<T>::value;
 
 //==================================================================================================
-//  Test if type extents is not dynamic
+//  Test if indices is within extents
 //==================================================================================================
 template < class T >
-struct extents_is_static : public ::std::false_type {};
-
-template < class SizeType, ::std::size_t ... Extents >
-struct extents_is_static< ::std::experimental::extents<SizeType,Extents...> > : public
-  ::std::conditional_t< ( ( Extents != dynamic_extent ) && ... ), ::std::true_type, ::std::false_type > {};
+struct Bounded_indices_impl;
+template < class IndexType, auto ... Ranks >
+struct Bounded_indices_impl< ::std::integer_sequence< IndexType, Ranks ... > >
+{
+  template < ::std::size_t ... Extents >
+  [[nodiscard]] static inline constexpr bool bounded( const ::std::extents< IndexType, Extents ... >& extents, auto ... indices ) noexcept
+  {
+    return ( ( ( indices >= 0 ) && ( static_cast< IndexType >( indices ) < extents.extent( Ranks ) ) ) && ... );
+  }
+};
 
 template < class T >
-inline constexpr bool extents_is_static_v = extents_is_static<T>::value;
+[[nodiscard]] inline constexpr bool bounded_indices( const T& extents, auto ... indices ) noexcept
+{
+  return Bounded_indices_impl< ::std::make_integer_sequence< typename T::index_type, T::rank() > >::bounded( extents, indices ... );
+}
+
 
 //==================================================================================================
 //  Test if type extents may be equal
@@ -130,22 +146,22 @@ template < class T, class U, class Seq >
 struct extents_may_be_equal_impl;
 
 template < class SizeType, class OtherSizeType, auto ... Extents, auto ... OtherExtents, auto ... Indices >
-struct extents_may_be_equal_impl< ::std::experimental::extents<SizeType,Extents...>,
-                                  ::std::experimental::extents<OtherSizeType,OtherExtents...>,
+struct extents_may_be_equal_impl< ::std::extents<SizeType,Extents...>,
+                                  ::std::extents<OtherSizeType,OtherExtents...>,
                                   ::std::index_sequence<Indices...> > :
-  ::std::conditional_t< ( ( ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) ) ||
-                            ( ::std::experimental::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::experimental::dynamic_extent ) ||
-                            ( ::std::experimental::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::experimental::dynamic_extent ) ) && ... ),
+  ::std::conditional_t< ( ( ( ::std::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::extents<SizeType,OtherExtents...>::static_extent(Indices) ) ||
+                            ( ::std::extents<SizeType,Extents...>::static_extent(Indices)      == ::std::dynamic_extent ) ||
+                            ( ::std::extents<SizeType,OtherExtents...>::static_extent(Indices) == ::std::dynamic_extent ) ) && ... ),
                         ::std::true_type, ::std::false_type > {};
 
 template < class T, class U >
 struct extents_may_be_equal : public ::std::false_type {};
 
 template < class SizeType, class OtherSizeType, auto ... Extents, auto ... OtherExtents >
-struct extents_may_be_equal< ::std::experimental::extents<SizeType,Extents...>,
-                             ::std::experimental::extents<OtherSizeType,OtherExtents...> > : public
+struct extents_may_be_equal< ::std::extents<SizeType,Extents...>,
+                             ::std::extents<OtherSizeType,OtherExtents...> > : public
   ::std::conditional_t< ( sizeof...(Extents) == sizeof...(OtherExtents) ),
-                        extents_may_be_equal_impl< ::std::experimental::extents<SizeType,Extents...>, ::std::experimental::extents<OtherSizeType,OtherExtents...>, ::std::make_index_sequence<sizeof...(Extents)> >,
+                        extents_may_be_equal_impl< ::std::extents<SizeType,Extents...>, ::std::extents<OtherSizeType,OtherExtents...>, ::std::make_index_sequence<sizeof...(Extents)> >,
                         ::std::false_type > {};
 
 template < class T, class U >
@@ -156,7 +172,7 @@ inline constexpr bool extents_may_be_equal_v = extents_may_be_equal<T,U>::value;
 //==================================================================================================
 template < class T, class U >
 struct extents_are_equal : public
-  ::std::conditional_t< extents_may_be_equal_v<T,U> && extents_is_static_v<T> && extents_is_static_v<U>,
+  ::std::conditional_t< extents_may_be_equal_v<T,U> && ( T::rank_dynamic() == 0 ) && ( U::rank_dynamic() == 0 ),
                         ::std::true_type,
                         ::std::false_type > {};
 
@@ -170,7 +186,7 @@ template < class T >
 struct nondynamic_rank;
 
 template < template < class, ::std::size_t ... > class E, class T, ::std::size_t ... Extents >
-struct nondynamic_rank< E<T,Extents...> > : public ::std::integral_constant< ::std::size_t, ( ( ( Extents > 1 ) && ( Extents != ::std::experimental::dynamic_extent ) ) + ... ) > {};
+struct nondynamic_rank< E<T,Extents...> > : public ::std::integral_constant< ::std::size_t, ( ( ( Extents > 1 ) && ( Extents != ::std::dynamic_extent ) ) + ... ) > {};
 
 template < class E, typename = ::std::enable_if_t< is_extents_v<E> > >
 inline constexpr ::std::size_t nondynamic_rank_v = nondynamic_rank<E>::value;
@@ -179,13 +195,13 @@ inline constexpr ::std::size_t nondynamic_rank_v = nondynamic_rank<E>::value;
 //  Returns the number of dimensions for which the extent is greater than one
 //==================================================================================================
 template < class SizeType, ::std::size_t ... Extents, ::std::size_t ... Ints >
-[[nodiscard]] inline constexpr ::std::size_t current_rank_impl( const ::std::experimental::extents<SizeType,Extents...>& extents,
+[[nodiscard]] inline constexpr ::std::size_t current_rank_impl( const ::std::extents<SizeType,Extents...>& extents,
                                                                 [[maybe_unused]] ::std::index_sequence<Ints...> ) noexcept
 {
   return ( ( extents.extent(Ints) > 1 ) + ... );
 }
 template < class SizeType, ::std::size_t ... Extents >
-[[nodiscard]] inline constexpr ::std::size_t current_rank( const ::std::experimental::extents<SizeType,Extents...>& extents ) noexcept
+[[nodiscard]] inline constexpr ::std::size_t current_rank( const ::std::extents<SizeType,Extents...>& extents ) noexcept
 {
   return current_rank_impl( extents, ::std::make_index_sequence<sizeof...(Extents)>() );
 }
@@ -322,17 +338,17 @@ template < class View >
 struct stride_order;
 
 template < class ElementType, class Extents, class AccessorPolicy >
-struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_left, AccessorPolicy > >
+struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_left, AccessorPolicy > >
 {
   template < class IndexType >
   [[nodiscard]] static constexpr auto get_nth_largest_stride_index( IndexType index ) noexcept
   {
-    return ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_left, AccessorPolicy >::rank() - index - 1;
+    return ::std::experimental::mdspan< ElementType, Extents, ::std::layout_left, AccessorPolicy >::rank() - index - 1;
   }
 };
 
 template < class ElementType, class Extents, class AccessorPolicy >
-struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_right, AccessorPolicy > >
+struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_right, AccessorPolicy > >
 {
   template < class IndexType >
   [[nodiscard]] static constexpr auto get_nth_largest_stride_index( IndexType index ) noexcept
@@ -344,9 +360,9 @@ struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::e
 // DOESN'T WORK. ORDER MUST BE DETERMINED AT COMPILE TIME
 //
 // template < class ElementType, class Extents, class AccessorPolicy >
-// struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::experimental::layout_stride, AccessorPolicy > >
+// struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::layout_stride, AccessorPolicy > >
 // {
-//   constexpr stride_order( const ::std::experimental::layout_stride::mapping<Extents>& layout ) noexcept :
+//   constexpr stride_order( const ::std::layout_stride::mapping<Extents>& layout ) noexcept :
 //     order_( layout.strides() )
 //   {
 //     sort( this->order_.begin(),
@@ -360,7 +376,7 @@ struct stride_order< ::std::experimental::mdspan< ElementType, Extents, ::std::e
 //     return this->order_[index];
 //   }
 // private :
-//   decltype( declval< ::std::experimental::layout_stride::mapping<Extents> >().strides() ) order_;
+//   decltype( declval< ::std::layout_stride::mapping<Extents> >().strides() ) order_;
 // };
 
 template < class         View,
@@ -570,7 +586,7 @@ constexpr void apply_all_strided( View&&            view,
                          lambda,
                          execution_policy,
                          indices );
-};
+}
 
 template < class     View,
            class     Lambda,
@@ -798,7 +814,7 @@ constexpr void apply_all( View&&            view,
                                       ::std::forward<ExecutionPolicy>( ::std::declval<ExecutionPolicy&&>() ),
                                       ::std::make_integer_sequence<typename ::std::decay_t<View>::extents_type::rank_type,::std::decay_t<View>::extents_type::rank()>{} ) ) )
 {
-  static_assert( View::is_always_unique(), "Apply all iterates over the set of viable indices. If some are invalid, then the function does not work properly." );
+  static_assert( ::std::remove_reference_t< View >::is_always_unique(), "Apply all iterates over the set of viable indices. If some are invalid, then the function does not work properly." );
   return apply_all_maybe_strided_helper< is_defined_v< stride_order< decay_t< View > > > &&
                                          is_unsequenced_v< decay_t< ExecutionPolicy > > >::
     apply_all( view, lambda, execution_policy );
@@ -860,17 +876,17 @@ template<class T, class Tuple>
 //  Sufficient Extents tests if the first extents encompasses the second
 //==================================================================================================
 template < class SizeType, class OtherSizeType, ::std::size_t ... Extents, ::std::size_t ... OtherExtents >
-[[nodiscard]] constexpr bool sufficient_extents( const ::std::experimental::extents<SizeType,Extents...>&           extents,
-                                                 const ::std::experimental::extents<OtherSizeType,OtherExtents...>& other_extents ) noexcept
+[[nodiscard]] constexpr bool sufficient_extents( const ::std::extents< SizeType, Extents ... >&           extents,
+                                                 const ::std::extents< OtherSizeType, OtherExtents ... >& other_extents ) noexcept
 {
-  if constexpr ( sizeof...(Extents) == sizeof...(OtherExtents) )
+  if constexpr ( sizeof...( Extents ) == sizeof...( OtherExtents ) )
   {
     // Iterate over each dimension
     bool sufficient = true;
-    for( ::std::size_t dim = 0; ( dim < ::std::experimental::extents<SizeType,Extents...>::rank() ) && sufficient; ++dim )
+    for( ::std::size_t dim = 0; ( dim < ::std::extents< SizeType, Extents ... >::rank() ) && sufficient; ++dim )
     {
       // Set to false if size is not large enough
-      sufficient = ( extents.extent( dim ) >= other_extents.extent( dim ) );
+      sufficient = ( extents.extent( dim ) >= static_cast< SizeType >( other_extents.extent( dim ) ) );
     }
     return sufficient;
   }
@@ -883,26 +899,17 @@ template < class SizeType, class OtherSizeType, ::std::size_t ... Extents, ::std
 //==================================================================================================
 //  Assign View assigns views with disparate but compatable types
 //==================================================================================================
-template < class ToView, class FromView
-#ifdef LINALG_ENABLE_CONCEPTS
-  > requires is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-             ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-             extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type>
-#else
-  , typename = ::std::enable_if_t< ( is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-                                   ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-                                   extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type> ) > >
-#endif
+template < class ToView, class FromView >
 constexpr ToView&
 assign_view( ToView& to_view, const FromView& from_view )
-  noexcept( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> &&
-            is_nothrow_convertible_v<typename FromView::reference,typename ToView::element_type> )
+  noexcept( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > &&
+            is_nothrow_convertible_v< typename FromView::reference, typename ToView::value_type > )
 {
-  if constexpr ( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> )
+  if constexpr ( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > )
   {
     apply_all( from_view,
                [ &to_view, &from_view ]( auto ... indices )
-                 constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                 constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::reference, typename ::std::decay_t< ToView >::reference > )
                  { access( to_view, indices ... ) = access( from_view, indices ... ); },
                LINALG_EXECUTION_UNSEQ );
   }
@@ -912,7 +919,7 @@ assign_view( ToView& to_view, const FromView& from_view )
     {
       apply_all( from_view,
                  [ &to_view, &from_view ]( auto ... indices )
-                   constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
+                   constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t<FromView>::reference, typename ::std::decay_t<ToView>::reference > )
                    { access( to_view, indices ... ) = access( from_view, indices ... ); },
                  LINALG_EXECUTION_UNSEQ );
     }
@@ -927,37 +934,28 @@ assign_view( ToView& to_view, const FromView& from_view )
 //==================================================================================================
 //  Copy View copies inplace views with disparate but compatable types
 //==================================================================================================
-template < class ToView, class FromView
-#ifdef LINALG_ENABLE_CONCEPTS
-  > requires is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-             ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-             extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type>
-#else
-  , typename = ::std::enable_if_t< ( is_mdspan_v< ToView > && is_mdspan_v< FromView > &&
-                                     ::std::is_convertible_v<typename FromView::reference,typename ToView::element_type> &&
-                                     extents_may_be_equal_v<typename FromView::extents_type,typename ToView::extents_type> ) > >
-#endif
+template < class ToView, class FromView >
 constexpr void
 copy_view( ToView& to_view, const FromView& from_view )
-  noexcept( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> &&
-            is_nothrow_convertible_v<typename FromView::reference,typename ToView::element_type> )
+  noexcept( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > &&
+            is_nothrow_convertible_v< typename FromView::value_type, typename ToView::value_type > )
 {
-  if constexpr ( extents_are_equal_v<typename FromView::extents_type,typename ToView::extents_type> )
+  if constexpr ( extents_are_equal_v< typename FromView::extents_type, typename ToView::extents_type > )
   {
     apply_all( ::std::forward<ToView>( to_view ),
               [ &to_view, &from_view ]( auto ... indices )
-                constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
-                { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::element_type( access( from_view, indices ... ) ); },
+                constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::value_type, typename ::std::decay_t< ToView >::reference > )
+                { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
               LINALG_EXECUTION_UNSEQ );
   }
   else
   {
     if ( sufficient_extents( to_view.extents(), from_view.extents() ) ) LINALG_LIKELY
     {
-      apply_all( forward<ToView>( to_view ),
+      apply_all( ::std::forward<ToView>( to_view ),
                 [ &to_view, &from_view ]( auto ... indices )
-                  constexpr noexcept( is_nothrow_convertible_v<typename ::std::decay_t<FromView>::reference,typename ::std::decay_t<ToView>::reference> )
-                  { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::element_type( access( from_view, indices ... ) ); },
+                  constexpr noexcept( is_nothrow_convertible_v< typename ::std::decay_t< FromView >::value_type,typename ::std::decay_t< ToView >::reference > )
+                  { ::new ( ::std::addressof( access( to_view, indices ... ) ) ) typename ToView::value_type( access( from_view, indices ... ) ); },
                 LINALG_EXECUTION_UNSEQ );
     }
     else LINALG_UNLIKELY
@@ -974,10 +972,10 @@ template < class T >
 struct is_complex : public ::std::false_type {};
 
 template < class T >
-struct is_complex< complex<T> > : public ::std::true_type {};
+struct is_complex< complex< T > > : public ::std::true_type {};
 
 template < class T >
-inline constexpr bool is_complex_v = is_complex<T>::value;
+inline constexpr bool is_complex_v = is_complex< T >::value;
 
 //==================================================================================================
 //  Rebind Accessor rebinds the accessor to a new value type
@@ -1012,9 +1010,9 @@ template < class U, U ... Indices >
 class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
 {
   private:
-    static constexpr U dyn_ext( [[maybe_unused]] U index ) noexcept { return ::std::experimental::dynamic_extent; }
+    static constexpr U dyn_ext( [[maybe_unused]] U index ) noexcept { return ::std::dynamic_extent; }
   public:
-    using extents_type = ::std::experimental::extents<U,dyn_ext(Indices)...>;
+    using extents_type = ::std::extents<U,dyn_ext(Indices)...>;
     using tuple_type   = ::std::tuple<decltype(Indices)...>;
     [[nodiscard]] static constexpr U size( const extents_type& e ) noexcept { return ( e.extent(Indices) * ... ); }
     [[nodiscard]] static constexpr extents_type zero() noexcept { return extents_type( U( 0 * Indices ) ... ); }
@@ -1024,7 +1022,9 @@ class extents_helper_impl< ::std::integer_sequence<U,Indices...> >
 template < class U, ::std::size_t R >
 using extents_helper = extents_helper_impl< ::std::make_integer_sequence<U,R> >;
 
-}       //- detail namespace
-}       //- experimental namespace
-}       //- std namespace
+template < class U, ::std::size_t R >
+using dyn_extents = typename extents_helper< U, R >::extents_type;
+
+LINALG_DETAIL_END // end detail namespace
+
 #endif  //- LINEAR_ALGEBRA_PRIVATE_SUPPORT_HPP

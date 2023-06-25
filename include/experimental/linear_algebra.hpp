@@ -11,19 +11,26 @@
 //- STL includes
 #include <algorithm>
 #include <array>
+#if __has_include( <concepts> )
 #include <concepts>
+#endif
 #include <complex>
 #include <cstddef>
+#if __has_include( <execution> )
 #include <execution>
+#endif
 #include <exception>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
-#ifdef LINALG_ENABLE_RANGED
+#include <new>
+#if __has_include( <ranges> )
 #include <ranges>
 #endif
+#if __has_include( <span> )
 #include <span>
+#endif
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -31,25 +38,36 @@
 
 //- mdspan include
 #include <experimental/mdspan>
-#include <experimental/mdspan_extensions/rank_one_extents_specialization.hpp>
-using ::std::experimental::dynamic_extent;
-
-// For optimized fixed size tensors
-#include <util/fixed_size_allocator.hpp>
+#include "mdspan_extensions/rank_one_extents_specialization.hpp"
 
 //- Implementation headers
-#include "linear_algebra/config.hpp"
-#include "linear_algebra/macros.hpp"
-#include "linear_algebra/private_support.hpp"
-#include "linear_algebra/forward_declarations.hpp"
-// #include "linear_algebra/tensor_concepts.hpp"
-// #include "linear_algebra/vector_concepts.hpp"
-// #include "linear_algebra/matrix_concepts.hpp"
-#include "linear_algebra/subtensor.hpp"
-#include "linear_algebra/tensor_memory.hpp"
-#include "linear_algebra/tensor.hpp"
-// #include "linear_algebra/instant_evaluated_operations.hpp"
-// namespace std::experimental::math::operations { using namespace std::experimental::math::instant_evaluated_operations; }
-// #include "linear_algebra/arithmetic_operators.hpp"
+#include "linalg/config.hpp"
+#include "linalg/macros.hpp"
+#include "linalg/private_support.hpp"
+#include "linalg/tensor_concepts.hpp"
+#include "linalg/forward_declarations.hpp"
+#include "linalg/tensor_expression/tensor_expression_traits.hpp"
+#include "linalg/subtensor.hpp"
+#include "linalg/tensor_memory.hpp"
+#include "linalg/dr_tensor.hpp"
+#include "linalg/fs_tensor.hpp"
+#include "linalg/subtensor.hpp"
+#include "linalg/tensor_expression/unary/unary_base.hpp"
+#include "linalg/tensor_expression/unary/negate.hpp"
+#include "linalg/tensor_expression/unary/transpose.hpp"
+#include "linalg/tensor_expression/unary/conjugate.hpp"
+#include "linalg/tensor_expression/binary/binary_base.hpp"
+#include "linalg/tensor_expression/binary/addition.hpp"
+#include "linalg/tensor_expression/binary/subtraction.hpp"
+#include "linalg/tensor_expression/binary/scalar_preprod.hpp"
+#include "linalg/tensor_expression/binary/scalar_postprod.hpp"
+#include "linalg/tensor_expression/binary/scalar_division.hpp"
+#include "linalg/tensor_expression/binary/scalar_modulo.hpp"
+#include "linalg/tensor_expression/binary/matrix_product.hpp"
+#include "linalg/tensor_expression/binary/vector_matrix_product.hpp"
+#include "linalg/tensor_expression/binary/matrix_vector_product.hpp"
+#include "linalg/tensor_expression/binary/vector_product.hpp"
+#include "linalg/tensor_expression/binary_tensor_expressions.hpp"
+#include "linalg/arithmetic_operators.hpp"
 
 #endif  //- LINEAR_ALGEBRA_HPP

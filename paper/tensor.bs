@@ -1,8 +1,8 @@
 <pre class='metadata'>
-Title: The Tensor
-Shortname: the-tensor
-Status: iso/WD
-Group: iso
+Title: Tensor
+Shortname: PXXXX
+Status: wg21/WD
+Group: wg21
 Level: 0
 URL: https://github.com/longhornbuckle/tensor
 Editor: Richard Warren Hornbuckle, longhornbuckle@utexas.edu
@@ -11,7 +11,7 @@ Editor Term: Author, Authors
 Abstract: A proposal for a C++ STL tensor container.
 Boilerplate: omit conformance
 Boilerplate: omit copyright
-Boilerplate: style-syntax-highlighting off
+Markup Shorthands: markdown yes
 </pre>
 
 Introduction {#intro}
@@ -30,29 +30,34 @@ The motivation of this proposal is to provide a foundational container from whic
 More specifically, this proposal seeks to establish:
 - A multidimensional container which:
     - Provides valarray-like interfaces and efficiency.
-    - Provides vector-like functionality in multiple dimensions.
+    - Provides efficient vector-like functionality in multiple dimensions.
     - Makes use of layout and accessor policy concepts established via mdspan.
 - A unifying relationship between vectors (rank 1 tensors), matrices (rank 2 tensors), and more generic N-dimensional tensors.
 - A framework for defining efficient implementations of linear algebraic functions using concepts and template expression types.
 
 This proposal differs from a couple similar existing works:
-- D1684 mdarray: The authors do not believe this work is incompatable with this proposal.
+- [D1684](https://isocpp.org/files/papers/D1684R0.html) mdarray: The authors do not believe this work is incompatable with this proposal.
 However, the authors of this work take a different approach of essentially defining an adaptor which reinterpret's an owned container with single dimensional access into a multidimensional framework.
 While such an adaptor may be useful, it both significant obscurs behavior and constrains the implementation to the frameworks of existing containers.
-- P1385 also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
-The authors have the following concerns in regards to the current iteration of P1385:
+- [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf) also seeks to establish linear algebra support in the standard and would be in conflict with this proposal.
+The authors have the following concerns in regards to the current iteration of [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf):
     - The proposal too narrowly focuses on rank 2 tensors (matrices). The authors believe an expandable framework establishing the relationship between a vector, matrix, and generic tensor is needed. Failing to address this risks making further proposals more complex and difficult.
-    - The proposal does not address unifying the relationship between its proposal engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.
+    - The proposal does not address unifying the relationship between its proposed engine types and mdspan. While these two are not incongruent, failure to consider how the two interact could overcomplicate the standard. Rather than attemping to enforce layout and accessor policies into a new engine paradigm, the authors (of this proposal) adopt and expand on the mdspan paradigms wholesale.
     - The proposal introduces additional template parameters for overloading function behavior. The authors find this overcomplicated, potentially confusing, difficult to specialize, and unnecessary. If specialized behavior is desired, additional namespaces and traditional functional overloading could be used to achieve the same affect.
 
-The scope of this proposal is contained to the definition of this new container as well as related class and concepts.
+The scope of this proposal is contained to the definition of this new container, relatively simple linear algebra functions, and related concepts.
 
 Description {#descript}
 =======================
 
-## Concepts
+## Tensor Expressions
 
 ### Tensor Expression
+
+The tensor expression defines the minimum requirement for a *tensor object*. A tensor object may be a concrete tensor object, a view conformant to the tensor object interface, or an unevaluated expression which the evaluation of results in a concrete tensor object. In this context, a concrete tensor object is an object which owns the underlying memory and is conformant to the *writable tensor* concept.
+
+The tensor expression defines sufficient requirements to be generically useful; however, allows for custom optimizations. In short, the tensor expression must specify the size (in the generic sense of the word) and provide the ability access the representative value given a valid set of indices.
+
 <pre class="highlight">
 <code class="language-c++">
 namespace std {
@@ -67,9 +72,9 @@ concept tensor_expression = requires
 } &&
 requires( const T& t, typename T::rank_type n )
 {
-  { t.extent( n ) } noexcept -> same_as< typename T::size_type >;
+  { t.extent( n ) }          -> same_as< typename T::size_type >;
   { T::rank() }     noexcept -> same_as< typename T::rank_type >;
-  { t.extents() }   noexcept -> convertible_to< typename T::extents_type >;
+  { t.extents() }            -> convertible_to< typename T::extents_type >;
   integral_constant< typename T::rank_type, T::rank() >::value;
 } &&
 requires( T& t, auto ... indices )
@@ -79,6 +84,195 @@ requires( T& t, auto ... indices )
 }
 </code>
 </pre>
+
+### Unevaluated Tensor Expression
+
+An unevaluated tensor expression is conformant to `tensor_expression` concept and guarantees an `operator auto()` which results in an evaluated tensor expression. In this context, evaluated refers to a tensor expression which manages its own memory.
+
+The authors propose standardizing this concept as it becomes useful in defining custom tensor expressions: If a tensor expression is unevaluated, then the template argument guarantees a consistent method for producing an evaluated result (as well as the types and traits associated with the result).
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept unevaluated_tensor_expression =
+tensor_expression< T > &&
+requires( T t )
+{
+  { t.operator auto() };
+} &&
+tensor_expression< decltype( auto( ::std::declval<T>() ) ) > &&
+( static_tensor< decltype( ::std::declval<T>().operator auto() ) > ||
+  dynamic_tensor< decltype( ::std::declval<T>().operator auto() ) > );
+}
+</code>
+</pre>
+
+The authors additionally propose two `unevaluated_tensor_expression` concepts: the `unary_tensor_expression` and `binary_tensor_expression`. Note, neither concept requires a `tensor_expression` as an input.
+
+Note: Would nullary tensor expressions be useful? The authors tend to believe not. The unary and binary tensor expression concepts are generally used to indicate there are underlying elements which may warrant further inspection.
+
+Note: Would it be useful to define an N-ary tensor expresson instead of a unary and binary tensor expression? Are there meaningful examples of N-ary expressions which cannot be easily decomposed into a composition of unary and binary expressions?
+
+#### Unary Tensor Expression
+
+The unary tensor expression represents a function requiring a single argument and producing a result conformant to a `tensor_expression`.
+The `negate_tensor_expression`, `transpose_tensor_expression`, and `conjugate_tensor_expression` are all conformant to the `unary_tensor_expression` (although the latter two may include an additional parameter to indicate along which dimensions to transpose / conjugate ).
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept unary_tensor_expression =
+tensor_expression< T > &&
+requires ( T& t )
+{
+  { t.underlying() };
+  { t.operator auto() };
+} &&
+( static_tensor< decltype( declval< T >().operator auto() ) > ||
+  dynamic_tensor< decltype( declval< T >().operator auto() ) > );
+}
+</code>
+</pre>
+
+#### Binary Tensor Expression
+
+The binary tensor expression represents a function requiring two arguments and producing a result conformant to a `tensor_expression`.
+The `addition_tensor_expression`, `subtraction_tensor_expression`, and various product-like expressions are all conformant to the `binary_tensor_expression`.
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < class T >
+concept binary_tensor_expression =
+tensor_expression< T > &&
+requires ( T& t )
+{
+  { t.first() };
+  { t.second() };
+  { t.operator auto() };
+} &&
+( static_tensor< decltype( declval< T >().operator auto() ) > ||
+  dynamic_tensor< decltype( declval< T >().operator auto() ) > );
+}
+</code>
+</pre>
+
+### Tensor Expression Traits
+
+The authors also propose several traits related to the *unevaluated tensor expressions*. The intent is to provide additional information on custom `unary_tensor_expression`s and `binary_tensor_expression`s which may be taken advantage of without further inspection of the types. In this section, consider `t1`, `t2`, and `t3` to be objects which satisfy the `tensor_expression` concept.
+
+#### Commutative
+<pre class="highlight">
+<code class="language-c++">
+template < binary_tensor_expression TE >
+namespace std {
+struct is_commutative< TE > : public false_type;
+template < binary_tensor_expression TE >
+[[nodiscard]] inline constexpr bool is_commutative_v = is_commutative< TE >::value;
+}
+</code>
+</pre>
+
+The `is_commutative` class may be specialized for any binary tensor expression. If `is_commutative_v< TE >` is `true`, then the following expressions are to be considered equivalent:
+
+<pre class="highlight">
+<code class="language-c++">
+auto t = TE( t1, t2 );
+auto t = TE( t2, t1 );
+</code>
+</pre>
+
+#### Associative
+<pre class="highlight">
+<code class="language-c++">
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+namespace std {
+struct is_associative< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_associative_v = is_associative< TE1, TE2 >::value;
+}
+</code>
+</pre>
+
+The `is_associative` class may be specialized for any pair of binary tensor expressions. If `is_associative_v< TE1, TE2 >` is `true`, then the following expressions are to be considered equivalent:
+
+<pre class="highlight">
+<code class="language-c++">
+auto t = TE1( t1, TE2( t2, t3 ) );
+auto t = TE1( TE2( t1, t2 ), t3 );
+</code>
+</pre>
+
+#### Distributive
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_left_distributive< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_left_distributive_v = is_left_distributive< TE1, TE2 >::value;
+
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_right_distributive< TE1, TE2 > : public false_type;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_right_distributive_v = is_right_distributive< TE1, TE2 >::value;
+
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+struct is_distributive< TE1, TE2 > : public conditional_t< is_commutative_v< TE1, TE2 > && is_left_distributive_v< TE1, TE2 > && is_right_distributive_v< TE1, TE2 >, true_type, false_type >;
+template < binary_tensor_expression TE1, binary_tensor_expression TE2 = TE1 >
+[[nodiscard]] inline constexpr bool is_distributive_v = is_distributive< TE1, TE2 >::value;
+}
+</code>
+</pre>
+
+For `is_distributive_v< TE1, TE2 >` to be `true`, then `is_commutative_v< TE1, TE2 >`, `is_left_distributive_v< TE1, TE2 >`, and `is_right_distributive_v< TE1, TE2 >` must also be `true`.
+
+The `is_left_distributive` class may be specialized for any pair of binary tensor expressions. If `is_left_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
+
+<pre class="highlight">
+<code class="language-c++">
+auto t = TE1( t1, TE2( t2, t3 ) );
+auto t = TE2( TE1( t1, t2 ), TE1( t1, t2 ) );
+</code>
+</pre>
+
+The `is_right_distributive` class may be specialized for any pair of binary tensor expressions. If `is_right_distributive_v< TE1, TE2 >` is `true`, then for the pair of binary tensor expression the following expressions are considered equivalent:
+
+<pre class="highlight">
+<code class="language-c++">
+auto t = TE1( TE2( t1, t2 ), t3 );
+auto t = TE2( TE1( t1, t2 ), TE1( t1, t2 ) );
+</code>
+</pre>
+
+For the unary and binary tensor expression combination, there is no need to specify left- and right-ness.
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
+template < unary_tensor_expression TE1, binary_tensor_expression TE2 >
+struct is_distributive< TE1, TE2 > : public false_type;
+template < unary_tensor_expression TE1, binary_tensor_expression TE2 >
+[[nodiscard]] inline constexpr bool is_distributive_v = is_distributive< TE1, TE2 >::value;
+}
+</code>
+</pre>
+
+If `is_distributive_v< TE1, TE2 >` is `true`, then the following expressions are considered equivalent:
+
+<pre class="highlight">
+<code class="language-c++">
+auto t = TE1( TE2( t1, t2 ) );
+auto t = TE2( TE1( t1 ), TE1( t2 ) );
+</code>
+</pre>
+
+Note: Is a closure trait useful? Closure traits can provide additional guarantees about otherwise unknown expressions. Implementations attempting to optimize behavior have to inspect the underlying type. A closure trait can standardize the way the inputs are inspected.
+
+## Additional Concepts
 
 ### Matrix Expression
 <pre class="highlight">
@@ -123,17 +317,17 @@ requires( const T& t, typename T::rank_type n )
 {
   { T::rank_dynamic() }         noexcept -> same_as< typename T::rank_type >;
   { T::static_extent( n ) }     noexcept -> same_as< typename T::size_type >;
-  { t.size() }                  noexcept -> same_as< typename T::size_type >;
+  { t.size() }                           -> same_as< typename T::size_type >;
   { T::is_always_strided() }    noexcept -> same_as< bool >;
   { T::is_always_exhaustive() } noexcept -> same_as< bool >;
   { T::is_always_unique() }     noexcept -> same_as< bool >;
-  { t.is_strided() }            noexcept -> same_as< bool >;
-  { t.is_exhaustive() }         noexcept -> same_as< bool >;
-  { t.is_unique() }             noexcept -> same_as< bool >;
-  { t.stride( n ) }             noexcept -> same_as< typename T::index_type >;
-  { t.accessor() }              noexcept -> convertible_to< typename T::accessor_type >;
-  { t.data_handle() }           noexcept -> convertible_to< typename T::data_handle_type >;
-  { t.mapping() }               noexcept -> convertible_to< typename T::mapping_type >;
+  { t.is_strided() }                     -> same_as< bool >;
+  { t.is_exhaustive() }                  -> same_as< bool >;
+  { t.is_unique() }                      -> same_as< bool >;
+  { t.stride( n ) }                      -> same_as< typename T::index_type >;
+  { t.accessor() }                       -> convertible_to< typename T::accessor_type >;
+  { t.data_handle() }                    -> convertible_to< typename T::data_handle_type >;
+  { t.mapping() }                        -> convertible_to< typename T::mapping_type >;
   integral_constant< typename T::rank_type, T::rank_dynamic() >::value;
   integral_constant< typename T::size_type, T::static_extent( n ) >::value;
   bool_constant< T::is_always_strided() >::value;
@@ -167,10 +361,7 @@ template < class T >
 concept static_tensor =
 writable_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
-requires
-{
-  { T {} };
-};
+default_initializable< T>;
 }
 </code>
 </pre>
@@ -186,55 +377,17 @@ requires
 {
   typename T::allocator_type
 } &&
-requires( const T& t, typename T::extents_type s, typename T::allocator_type alloc )
+requires( const T& tc, T&, const typename T::extents_type& s )
 {
-  { t.max_size() -> same_as< typename T::size_type > };
-  { t.capacity() -> same_as< typename T::size_type > };
+  { tc.max_size() -> same_as< typename T::size_type > };
+  { tc.capacity() -> same_as< typename T::size_type > };
   { t.resize( s ) };
   // TBD on capacity_extents()
   // TBD on reserve( ... )
-  { t.get_allocator() } -> same_as< typename T::allocator_type >;
-  { T( alloc ) };
-  { T( s, alloc ) };
-};
-
-}
-</code>
-</pre>
-
-### Unary Tensor Expression
-<pre class="highlight">
-<code class="language-c++">
-namespace std {
-template < class T >
-concept unary_tensor_expression =
-tensor_expression< T > &&
-requires ( T t )
-{
-  { t.underlying() } -> tensor_expression;
-  { t.operator auto() };
+  { tc.get_allocator() } -> same_as< typename T::allocator_type >;
 } &&
-( static_tensor< decltype( declval< T >().operator auto() ) > ||
-  dynamic_tensor< decltype( declval< T >().operator auto() ) > );
-}
-</code>
-</pre>
-
-### Binary Tensor Expression
-<pre class="highlight">
-<code class="language-c++">
-namespace std {
-template < class T >
-concept binary_tensor_expression =
-tensor_expression< T > &&
-requires ( T t )
-{
-  { t.first() } -> tensor_expression;
-  { t.second() } -> tensor_expression;
-  { t.operator auto() };
-} &&
-( static_tensor< decltype( declval< T >().operator auto() ) > ||
-  dynamic_tensor< decltype( declval< T >().operator auto() ) > );
+constructible_from< T, const typename T::allocator_type& > &&
+constructible_from< T, const typename T::extents_type&, const typename T::allocator_type& >;
 }
 </code>
 </pre>
@@ -270,8 +423,8 @@ class tensor
     explicit constexpr tensor( const extents_type& s, const allocator_type& alloc = allocator_type() );
     explicit constexpr tensor( const mapping_type& m, const allocator_type& alloc = allocator_type() );
 
-    constexpr tensor( const initializer_list< value_type >& il, const extents_type& s, const allocator_type& alloc = allocator_type() );
-    constexpr tensor( const initializer_list< value_type >& il, const mapping_type& m, const allocator_type& alloc = allocator_type() );
+    constexpr tensor( initializer_list< value_type > il, const extents_type& s, const allocator_type& alloc = allocator_type() );
+    constexpr tensor( initializer_list< value_type > il, const mapping_type& m, const allocator_type& alloc = allocator_type() );
     
     template < class InputIt >
     constexpr tensor( InputIt first, InputIt last, const extents_type& s, const allocator_type& alloc = allocator_type() );
@@ -286,7 +439,7 @@ class tensor
     // NOTE: These constructors require one of:
     //    A: ( extents_type::rank_dynamic() == 0 ) && ( mapping_type().required_span_size() == size of initializer_list, iterator pair, or range )
     //    B: ( extents_type::rank_dynamic() == 1 ) && ( mapping_type( extents_type(N) ).required_span_size() == size of initializer_list, iterator pair, or range ) (for some integer value N)
-    explicit constexpr tensor( const initializer_list< value_type >& il, const allocator_type& alloc = allocator_type() );
+    explicit constexpr tensor( initializer_list< value_type > il, const allocator_type& alloc = allocator_type() );
     template < class InputIt >
     constexpr tensor( InputIt first, InputIt last, const allocator_type& alloc = allocator_type() );
     template < class R >
@@ -310,7 +463,7 @@ class tensor
     template < tensor_expression Tensor >
     constexpr tensor& operator = ( Tensor&& rhs );
     // NOTE: This assignment operator requires the same requirements as the constructors
-    constexpr tensor& operator = ( const initializer_list< value_type > il );
+    constexpr tensor& operator = ( initializer_list< value_type > il );
 
     // Members
     constexpr swap( tensor& rhs ) noexcept( allocator_traits< allocator_type >::propagate_on_container_swap ||
@@ -359,22 +512,47 @@ class tensor
     constexpr tensor& operator>>=( const value_type& value );
     constexpr tensor& operator<<=( const value_type& value );
 };
+}
+</code>
+</pre>
 
+### Mandates
+- T is a complete object type that is neither an abstract class type nor an array type.
+- is_same_v< Allocator::value_type, T > is true.
+- is_same_v< AccessorPolicy::element_type, T > is true.
+- Extents is a specialization of extents.
+- Allocator shall meet the allocator requirements.
+- LayoutPolicy shall meet the layout mapping policy requirements.
+- AccessorPolicy shall meet the accessor policy requirements.
+
+### Non-Member Functions
+A number of non-member arithmetic and bit manipulation functions are provided. Each makes use of tensor expressions to allow optimization.
+Note, these functions do not strictly operate on the tensor object, but any object conformant to the tensor expression template. This includes std::mdspan.
+The authors believe the use of the tensor expression constraint is sufficiently general to not overly constrain future additions to the STL and to allow for customization via overloading the inputs or via specialization of the returned tensor expression.
+
+<pre class="highlight">
+<code class="language-c++">
+namespace std {
 // IN WORK: Non-member functions
 // Addition
 template < tensor_expression FirstTensor, tensor_expression SecondTensor >
-[[nodiscard]] constexpr /* implementation defined */ operator + ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
+[[nodiscard]] constexpr addition_tensor_expression< FirstTensor, SecondTensor > operator + ( FirstTensor&& tensor_a, SecondTensor&& tensor_b )
+  requires constructible_from< addition_tensor_expression< FirstTensor, SecondTensor >, FirstTensor&&, SecondTensor&& >;
 // Substraction
 template < tensor_expression FirstTensor, tensor_expression SecondTensor >
-[[nodiscard]] constexpr /* implementation defined */ operator - ( FirstTensor&& tensor_a, SecondTensor&& tensor_b );
+[[nodiscard]] constexpr subtraction_tensor_expression< FirstTensor, SecondTensor > operator - ( FirstTensor&& tensor_a, SecondTensor&& tensor_b )
+  requires constructible_from< subtraction_tensor_expression< FirstTensor, SecondTensor >, FirstTensor&&, SecondTensor&& >;
 // Negation
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ operator - ( Tensor&& t );
+[[nodiscard]] constexpr negate_tensor_expression< Tensor > operator - ( Tensor&& t )
+  requires constructible_from< negate_tensor_expression< Tensor >, Tensor&& >;
 // Scalar Multiplication
 template < tensor_expression Tensor, class ValueType >
-[[nodiscard]] constexpr /* implementation defined */ operator * ( Tensor&& t, ValueType v ) requires (  );
+[[nodiscard]] constexpr scalar_postprod_tensor_expression< ValueType, Tensor > operator * ( Tensor&& t, ValueType v )
+  requires constructible_from< scalar_postprod_tensor_expression< ValueType, Tensor >, Tensor&&, ValueType >;
 template < tensor_expression Tensor, class ValueType >
-[[nodiscard]] constexpr /* implementation defined */ operator * ( ValueType v, Tensor&& t ) requires (  );
+[[nodiscard]] constexpr scalar_preprod_tensor_expression< Value_Type, Tensor > operator * ( ValueType v, Tensor&& t )
+  requires constructible_from< scalar_preprod_tensor_expression< Value_Type, Tensor >, ValueType, Tensor&& >;
 // Scalar Division
 template < tensor_expression Tensor, class ValueType >
 [[nodiscard]] constexpr /* implementation defined */ operator / ( Tensor&& t, ValueType v ) requires (  );
@@ -394,10 +572,18 @@ template < vector_expression FirstVector, vector_expression SecondVector >
 [[nodiscard]] constexpr /* implementation defined */ outer_prod( FirstVector&& vector_a, SecondVector&& vector_b ) requires (  );
 // Transpose
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ transpose( Tensor&& t );
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t, typename Tensor::index_type dim1, typename Tensor::index_type dim2 );
+template < matrix_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t );
+template < vector_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ trans( Tensor&& t );
 // Conjugate
 template < tensor_expression Tensor >
-[[nodiscard]] constexpr /* implementation defined */ conjugate( Tensor&& t );
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t, typename Tensor::index_type dim1, typename Tensor::index_type dim2 );
+template < matrix_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t );
+template < vector_expression Tensor >
+[[nodiscard]] constexpr /* implementation defined */ conj( Tensor&& t );
 // Scalar Modulo
 template < tensor_expression Tensor, class ValueType >
 [[nodiscard]] constexpr /* implementation defined */ operator % ( Tensor&& t, ValueType v ) requires (  );
@@ -405,22 +591,9 @@ template < tensor_expression Tensor, class ValueType >
 </code>
 </pre>
 
-Mandates:
-- T is a complete object type that is neither an abstract class type nor an array type.
-- is_same_v< Allocator::value_type, T > is true.
-- is_same_v< AccessorPolicy::element_type, T > is true.
-- Extents is a specialization of extents.
-- Allocator shall meet the allocator requirements.
-- LayoutPolicy shall meet the layout mapping policy requirements.
-- AccessorPolicy shall meet the accessor policy requirements.
+## Helpers
 
-## Tensor Expressions
-
-### Why Template Expressions
-
-### General Approach
-
-This section is in work. It will provide expressions for implementing the algebraic functions defined by tensor and conform to the tensor_expression concepts.
+IN WORK: How to define resultant layout, accessor, and allocator types?
 
 Design Questions {#questions}
 =============================
@@ -430,21 +603,22 @@ These are issues for which different approaches may be taken. Many have pros and
 ## Fixed Size Tensor
 On its face, the tensor container does not address optimization for fixed size tensor objects. For these objects - particularly of small size - optimizations provide significant performance improvements.
 There are a couple paths which could be taken:
-1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from P1385.
-    fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
-    dr_tensor would adopt the existing tensor interface wholesale.
-    This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
-    The issue of optimizing memory access is also not new. This approach would follow existing paradigms addressing this issue.
-2.  Another partial solution would is to encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
+1.  Functionality could be split into two separate classes fs_tensor and dr_tensor - adopting similar language from [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf).
+    - fs_tensor would remove the allocator dependency - instead operating on a an array of objects - and remove a couple functions which serve no purpose for statically defined extents ( capacity, resize, reserve, shrink_to_fit, ... ).
+    - dr_tensor would adopt the existing tensor interface wholesale.
+    - This option would be particularly beneficial if further vector-like functions are adopted: Allowing fs_tensor to be the multidimensional corolary to std::array and dr_tensor the multidimensional corolary to std::vector.
+    - The issue of optimizing memory access is also not new. This approach would follow existing paradigms already in the standard library addressing this issue.
+2.  The pointer to buffer and allocator behavior could be encapsulated into a single interface - replacing the allocator template parameter on the tensor class.
+    - This would be similar to the unbounded and bounded arrays used in Boost. This would also be somewhat similar to the engine class described in [P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf); although, limited to memory ownership behavior.
+    - This would allow for dynamic size fixed capacity tensor operations on a local buffer (where as in the first option dynamic size fixed capacity operations could only be done on a remote buffer through an allocator).
+3.  Don't address the issue for now and encourage the use of fixed buffers. This could be problematic for a couple reasons; however, allows focus on a single container class:
     - The abstraction provided by the allocator becomes less useful as the buffer size becomes too small for use by other objects.
     - This also fails to achieve full memory optimization - still requiring a pointer to a local buffer. This can be undesirable for small tensors in high performance computing.
-    - Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious.
+    - Some high performance applications require predictable performance - requiring stack only memory. In these instances, the familiar three step process of creating the buffer, allocator, and container becomes tedious and error prone. This leads to attempts to encapsulate the behavior (like Boost's static_vector).
     - The memory access through pointer limits compiler optimizations and limits what can be performed at compile time.
     - Many existing applications already make use of fixed size optimization to improvement performance and ease of use.
     - Many existing C++ libraries such as Boost and Eigen already provide such fixed size optimization. Not providing it would discourage standard adoption.
     - Given a fairly ubiquitous need, it is expected to be addressed at some point. Failure to address the need now could complicate further proposals.
-    A similar and full solution would be to package the pointer and allocator required by the tensor together - allowing for specialization of these members - when desired for fixed size tensors.
-    - This is also problematic as full optimization cannot be achieved without violating the allocator requirements which the authors do not promote.
 
 ## Capacity and Reserve
 The expected behavior of reserve also needs further guidance. There are several options to take:
@@ -501,16 +675,90 @@ The expected behavior of reserve also needs further guidance. There are several 
     - Introduces another template parameter; however, this can be marginalized through appropriate aliasing.
 
 ## Dynamic Only Extents
-Should tensor require extents_type::dynamic_rank() != 0?
+Should tensor require extents_type::rank_dynamic() != 0?
 
-If dynamic_rank() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
+If rank_dynamic() == 0, then the constructors, tensor() and tensor( const allocator_type& alloc ), must perform allocation because size() is non-zero at initialization. This differs if at least one dimension of the extents is dynamic. In this case, no allocation need occur because size() is still zero.
 
 Alternatively, tensor could impose the requirement only on the impacted constructors.
 
-## [[[nodiscard]]] Clarification
-The P0009 proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. P0009 only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
+## Tensor Expressions Contain by Value
+Is it useful to be able to constuct expressions which contain the operands by value? If so, what syntax is desired to indicate contain-by-value?
 
-P0600 is the proposal which motivated the addition of [[nodiscard]] to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [[[nodiscard]]] on future additions to the proposal:
+## Implementation Freedoms in Compound Expressions
+
+Linear algebra conforms to a set of axiomatic identities. The authors believe implementations which conform to this proposal should be free to apply them liberally, but think it is important to bring the implications into consideration.
+
+Consider - given tensors a, b, c:
+<pre class="highlight">
+<code class="language-c++">
+auto d = a + b + c;
+auto d = a + c + b;
+auto d = b + a + c;
+auto d = b + c + a;
+auto d = c + a + b;
+auto d = c + b + a;
+</code>
+</pre>
+
+Because the addition operator under the set of tensors is both commutative and associative, each of the above expressions are equivalent.
+Baring numerical overflow and instability - evaluation of each of these expressions in the order specified should result in the same result.
+This example is relatively trivial: Since each tensor is the same type, there is no reason to believe any one order is better than another.
+However, if considering each tensor may have a different layout_type, then some orders may be more efficient than others. Consider if `a` and `b` are diagonal, then their result is also guaranteed diagonal. Therefore, chosing an order which allows them to be evaulated together is more efficient.
+
+Though the authors do not propose an inverse operation in this proposal, its use here illustrates the point better. The inverse operation is an operation on a square matrix which resuls in a matrix when either pre- or post-multiplied with the original matrix results in an identity matrix.
+
+Consider - given square matrices a, b:
+<pre class="highlight">
+<code class="language-c++">
+auto c = inverse( inverse(a) + inverse(b) );
+auto c = a - a * inverse( a + b ) * a;
+auto c = b - b * inverse( a + b ) * b;
+auto c = a * inverse( a + b ) * b;
+auto c = b * inverse( a + b ) * a;
+</code>
+</pre>
+
+These expressions are sometimes referred to as rank-k updates. By virtue of the Woodbury matrix identity and a little algebraic manipulation - each of these evaluate to the same result.
+The concern of the authors is more clear - the first expression is both the most expensive and the only which requires both a and b to be invertible. Each of the remaining expressions only require the sum of the matrices to be invertible. This leads to the natural question: If the client code calls for the inverse of the matrix, must the matrix actually be invertible or is the implementation free to evaluate the compound expression in such a way that the inverse may never be computed?
+
+## Simplification and Simultaneous Evaluation
+
+In this section, the authors present limitations in the compiler's ability to optimize code. At this time, no solutions are presented.
+
+For this illustration, the authors introduce a state, X, and its associated uncertainty, XX. X is a vector (rank 1 tensor), XX is a positive semi-definite symmetric matrix.
+
+Consider the linear transform, A\*X, and the associated transformation of the uncertainty, A\*XX\*trans(A).
+<pre class="highlight">
+<code class="language-c++">
+auto Y  = A*X;
+auto YY = A*XX*trans(A);
+</code>
+</pre>
+
+The first question is how can optimize the second function? Breaking down the second function into the intermediate expression templates used, it looks something like:
+<pre class="highlight">
+<code class="language-c++">
+auto YY = matrix_product_expression( A, matrix_product_expression( XX, matrix_transpose_expression(A) );
+</code>
+</pre>
+
+The types used and their order essentially constitute a pattern. The additional piece of information needed to cue the compiler that this is indeed a linear transform operation is the knowledge the first argument of the outermost product is the same as the argument in the transpose. How can we allow the compiler the introspection to confirm this and perform the appropriate optimization?
+
+The second is how can the compiler optimize computing both simultaneously? This example was chosen as it is not trivial to simply concatenate the two equations to allow for simultaneous evaluation as the first is an operation on a vector and the second an operation on a matrix. Nonetheless, it is desirable to limit the iterations over A.
+
+The following structured binding syntax might be preferential to cue the compiler to evaluate the two simultaneously:
+<pre class="highlight">
+<code class="language-c++">
+auto [ Y, YY ] = { A*X, A*XX*trans(A) };
+</code>
+</pre>
+
+However, this requires someway to overload the way assignment is performed on the structured binding to evaluate Y and YY simultaneously as well as verify the first parameter in the matrix-vector product is the same parameter used in the second expression.
+
+## [[[nodiscard]]] Clarification
+The [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) proposal introduced many new concepts and functions to the standard. Many are re-used in this proposal. [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) only introduced [[[nodiscard]]] to the empty() function consistent with the specification of a number of STL containers.
+
+[P0600](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf) is the proposal which motivated the addition of [[nodiscard]] to empty() on those containers to disambiguate functionality from clear(). This proposal also provides guidance on when to use [[[nodiscard]]] on future additions to the proposal:
 > It should be added where:
 > 
 > - For existing API’s:
@@ -521,7 +769,7 @@ P0600 is the proposal which motivated the addition of [[nodiscard]] to empty() o
 >   
 >     - not using the return value is usually an error.
 
-In the authors' opinions, P0009 did not adhere to this guidance. The authors have marked which functions could be marked no [[[nodiscard]]] in accordance to the guidance provided by P0600; however, the authors seek clarity on the appropriate direction to take.
+In the authors' opinions, [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) did not adhere to this guidance. The authors have marked which functions could be marked no [[[nodiscard]]] in accordance to the guidance provided by [P0600](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0600r1.pdf); however, the authors seek clarity on the appropriate direction to take.
 
 <h3>Safe Memory Access</h3>
 Safe memory access is important to avoid undefined behaviors if the user tries to access an invalid location. This is further highlighted in the recent paper P2759.
@@ -546,14 +794,14 @@ The mapping_type needs to provide a mechanism allowing for the container to resi
     However, this approach may be less efficient owing to an additional assignment required.
 
 ## [[ assume( restrict( p ) ) ]]
-C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function
+C++23 introduced the assume attribute which could be used to achieve valarray-like vectorization performance. This would be feasable by adding a new function:
 
 <pre class="highlight">
 <code class="language-c++">
 template < class T >
-[[nodiscard]] constexpr bool restrict( [[maybe_unused]] T* p ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
+[[nodiscard]] consteval bool restrict( [[maybe_unused]] T* p ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
 template < class T >
-[[nodiscard]] constexpr bool restrict( [[maybe_unused]] T& ref ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
+[[nodiscard]] consteval bool restrict( [[maybe_unused]] T& ref ) noexcept requires is_same_v< T, remove_reference_t< T > > { return true; }
 </code>
 </pre>
 In the context of an [[ assume( ) ]],
@@ -563,9 +811,13 @@ In the context of an [[ assume( ) ]],
 
 The authors are aware there has been significant work over the years to introduce restrict-like behavior to C++. The authors believe this approach could significantly simplify some of the complexities of introducing this behavior by not requiring a new type specifier at all; rather, the existing pointer symmantics may be treated with additional guarantees for the lifetime of the assume statement.
 
-A shorter syntax may be to remove the assume() altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume().
+A shorter syntax may be to remove the assume altogether and introduce restrict as its own attribute. While shorter and acceptable, the authors also like the contractual language conveyed by assume.
 
 Understanding this could benefit the performance of tensor, the authors would like to gauge interest in this approach.
+
+## Default Zero initialization
+The authors feel obliged to point out default zero initialization in tensors is less trivial than one dimensional contiguous containers.
+This is because a resize operation is likely to require multiple chunks of memory which must be set to zero. It is also highly likely any zero initialized memory will be immediately overwritten with more meaningful data.
 
 ## Vector and Matrix Aliases
 
@@ -580,13 +832,13 @@ template < class T,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using matrix = tensor< T, extents<common_type_t<decltype(R),decltype(C)>,static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, Allocator, AccessorPolicy >;
+using matrix = tensor< T, extents< common_type_t< decltype(R), decltype(C) >, static_cast< size_t >(R), static_cast< size_t >(C) >, LayoutPolicy, Allocator, AccessorPolicy >;
 template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class Allocator      = allocator<T>,
            class AccessorPolicy = default_accessor<T> >
-using vector = tensor< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, Allocator, AccessorPolicy >;
+using vector = tensor< T, extents< decltype(N), static_cast< size_t >(N) >, LayoutPolicy, Allocator, AccessorPolicy >;
 
 template < class T,
            class Extents,
@@ -598,19 +850,19 @@ template < class T,
            auto  C,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using matrix_view = mdspan< T, extents<common_type_t<decltype(R),decltype(C)>,static_cast<size_t>(R),static_cast<size_t>(C)>, LayoutPolicy, AccessorPolicy >;
+using matrix_view = mdspan< T, extents< common_type_t< decltype(R), decltype(C) >, static_cast< size_t >(R), static_cast< size_t >(C) >, LayoutPolicy, AccessorPolicy >;
 template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using vector_view = mdspan< T, extents<decltype(N),static_cast<size_t>(N)>, LayoutPolicy, AccessorPolicy >;
+using vector_view = mdspan< T, extents< decltype(N), static_cast< size_t >(N) >, LayoutPolicy, AccessorPolicy >;
 
 namespace pmr {
 template < class T,
            class Extents,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using tensor = ::std::tensor< T, Extents, LayoutPolicy, ::std::pmr::polymorphic_allocator<T>, AccessorPolicy >;
+using tensor = ::std::tensor< T, Extents, LayoutPolicy, ::std::pmr::polymorphic_allocator< T >, AccessorPolicy >;
 template < class T,
            auto  R,
            auto  C,
@@ -621,7 +873,7 @@ template < class T,
            auto  N,
            class LayoutPolicy   = layout_right,
            class AccessorPolicy = default_accessor<T> >
-using vector = ::std::vector< T, N, LayoutPolicy, ::std::pmr::polymorphic_allocator<T>, AccessorPolicy >;
+using vector = ::std::vector< T, N, LayoutPolicy, ::std::pmr::polymorphic_allocator< T >, AccessorPolicy >;
 }
 }
 </code>
@@ -655,24 +907,24 @@ If neither are true, then the authors believe a more definition of iterators wit
 Without such concepts, the current implementation is to isolate these functions in a way the user may provide custom overloads.
 
 ## mdslice, submdspan, or subtensor
-Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of P0009 have proposed a reasonable implementation to achieve this in proposal P2630.
+Accessing non-owning (potentially) sub-dimensional views of tensors is an important aspect to efficient implementation of linear algebraic functions. The authors of [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) have proposed a reasonable implementation to achieve this in proposal [P2630](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html).
 
 If standards committee prefers tensors to be a truer extension of valarray, then new classes mdslice and mdslice_array with similar functionality to gslice and gslice_array would be required.
 
-The authors of this proposal are preferential to the implementation of P2630; however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.
+The authors of this proposal are preferential to the implementation of [P2630](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html); however, the authors are also partial to the subtensor naming (for obvious reasons). The authors also recognize a common naming scheme and implementation for both tensor and mdspan may be preferred.
 
 ## Rank One Extents Implicit Conversions
 One naturally expects to deal with less verbose syntax when dealing with rank one tensors. Currently, constructing a rank one tensor and accessing its length feels overly verbose:
 
 <pre class="highlight">
 <code class="language-c++">
-template < T, auto N, … >
-using vector = tensor<T,extents<size_t,N>,…>;
-template < T, … >
-using dyn_vector = vector< T, dynamic_extent, … >;
+template < T, auto N, ... >
+using vector = tensor< T, extents< size_t, N >, ... >;
+template < T, ... >
+using dyn_vector = vector< T, dynamic_extent, ... >;
 
-size_t n = …;
-dyn_vector<T,...> vec( extents<size_t,dynamic_extent>( n ) );
+size_t n = ...;
+dyn_vector< T, ... > vec( extents< size_t, dynamic_extent >( n ) );
 size_t m = vec.extents().extent(0);
 </code>
 </pre>
@@ -682,13 +934,13 @@ If the standard was to adopt a specialization which allowed extents<T,dyn_extent
 
 <pre class="highlight">
 <code class="language-c++">
-template < T, auto N, … >
-using vector = tensor<T,extents<size_t,N>,…>;
-template < T, … >
-using dyn_vector = vector< T, dynamic_extent, … >;
+template < T, auto N, ... >
+using vector = tensor< T, extents< size_t, N >, ... >;
+template < T, ... >
+using dyn_vector = vector< T, dynamic_extent, ... >;
 
-size_t n = …;
-dyn_vector<T,...> vec( n );
+size_t n = ...;
+dyn_vector< T, ... > vec( n );
 size_t m = vec.extents();
 </code>
 </pre>
@@ -702,11 +954,14 @@ Below are additional topics which may merit additional discussion.
 
 ## Multi-dimensional Iterators
 Iterators which operate on multidimensional containers and views is a key concept not yet introduced to the standard. While the lack of them complicates certain implementations, the authors are choosing not to pursue defining these for a several reasons:
-- The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan.
-- Previous versions of P0009 mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.
+- The authors would like to establish the basic implementation of tensor first and then revisit the issue of iterators - much like mdspan. Possible memory layouts as well as the possible inclusion of more vector-like functions could have significant behavior implications for iterators. The authors would like to have these design considerations solidified first.
+- Previous versions of [P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html) mentioned iterators. If this issue is already being worked, the authors do not wish to duplicate effort unnecessarily.
 - Multi-dimensional iterators is a complex concept likely requiring its own proposal.
 
-## Additional Vector-like functions
+## Inverse, Eigen Vectors, and Everything Else
+There are too many useful functions which operate on various kinds of tensors. It is not feasable to introduce them all in a single proposal. This proposal seeks to build a foundation for future work while providing some basic functions.
+
+## Additional STL Vector-like functions
 Some consideration was given to provide additional vector-like functions such as push_back, emplace_back, pop_back, insert, erase, ...
 
 The authors felt additional clarity must be provided first - particularly on the issue of fixed size tensors.
@@ -716,11 +971,13 @@ Additionally, single elements cannot simply be pushed; rather, entire subrank te
 ## Comparison Operators
 Comparison operators do have value to higher level math objects; however, such comparisons are defined using a *norm*. Additional work is needed to define how such norms should interact with existing comparison and sorting paradigms. The authors chose not to include this in the scope of this proposal.
 
-## Element-wise Functions
+## Element-wise Multiply and Divide
 Element-wise (or Hadamard) multiply and divide was additionally considered. The authors note other langauges like MATLAB and Python provide operator like syntax for achieving this. The authors want to gauge interest before pursuing.
 
 ## tensor< bool, ... >
 A specialization of tensor analogous to vector<bool> was considered. (Very briefly)
+
+## Non-contiguous buffers
 
 Acknowledgements {#acknowledge}
 ===============================
@@ -728,8 +985,7 @@ Acknowledgements {#acknowledge}
 Related Work {#related}
 =======================
 In work.
-P0009
-P1385
-P1673
-P2670
-D1684
+[P0009](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0009r18.html)
+[P1385](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1385r7.pdf)
+[P2630](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2630r3.html)
+[D1684](https://isocpp.org/files/papers/D1684R0.html)
