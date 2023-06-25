@@ -493,7 +493,6 @@ template < class T, class Extents, class LayoutPolicy, class CapExtents, class A
 LINALG_CONSTEXPR_DESTRUCTOR dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::~dr_tensor()
   noexcept( ::std::is_nothrow_destructible_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::element_type > )
 {
-  static_assert( LINALG_CONCEPTS::dynamic_tensor< self_type > );
   // If the elements pointer has been set, then destroy and deallocate
   if ( this->tm_.data() ) LINALG_LIKELY
   {
