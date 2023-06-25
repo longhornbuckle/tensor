@@ -202,17 +202,27 @@ class scalar_modulo_tensor_expression :
     using size_type      = typename traits_type::size_type;
     using extents_type   = typename traits_type::extents_type;
     using rank_type      = typename traits_type::rank_type;
-    using evaluated_type = ::std::conditional_t< ( extents_type::rank_dynamic() == 0 ),
-                                                 LINALG::fs_tensor< value_type,
-                                                                    extents_type,
-                                                                    LINALG::layout_result_t< self_type >,
-                                                                    LINALG::accessor_result_t< self_type > >,
-                                                 LINALG::dr_tensor< value_type,
-                                                                    extents_type,
-                                                                    LINALG::layout_result_t< self_type >,
-                                                                    extents_type,
-                                                                    typename ::std::allocator_traits< LINALG::allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                                    LINALG::accessor_result_t< self_type > > >;
+  private:
+    template < class T, bool >
+    struct helper
+    {
+      using type = LINALG::fs_tensor< typename T::value_type,
+                                      typename T::extents_type,
+                                      LINALG::layout_result_t< T >,
+                                      LINALG::accessor_result_t< T > >;
+    };
+    template < class T >
+    struct helper< T, false >
+    {
+      using type = LINALG::dr_tensor< typename T::value_type,
+                                      typename T::extents_type,
+                                      LINALG::layout_result_t< T >,
+                                      typename T::extents_type,
+                                      typename ::std::allocator_traits< LINALG::allocator_result_t< T > >::template rebind_alloc< typename T::value_type >,
+                                      LINALG::accessor_result_t< T > >;
+    };
+  public:
+    using evaluated_type = typename helper< self_type, ( extents_type::rank_dynamic() == 0 ) >::type;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< Tensor >::rank(); }
     [[nodiscard]] constexpr extents_type extents() const noexcept { return this->t_.extents(); }
@@ -265,6 +275,11 @@ class scalar_modulo_tensor_expression :
       {
         return evaluated_type( *static_cast< const base_type* >( this ), LINALG::allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
+    }
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( conversion_is_noexcept() )
+    {
+      return evaluated_type( *this );
     }
   private:
     // Data

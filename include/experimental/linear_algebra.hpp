@@ -64,6 +64,9 @@
 #include "linalg/tensor_expression/binary/scalar_division.hpp"
 #include "linalg/tensor_expression/binary/scalar_modulo.hpp"
 #include "linalg/tensor_expression/binary/matrix_product.hpp"
+#include "linalg/tensor_expression/binary/vector_matrix_product.hpp"
+#include "linalg/tensor_expression/binary/matrix_vector_product.hpp"
+#include "linalg/tensor_expression/binary/vector_product.hpp"
 #include "linalg/tensor_expression/binary_tensor_expressions.hpp"
 #include "linalg/arithmetic_operators.hpp"
 

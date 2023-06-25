@@ -127,7 +127,7 @@ template < class Scalar, class Tensor >
 template < class Scalar, class Tensor,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
                                           ! LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Scalar > > &&
-                                          LINALG_CONCEPTS::tensor_is_scalar_premultiplicative_v< Scalar, Tensor > > >
+                                          LINALG_CONCEPTS::tensor_is_scalar_premultiplicative_v< ::std::remove_reference_t< Scalar >, ::std::remove_reference_t< Tensor > > > >
 #endif
 class scalar_preprod_tensor_expression;
 
@@ -141,7 +141,7 @@ template < class Tensor, class Scalar >
 template < class Tensor, class Scalar,
            typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > &&
                                           ! LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Scalar > > &&
-                                          LINALG_CONCEPTS::tensor_is_scalar_postmultiplicative_v< Tensor, Scalar > > >
+                                          LINALG_CONCEPTS::tensor_is_scalar_postmultiplicative_v< ::std::remove_reference_t< Tensor >, ::std::remove_reference_t< Scalar > > > >
 #endif
 class scalar_postprod_tensor_expression;
 
@@ -151,7 +151,7 @@ template < class Tensor, class Scalar >
   requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
              requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v / s; } )
 #else
-template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisable_v< Tensor, Scalar > > >
+template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_divisible_v< ::std::remove_reference_t< Tensor >, ::std::remove_reference_t< Scalar > > > >
 #endif
 class scalar_division_tensor_expression;
 
@@ -161,7 +161,7 @@ template < class Tensor, class Scalar >
   requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
              requires ( typename ::std::remove_reference_t< Tensor >::value_type v, Scalar s ) { v % s; } )
 #else
-template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_modulo_v< Tensor, Scalar > > >
+template < class Tensor, class Scalar, typename = ::std::enable_if_t< LINALG_CONCEPTS::tensor_is_scalar_modulo_v< ::std::remove_reference_t< Tensor >, ::std::remove_reference_t< Scalar > > > >
 #endif
 class scalar_modulo_tensor_expression;
 
@@ -184,42 +184,48 @@ class matrix_product_expression;
 
 // Vector Matrix Product
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::vector_expression Vector, LINALG_CONCEPTS::matrix_expression Matrix >
-  requires ( ( requires ( const typename Vector::value_type& v1, const typename Matrix::value_type& v2 ) { v1 * v2; } ) &&
-             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(0) ) ||
-               ( Vector::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
-               ( Matrix::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
+template < class Vector, class Matrix >
+  requires ( LINALG_CONCEPTS::vector_expression< ::std::remove_reference_t< Vector > > &&
+             LINALG_CONCEPTS::matrix_expression< ::std::remove_reference_t< Matrix > > &&
+             ( requires ( const typename ::std::remove_reference_t< Vector >::value_type& v1, const typename ::std::remove_reference_t< Matrix >::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( ::std::remove_reference_t< Vector >::extents_type::static_extent(0) == ::std::remove_reference_t< Matrix >::extents_type::static_extent(0) ) ||
+               ( ::std::remove_reference_t< Vector >::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
+               ( ::std::remove_reference_t< Matrix >::extents_type::static_extent(0) == ::std::dynamic_extent ) ) )
 #else
-template < class Vector, class Matrix, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Vector > &&
-                                                                      LINALG_CONCEPTS::matrix_expression_v< Matrix > &&
-                                                                      LINALG_CONCEPTS::elements_are_multiplicative_v< Vector, Matrix > &&
-                                                                      LINALG_CONCEPTS::vector_matrix_may_be_multiplicative_v< Vector, Matrix > > >
+template < class Vector, class Matrix, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Vector > > &&
+                                                                      LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< Matrix > > &&
+                                                                      LINALG_CONCEPTS::elements_are_multiplicative_v< ::std::remove_reference_t< Vector >, ::std::remove_reference_t< Matrix > > &&
+                                                                      LINALG_CONCEPTS::vector_matrix_may_be_multiplicative_v< ::std::remove_reference_t< Vector >, ::std::remove_reference_t< Matrix > > > >
 #endif
 class vector_matrix_product_expression;
 
 // Matrix Vector Product
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::matrix_expression Matrix, LINALG_CONCEPTS::vector_expression Vector >
-  requires ( ( requires ( const typename Matrix::value_type& v1, const typename Vector::value_type& v2 ) { v1 * v2; } ) &&
-             ( ( Vector::extents_type::static_extent(0) == Matrix::extents_type::static_extent(1) ) ||
-               ( Vector::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
-               ( Matrix::extents_type::static_extent(1) == ::std::dynamic_extent ) ) )
+template < class Matrix, class Vector >
+  requires ( LINALG_CONCEPTS::matrix_expression< ::std::remove_reference_t< Matrix > > &&
+             LINALG_CONCEPTS::vector_expression< ::std::remove_reference_t< Vector > > &&
+             ( requires ( const typename ::std::remove_reference_t< Matrix >::value_type& v1, const typename ::std::remove_reference_t< Vector >::value_type& v2 ) { v1 * v2; } ) &&
+             ( ( ::std::remove_reference_t< Vector >::extents_type::static_extent(0) == ::std::remove_reference_t< Matrix >::extents_type::static_extent(1) ) ||
+               ( ::std::remove_reference_t< Vector >::extents_type::static_extent(0) == ::std::dynamic_extent ) ||
+               ( ::std::remove_reference_t< Matrix >::extents_type::static_extent(1) == ::std::dynamic_extent ) ) )
 #else
-template < class Matrix, class Vector, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< Vector > &&
-                                                                      LINALG_CONCEPTS::matrix_expression_v< Matrix > &&
-                                                                      LINALG_CONCEPTS::elements_are_multiplicative_v< Vector, Matrix > &&
-                                                                      LINALG_CONCEPTS::matrix_vector_may_be_multiplicative_v< Matrix, Vector > > >
+template < class Matrix, class Vector, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< Vector > > &&
+                                                                      LINALG_CONCEPTS::matrix_expression_v< ::std::remove_reference_t< Matrix > > &&
+                                                                      LINALG_CONCEPTS::elements_are_multiplicative_v< ::std::remove_reference_t< Vector >, ::std::remove_reference_t< Matrix > > &&
+                                                                      LINALG_CONCEPTS::matrix_vector_may_be_multiplicative_v< ::std::remove_reference_t< Matrix >, ::std::remove_reference_t< Vector > > > >
 #endif
 class matrix_vector_product_expression;
 
 // Outer Product
 #ifdef LINALG_ENABLE_CONCEPTS
-template < LINALG_CONCEPTS::vector_expression FirstVector, LINALG_CONCEPTS::vector_expression SecondVector >
-  requires ( requires ( const typename FirstVector::value_type& v1, const typename SecondVector::value_type& v2 ) { v1 * v2; } )
+template < class FirstVector, class SecondVector >
+  requires ( LINALG_CONCEPTS::vector_expression< ::std::remove_reference_t< FirstVector > > &&
+             LINALG_CONCEPTS::vector_expression< ::std::remove_reference_t< SecondVector > > &&
+            ( requires ( const typename ::std::remove_reference_t< FirstVector >::value_type& v1, const typename ::std::remove_reference_t< SecondVector >::value_type& v2 ) { v1 * v2; } ) )
 #else
-template < class FirstVector, class SecondVector, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< FirstVector > &&
-                                                                                 LINALG_CONCEPTS::vector_expression_v< SecondVector > &&
-                                                                                 LINALG_CONCEPTS::elements_are_multiplicative_v< FirstVector, SecondVector > > >
+template < class FirstVector, class SecondVector, typename = ::std::enable_if_t< LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< FirstVector > > &&
+                                                                                 LINALG_CONCEPTS::vector_expression_v< ::std::remove_reference_t< SecondVector > > &&
+                                                                                 LINALG_CONCEPTS::elements_are_multiplicative_v< ::std::remove_reference_t< FirstVector >, ::std::remove_reference_t< SecondVector > > > >
 #endif
 class outer_product_expression;
 
@@ -319,6 +325,17 @@ template < class T,
            class LayoutPolicy   = default_layout,
            class AccessorPolicy = ::std::default_accessor< T > >
 using fs_vector = fs_tensor< T, ::std::extents< decltype(N), static_cast< ::std::size_t >(N) >, LayoutPolicy, AccessorPolicy >;
+
+// Evaluates expressions
+template < class T >
+[[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION decltype(auto) eval( T&& t ) noexcept { return t; }
+
+#ifdef LINALG_ENABLE_CONCEPTS
+template < class T >  requires LINALG_CONCEPTS::unevaluated_tensor_expression< ::std::remove_reference_t< T > >
+#else
+template < class T, typename = ::std::enable_if_t< LINALG_CONCEPTS::unevaluated_tensor_expression_v< ::std::remove_reference_t< T > > > >
+#endif
+[[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto eval( T&& t ) noexcept( noexcept( ::std::declval<T&&>().evaluate() ) ) { return t.evaluate(); }
 
 LINALG_END // end linalg namespace
 

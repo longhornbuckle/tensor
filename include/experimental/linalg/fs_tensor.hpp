@@ -25,6 +25,11 @@ template < class T,
 #endif
 class fs_tensor
 {
+  private:
+    //- Types
+
+    /// @brief Alias to this type
+    using self_type                = fs_tensor< T, Extents, LayoutPolicy, AccessorPolicy >;
   public:
     //- Types
 
@@ -85,7 +90,7 @@ class fs_tensor
     constexpr fs_tensor( const fs_tensor& rhs ) noexcept( ::std::is_nothrow_copy_constructible_v< element_type > ) = default;
     /// @brief Construct from an initializer list
     /// @param il initializer list of elements to be copied
-    explicit constexpr fs_tensor( const ::std::initializer_list<value_type>& il );
+    constexpr fs_tensor( const ::std::initializer_list<value_type>& il );
     /// @brief Constructs from an iterator pair
     /// @tparam InputIt Iterator Type
     /// @param first begin iterator

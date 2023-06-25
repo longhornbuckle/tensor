@@ -142,10 +142,9 @@ writable_tensor< T > &&
 ( T::rank_dynamic() == 0 ) &&
 ::std::default_initializable< T > &&
 // Constexpr functions
-LINALG_DETAIL::is_constexpr( []{ T { }; } ) &&
 requires
 {
-  integral_constant< typename T::size_type, T { }.size() >::value;
+  ::std::integral_constant< typename T::size_type, T { }.size() >::value;
 };
 
 // Dynamic tensor concept
@@ -156,17 +155,16 @@ requires
 {
   // Types
   typename T::allocator_type;
+  typename T::capacity_extents_type;
 } &&
-requires( const T& t, typename T::extents_type s, typename T::allocator_type alloc ) // Functions
+requires( const T& ct, T& t, typename T::extents_type s, typename T::allocator_type alloc ) // Functions
 {
   // Size / Capacity
-  { t.max_size() } -> ::std::same_as< typename T::size_type >;
-  { t.capacity() } -> ::std::same_as< typename T::size_type >;
+  { ct.max_size() } -> ::std::same_as< typename T::size_type >;
+  { ct.capacity() } -> ::std::same_as< typename T::capacity_extents_type >;
   { t.resize( s ) };
-  // TBD on capacity_extents()
-  // TBD on reserve( ... )
   // Allocator access
-  { t.get_allocator() } -> ::std::same_as< typename T::allocator_type > ;
+  { ct.get_allocator() } -> ::std::same_as< typename T::allocator_type > ;
 } &&
 constructible_from< T, typename T::allocator_type > &&
 constructible_from< T, const typename T::extents_type&, typename T::allocator_type >;
@@ -182,11 +180,11 @@ requires
 } &&
 requires( T t )
 {
-  { t.operator T::evaluated_type() };
+  { t.evaluate() };
 } &&
-tensor_expression< decltype( ::std::declval< T >().operator T::evaluated_type() ) > &&
-( static_tensor< decltype( ::std::declval< T >().operator T::evaluated_type() ) > ||
-  dynamic_tensor< decltype( ::std::declval< T >().operator T::evaluated_type() ) > );
+tensor_expression< decltype( ::std::declval< T >().evaluate() ) > &&
+( static_tensor< decltype( ::std::declval< T >().evaluate() ) > ||
+  dynamic_tensor< decltype( ::std::declval< T >().evaluate() ) > );
 
 // Unary tensor expression concept
 template < class T >
@@ -237,6 +235,11 @@ template < class T > inline constexpr bool has_rank_type_v = has_rank_type< T >:
 template < class T, class = void > struct has_extents_type : public ::std::false_type { };
 template < class T > struct has_extents_type< T, ::std::enable_if_t< ::std::is_same_v< typename T::extents_type, typename T::extents_type > && detail::is_extents_v< typename T::extents_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_extents_type_v = has_extents_type< T >::value;
+
+// Test if T has alias capacity_extents_type
+template < class T, class = void > struct has_capacity_extents_type : public ::std::false_type { };
+template < class T > struct has_capacity_extents_type< T, ::std::enable_if_t< ::std::is_same_v< typename T::capacity_extents_type, typename T::capacity_extents_type > && detail::is_extents_v< typename T::extents_type > > > : public ::std::true_type { };
+template < class T > inline constexpr bool has_capacity_extents_type_v = has_capacity_extents_type< T >::value;
 
 // Test if T has alias layout_type
 template < class T, class = void > struct has_layout_type : public ::std::false_type { };
@@ -387,7 +390,7 @@ template < class T > inline constexpr bool has_max_size_func_v = has_max_size_fu
 
 // Test for capacity function
 template < class T, class = void > struct has_capacity_func : public ::std::false_type { };
-template < class T > struct has_capacity_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().capacity() ), typename T::extents_type > > > : public ::std::true_type { };
+template < class T > struct has_capacity_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< const T >().capacity() ), typename T::capacity_extents_type > > > : public ::std::true_type { };
 template < class T > inline constexpr bool has_capacity_func_v = has_capacity_func< T >::value;
 
 // Test for resize function
@@ -440,10 +443,10 @@ template < class T > inline constexpr bool constructible_from_size_and_alloc_v =
 // template < class T > struct has_assignable_paren_operator< T, ::std::enable_if_t< ::std::is_convertible_v< decltype( ::std::declval< const T >().operator()( ::std::declval< auto ... >() ) = ::std::declval< typename T::value_type >() ), typename T::value_type > > > : public ::std::true_type { };
 // template < class T > inline constexpr bool has_assignable_paren_operator_v = has_assignable_paren_operator< T >::value;
 
-// Test for operator auto
-template < class T, class = void > struct has_operator_auto : public ::std::false_type { };
-template < class T > struct has_operator_auto< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< ::std::remove_reference_t< const T > >(). ::std::remove_reference_t< const T >::operator auto() ), decltype( ::std::declval< ::std::remove_reference_t< const T > >(). ::std::remove_reference_t< const T >::operator auto() ) > > > : public ::std::true_type { };
-template < class T > inline constexpr bool has_operator_auto_v = has_operator_auto< T >::value;
+// Test for evaluate function
+template < class T, class = void > struct has_evaluate_func : public ::std::false_type { };
+template < class T > struct has_evaluate_func< T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< ::std::remove_reference_t< const T > >().evaluate() ), decltype( ::std::declval< ::std::remove_reference_t< const T > >().evaluate() ) > > > : public ::std::true_type { };
+template < class T > inline constexpr bool has_evaluate_func_v = has_evaluate_func< T >::value;
 
 // Test for underlying function
 template < class T, class = void > struct has_underlying_func : public ::std::false_type { };
@@ -470,6 +473,11 @@ template < class T1, class T2, class = void > struct has_equal_ranks : public ::
 template < class T1, class T2 > struct has_equal_ranks< T1, T2, ::std::enable_if_t< ( T1::rank() == T2::rank() ) > > : public ::std::true_type { };
 template < class T1, class T2 > inline constexpr bool has_equal_ranks_v = has_equal_ranks< T1, T2 >::value;
 
+// Test for rank
+template < class T, ::std::size_t R, class = void > struct has_rank : public ::std::false_type { };
+template < class T, ::std::size_t R > struct has_rank< T, R, ::std::enable_if_t< T::rank() == R > > : public ::std::true_type { };
+template < class T, ::std::size_t R > inline constexpr bool has_rank_v = has_rank< T, R >::value;
+
 // Test for additive elements
 template < class T1, class T2, class = void > struct elements_are_additive : public ::std::false_type { };
 template < class T1, class T2 > struct elements_are_additive< T1, T2, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T1::value_type >() + ::std::declval< typename T2::value_type >() ), decltype( ::std::declval< typename T1::value_type >() + ::std::declval< typename T2::value_type >() ) > > > : public ::std::true_type { };
@@ -491,19 +499,19 @@ template < class S, class T > struct tensor_is_scalar_premultiplicative< S, T, :
 template < class S, class T > inline constexpr bool tensor_is_scalar_premultiplicative_v = tensor_is_scalar_premultiplicative< S, T >::value;
 
 // Test for scalar post-multiplicative
-template < class S, class T, class = void > struct tensor_is_scalar_postmultiplicative : public ::std::false_type { };
-template < class S, class T > struct tensor_is_scalar_postmultiplicative< S, T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() * ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() * ::std::declval< S >() ) > > > : public ::std::true_type { };
-template < class S, class T > inline constexpr bool tensor_is_scalar_postmultiplicative_v = tensor_is_scalar_postmultiplicative< S, T >::value;
+template < class T, class S, class = void > struct tensor_is_scalar_postmultiplicative : public ::std::false_type { };
+template < class T, class S > struct tensor_is_scalar_postmultiplicative< T, S, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() * ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() * ::std::declval< S >() ) > > > : public ::std::true_type { };
+template < class T, class S > inline constexpr bool tensor_is_scalar_postmultiplicative_v = tensor_is_scalar_postmultiplicative< T, S >::value;
 
 // Test for scalar divisible
-template < class S, class T, class = void > struct tensor_is_scalar_divisible : public ::std::false_type { };
-template < class S, class T > struct tensor_is_scalar_divisible< S, T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() / ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() / ::std::declval< S >() ) > > > : public ::std::true_type { };
-template < class S, class T > inline constexpr bool tensor_is_scalar_divisible_v = tensor_is_scalar_divisible< S, T >::value;
+template < class T, class S, class = void > struct tensor_is_scalar_divisible : public ::std::false_type { };
+template < class T, class S > struct tensor_is_scalar_divisible< T, S, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() / ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() / ::std::declval< S >() ) > > > : public ::std::true_type { };
+template < class T, class S > inline constexpr bool tensor_is_scalar_divisible_v = tensor_is_scalar_divisible< T, S >::value;
 
 // Test for scalar modulo
-template < class S, class T, class = void > struct tensor_is_scalar_modulo : public ::std::false_type { };
-template < class S, class T > struct tensor_is_scalar_modulo< S, T, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() % ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() % ::std::declval< S >() ) > > > : public ::std::true_type { };
-template < class S, class T > inline constexpr bool tensor_is_scalar_modulo_v = tensor_is_scalar_modulo< S, T >::value;
+template < class T, class S, class = void > struct tensor_is_scalar_modulo : public ::std::false_type { };
+template < class T, class S > struct tensor_is_scalar_modulo< T, S, ::std::enable_if_t< ::std::is_same_v< decltype( ::std::declval< typename T::value_type >() % ::std::declval< S >() ), decltype( ::std::declval< typename T::value_type >() % ::std::declval< S >() ) > > > : public ::std::true_type { };
+template < class T, class S > inline constexpr bool tensor_is_scalar_modulo_v = tensor_is_scalar_modulo< T, S >::value;
 
 // Test for matrices may be multiplicative
 template < class M1, class M2, class = void > struct matrices_may_be_multiplicative : public ::std::false_type { };
@@ -543,13 +551,13 @@ template < class T > inline constexpr bool tensor_expression_v = tensor_expressi
 // Matrix expression
 template < class T > struct matrix_expression : public ::std::conditional_t<
   tensor_expression_v< T > &&
-  ( T::rank() == 2 ), ::std::true_type, ::std::false_type > { };
+  has_rank_v< T, 2 >, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool matrix_expression_v = matrix_expression< T >::value;
 
 // Vector expression
 template < class T > struct vector_expression : public ::std::conditional_t<
   tensor_expression_v< T > &&
-  ( T::rank() == 1 ), ::std::true_type, ::std::false_type > { };
+  has_rank_v< T, 1 >, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool vector_expression_v = vector_expression< T >::value;
 
 // Readable tensor
@@ -604,6 +612,7 @@ template < class T > inline constexpr bool static_tensor_v = static_tensor< T >:
 template < class T > struct dynamic_tensor : public ::std::conditional_t<
   writable_tensor_v< T > &&
   has_allocator_type_v< T > &&
+  has_capacity_extents_type_v< T > &&
   has_max_size_func_v< T > &&
   has_capacity_func_v< T > &&
   has_resize_func_v< T > &&
@@ -615,7 +624,7 @@ template < class T > inline constexpr bool dynamic_tensor_v = dynamic_tensor< T 
 // Unevaluated tensor expression
 template < class T > struct unevaluated_tensor_expression : public ::std::conditional_t<
   tensor_expression_v< T > &&
-  has_operator_auto_v< T >, ::std::true_type, ::std::false_type > { };
+  has_evaluate_func_v< T >, ::std::true_type, ::std::false_type > { };
 template < class T > inline constexpr bool unevaluated_tensor_expression_v = unevaluated_tensor_expression< T >::value;
 
 // Unary tensor expression

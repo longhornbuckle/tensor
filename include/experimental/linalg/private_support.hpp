@@ -876,17 +876,17 @@ template<class T, class Tuple>
 //  Sufficient Extents tests if the first extents encompasses the second
 //==================================================================================================
 template < class SizeType, class OtherSizeType, ::std::size_t ... Extents, ::std::size_t ... OtherExtents >
-[[nodiscard]] constexpr bool sufficient_extents( const ::std::extents<SizeType,Extents...>&           extents,
-                                                 const ::std::extents<OtherSizeType,OtherExtents...>& other_extents ) noexcept
+[[nodiscard]] constexpr bool sufficient_extents( const ::std::extents< SizeType, Extents ... >&           extents,
+                                                 const ::std::extents< OtherSizeType, OtherExtents ... >& other_extents ) noexcept
 {
-  if constexpr ( sizeof...(Extents) == sizeof...(OtherExtents) )
+  if constexpr ( sizeof...( Extents ) == sizeof...( OtherExtents ) )
   {
     // Iterate over each dimension
     bool sufficient = true;
-    for( ::std::size_t dim = 0; ( dim < ::std::extents<SizeType,Extents...>::rank() ) && sufficient; ++dim )
+    for( ::std::size_t dim = 0; ( dim < ::std::extents< SizeType, Extents ... >::rank() ) && sufficient; ++dim )
     {
       // Set to false if size is not large enough
-      sufficient = ( extents.extent( dim ) >= other_extents.extent( dim ) );
+      sufficient = ( extents.extent( dim ) >= static_cast< SizeType >( other_extents.extent( dim ) ) );
     }
     return sufficient;
   }

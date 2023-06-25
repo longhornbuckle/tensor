@@ -58,34 +58,6 @@ using accessor_result_t = typename accessor_result< Tensor >::type;
 
 // Allocator result defines the resultant allocator of an unevaluated tensor expression.
 // It must be defined for any given unevaluated tensor expression.
-#ifdef LINALG_ENABLE_CONCEPTS
-template < class Tensor >
-  requires LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >
-struct allocator_result
-{
-  using type = ::std::allocator< typename ::std::remove_reference_t< Tensor >::value_type >;
-  [[nodiscard]] static inline constexpr type get_allocator( const Tensor&& ) noexcept { return type(); }
-};
-
-template < class Tensor >
-  requires ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > &&
-             LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< Tensor > > )
-struct allocator_result< Tensor >
-{
-  using type = typename ::std::remove_reference_t< Tensor >::allocator_type;
-  [[nodiscard]] static inline constexpr type get_allocator( const Tensor&& t ) noexcept
-  {
-    if constexpr ( ! ::std::is_rvalue_reference_v<Tensor> )
-    {
-      return ::std::allocator_traits< typename ::std::remove_reference_t< Tensor >::allocator_type >::select_on_container_copy_construction( t.get_allocator() );
-    }
-    else
-    {
-      return t.get_allocator();
-    }
-  }
-};
-#else
 template < class Tensor >
 struct allocator_result
 {
@@ -115,18 +87,36 @@ private:
     }
   };
 public:
-  using type = typename ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< Tensor > >,
+  using type = typename ::std::conditional_t< 
+                                              #ifdef LINALG_ENABLE_CONCEPTS
+                                              LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< Tensor > >,
+                                              #else
+                                              LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< Tensor > >,
+                                              #endif
                                               dynamic_helper< Tensor >,
-                                              ::std::conditional_t< LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > >,
+                                              ::std::conditional_t< 
+                                                                    #ifdef LINALG_ENABLE_CONCEPTS
+                                                                    LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > >,
+                                                                    #else
+                                                                    LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > >,
+                                                                    #endif
                                                                     default_helper< Tensor >,
                                                                     invalid_helper< Tensor > > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( const Tensor&& t ) noexcept
   {
+    #ifdef LINALG_ENABLE_CONCEPTS
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< Tensor > > )
+    #else
     if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< Tensor > > )
+    #endif
     {
       return dynamic_helper< Tensor >::get_allocator( ::std::forward< const Tensor >( t ) );
     }
+    #ifdef LINALG_ENABLE_CONCEPTS
+    else if constexpr ( LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< Tensor > > )
+    #else
     else if constexpr ( LINALG_CONCEPTS::tensor_expression_v< ::std::remove_reference_t< Tensor > > )
+    #endif
     {
       return default_helper< Tensor >::get_allocator( ::std::forward< const Tensor >( t ) );
     }
@@ -136,7 +126,6 @@ public:
     }
   }
 };
-#endif
 
 template < class Tensor >
 using allocator_result_t = typename allocator_result< Tensor >::type;

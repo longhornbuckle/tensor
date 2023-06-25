@@ -15,6 +15,19 @@ LINALG_EXPRESSIONS_DETAIL_BEGIN // expressions detail namespace
 template < class Tensor, class Traits >
 class binary_tensor_expression_base;
 
+LINALG_EXPRESSIONS_DETAIL_END // expressions detail namespace
+
+LINALG_BEGIN // linalg namespace
+
+template < class Tensor, class Traits >
+struct is_alias_assignable< LINALG_EXPRESSIONS_DETAIL::binary_tensor_expression_base< Tensor, Traits > > :
+  public is_alias_assignable< Tensor > { };
+
+LINALG_END // linalg namespace
+
+LINALG_EXPRESSIONS_DETAIL_BEGIN // expressions detail namespace
+
+
 #ifdef LINALG_ENABLE_CONCEPTS
 template < template < class, class > class BTE,
                                      class FirstTensor,
@@ -68,6 +81,11 @@ class binary_tensor_expression_base< BTE< FirstTensor, SecondTensor, Enable >, T
     #endif
       { return static_cast< const expression_type* >(this)->operator()( indices ... ); }
     #endif
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( this->BTE< FirstTensor, SecondTensor >::conversion_is_noexcept() )
+    {
+      return this->BTE< FirstTensor, SecondTensor >::evaluate();
+    }
 };
 
 LINALG_EXPRESSIONS_DETAIL_END // expressions detail namespace

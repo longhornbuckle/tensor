@@ -1793,12 +1793,12 @@ namespace
     LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
     // Multiply the matrices
     auto prod_matrix { matrix_a * matrix_b };
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
     auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
     auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
     auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -1837,12 +1837,12 @@ namespace
     LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
     // Multiply the matrices
     auto prod_matrix { matrix_a * matrix_b };
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
     auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
     auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
     auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -1881,12 +1881,12 @@ namespace
     LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
     // Multiply the matrices
     auto prod_matrix { matrix_a * matrix_b };
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
     auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
     auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
     auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -1934,12 +1934,12 @@ namespace
     auto submatrix_b = submatrix( matrix_b, ::std::tuple(0,3), ::std::tuple(0,2) );
     // Multiply the matrices
     auto prod_matrix { submatrix_a * submatrix_b };
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
     auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
     auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
     auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -1956,7 +1956,7 @@ namespace
     EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( submatrix_b ) ) );
   }
 
-  TEST( MATRIX_PRODUCT, TENSOR_VIEW_FS_TENSOR )
+  TEST( MATRIX_PRODUCT, MATRIX_VIEW_FS_MATRIX )
   {
     // Construct
     LINALG::dyn_matrix< double > matrix_a { ::std::extents< ::std::size_t, 3, 3 >() };
@@ -1983,12 +1983,12 @@ namespace
     LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
     // Multiply the matrices
     auto prod_matrix { submatrix_a * matrix_b };
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
     auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
     auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
     auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -2005,7 +2005,7 @@ namespace
     EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( matrix_b ) ) );
   }
 
-  TEST( MATRIX_PRODUCT_ASSIGNMENT, DR_TENSOR_DR_TENSOR )
+  TEST( MATRIX_PRODUCT_ASSIGNMENT, DR_MATRIX_DR_MATRIX )
   {
     using matrix_type = LINALG::dyn_matrix< double >;
     // Construct
@@ -2028,12 +2028,12 @@ namespace
     LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
     // Multiply the matrices
     matrix_a *= matrix_b;
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( matrix_a, 0, 0 );
     auto val2 = LINALG_DETAIL::access( matrix_a, 0, 1 );
     auto val3 = LINALG_DETAIL::access( matrix_a, 1, 0 );
     auto val4 = LINALG_DETAIL::access( matrix_a, 1, 1 );
-    // Check the tensors were added properly
+    // Check the tensors were multiplied properly
     EXPECT_EQ( val1, 14.0 );
     EXPECT_EQ( val2, 32.0 );
     EXPECT_EQ( val3, 32.0 );
@@ -2047,7 +2047,7 @@ namespace
     EXPECT_EQ( ( matrix_a.extents().extent(1) ), 2 );
   }
 
-  TEST( MATRIX_PRODUCT_ASSIGNMENT, FS_TENSOR_DR_TENSOR )
+  TEST( MATRIX_PRODUCT_ASSIGNMENT, FS_MATRIX_DR_MATRIX )
   {
     // Construct
     LINALG::fs_matrix< double, 2, 2 > matrix_a { };
@@ -2065,16 +2065,16 @@ namespace
     LINALG_DETAIL::access( matrix_b, 1, 1 ) = 4.0;
     // Multiply the matrices
     matrix_a *= matrix_b;
-    // Access elements from addition expression
+    // Access elements from product expression
     auto val1 = LINALG_DETAIL::access( matrix_a, 0, 0 );
     auto val2 = LINALG_DETAIL::access( matrix_a, 0, 1 );
     auto val3 = LINALG_DETAIL::access( matrix_a, 1, 0 );
     auto val4 = LINALG_DETAIL::access( matrix_a, 1, 1 );
-    // Check the tensors were added properly
-    EXPECT_EQ( val1, 9.0 );
-    EXPECT_EQ( val2, 12.0 );
-    EXPECT_EQ( val3, 24.0 );
-    EXPECT_EQ( val4, 33.0 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 7.0 );
+    EXPECT_EQ( val2, 10.0 );
+    EXPECT_EQ( val3, 15.0 );
+    EXPECT_EQ( val4, 22.0 );
     // Check rank
     EXPECT_EQ( ( matrix_a.rank() ), 2 );
     // Check extents
@@ -2082,6 +2082,652 @@ namespace
     EXPECT_EQ( ( matrix_a.extent(1) ), 2 );
     EXPECT_EQ( ( matrix_a.extents().extent(0) ), 2 );
     EXPECT_EQ( ( matrix_a.extents().extent(1) ), 2 );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT, DR_VECTOR_DR_MATRIX )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    vector_type vector_a{ ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    matrix_type matrix_b { ::std::extents< ::std::size_t, 3, 2 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 2, 0 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 4.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
+    // Multiply the vector and matrix
+    auto prod_vector { vector_a * matrix_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( matrix_b ) ) );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT, FS_VECTOR_FS_MATRIX )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    using matrix_type = LINALG::fs_matrix< double, 3, 2 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    matrix_type matrix_b { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 2, 0 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 4.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
+    // Multiply the vector and matrix
+    auto prod_vector { vector_a * matrix_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( matrix_b ) ) );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT, FS_VECTOR_DR_MATRIX )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    matrix_type matrix_b { ::std::extents< ::std::size_t, 3, 2 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 2, 0 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 4.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
+    // Multiply the vector and matrix
+    auto prod_vector { vector_a * matrix_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( matrix_b ) ) );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT, VECTOR_VIEW_MATRIX_VIEW )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    vector_type vector_a{ ::std::extents< ::std::size_t, 4 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    LINALG_DETAIL::access( vector_a, 3 ) = 4.0;
+    // Get view
+    auto subvector_a = subvector( vector_a, ::std::tuple(0,3) );
+    // Construct
+    matrix_type matrix_b { ::std::extents< ::std::size_t, 3, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 2, 0 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 4.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
+    LINALG_DETAIL::access( matrix_b, 0, 2 ) = 7.0;
+    LINALG_DETAIL::access( matrix_b, 1, 2 ) = 8.0;
+    LINALG_DETAIL::access( matrix_b, 2, 2 ) = 9.0;
+    // Get view
+    auto submatrix_b = submatrix( matrix_b, ::std::full_extent, ::std::tuple(0,2) );
+    // Multiply the vector and matrix
+    auto prod_vector { subvector_a * submatrix_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( subvector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( submatrix_b ) ) );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT_ASSIGNMENT, DR_VECTOR_DR_MATRIX )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    vector_type vector_a { ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    matrix_type matrix_b { ::std::extents< ::std::size_t, 3, 2 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 2, 0 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 4.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_b, 2, 1 ) = 6.0;
+    // Multiply the vector and matrix
+    vector_a *= matrix_b;
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( vector_a, 0 );
+    auto val2 = LINALG_DETAIL::access( vector_a, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check extents
+    EXPECT_EQ( ( vector_a.extent(0) ), 2 );
+    EXPECT_EQ( ( vector_a.extents().extent(0) ), 2 );
+  }
+
+  TEST( VECTOR_MATRIX_PRODUCT_ASSIGNMENT, FS_VECTOR_FS_MATRIX )
+  {
+    using vector_type = LINALG::fs_vector< double, 2 >;
+    using matrix_type = LINALG::fs_matrix< double, 2, 2 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    // Construct
+    matrix_type matrix_b { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_b, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_b, 1, 0 ) = 2.0;
+    LINALG_DETAIL::access( matrix_b, 0, 1 ) = 3.0;
+    LINALG_DETAIL::access( matrix_b, 1, 1 ) = 4.0;
+    // Multiply the vector and matrix
+    vector_a *= matrix_b;
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( vector_a, 0 );
+    auto val2 = LINALG_DETAIL::access( vector_a, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 5.0 );
+    EXPECT_EQ( val2, 11.0 );
+  }
+
+  TEST( MATRIX_VECTOR_PRODUCT, DR_MATRIX_DR_VECTOR )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    matrix_type matrix_a { ::std::extents< ::std::size_t, 2, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_a, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_a, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( matrix_a, 0, 2 ) = 3.0;
+    LINALG_DETAIL::access( matrix_a, 1, 0 ) = 4.0;
+    LINALG_DETAIL::access( matrix_a, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_a, 1, 2 ) = 6.0;
+    // Construct
+    vector_type vector_b{ ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and matrix
+    auto prod_vector { matrix_a * vector_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( matrix_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( MATRIX_VECTOR_PRODUCT, FS_MATRIX_FS_VECTOR )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    using matrix_type = LINALG::fs_matrix< double, 2, 3 >;
+    // Construct
+    matrix_type matrix_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_a, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_a, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( matrix_a, 0, 2 ) = 3.0;
+    LINALG_DETAIL::access( matrix_a, 1, 0 ) = 4.0;
+    LINALG_DETAIL::access( matrix_a, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_a, 1, 2 ) = 6.0;
+    // Construct
+    vector_type vector_b{ };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and matrix
+    auto prod_vector { matrix_a * vector_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( matrix_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( MATRIX_VECTOR_PRODUCT, DR_MATRIX_FS_VECTOR )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    matrix_type matrix_a { ::std::extents< ::std::size_t, 2, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_a, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_a, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( matrix_a, 0, 2 ) = 3.0;
+    LINALG_DETAIL::access( matrix_a, 1, 0 ) = 4.0;
+    LINALG_DETAIL::access( matrix_a, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_a, 1, 2 ) = 6.0;
+    // Construct
+    vector_type vector_b{ };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and matrix
+    auto prod_vector { matrix_a * vector_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( matrix_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( MATRIX_VECTOR_PRODUCT, MATRIX_VIEW_VECTOR_VIEW )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    using matrix_type = LINALG::dyn_matrix< double >;
+    // Construct
+    vector_type vector_b { ::std::extents< ::std::size_t, 4 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    LINALG_DETAIL::access( vector_b, 3 ) = 4.0;
+    // Get view
+    auto subvector_b = subvector( vector_b, ::std::tuple(0,3) );
+    // Construct
+    matrix_type matrix_a { ::std::extents< ::std::size_t, 3, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( matrix_a, 0, 0 ) = 1.0;
+    LINALG_DETAIL::access( matrix_a, 0, 1 ) = 2.0;
+    LINALG_DETAIL::access( matrix_a, 0, 2 ) = 3.0;
+    LINALG_DETAIL::access( matrix_a, 1, 0 ) = 4.0;
+    LINALG_DETAIL::access( matrix_a, 1, 1 ) = 5.0;
+    LINALG_DETAIL::access( matrix_a, 1, 2 ) = 6.0;
+    LINALG_DETAIL::access( matrix_a, 2, 0 ) = 7.0;
+    LINALG_DETAIL::access( matrix_a, 2, 1 ) = 8.0;
+    LINALG_DETAIL::access( matrix_a, 2, 2 ) = 9.0;
+    // Get view
+    auto submatrix_a = submatrix( matrix_a, ::std::tuple(0,2), ::std::full_extent );
+    // Multiply the matrix and vector
+    auto prod_vector { submatrix_a * subvector_b };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_vector, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_vector, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 14.0 );
+    EXPECT_EQ( val2, 32.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_vector.rank() ), 1 );
+    // Check extents
+    EXPECT_EQ( ( prod_vector.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_vector.extents().extent(0) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_vector.first() ) ), ( ::std::addressof( submatrix_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_vector.second() ) ), ( ::std::addressof( subvector_b ) ) );
+  }
+
+  TEST( OUTER_PRODUCT, DR_VECTOR_DR_VECTOR )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    // Construct
+    vector_type vector_a { ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    vector_type vector_b{ ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto prod_matrix { outer_prod( vector_a, vector_b ) };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( prod_matrix, 0, 2 );
+    auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
+    auto val5 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
+    auto val6 = LINALG_DETAIL::access( prod_matrix, 1, 2 );
+    auto val7 = LINALG_DETAIL::access( prod_matrix, 2, 0 );
+    auto val8 = LINALG_DETAIL::access( prod_matrix, 2, 1 );
+    auto val9 = LINALG_DETAIL::access( prod_matrix, 2, 2 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 1.0 );
+    EXPECT_EQ( val2, 2.0 );
+    EXPECT_EQ( val3, 3.0 );
+    EXPECT_EQ( val4, 2.0 );
+    EXPECT_EQ( val5, 4.0 );
+    EXPECT_EQ( val6, 6.0 );
+    EXPECT_EQ( val7, 3.0 );
+    EXPECT_EQ( val8, 6.0 );
+    EXPECT_EQ( val9, 9.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_matrix.rank() ), 2 );
+    // Check extents
+    EXPECT_EQ( ( prod_matrix.extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extent(1) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(1) ), 3 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( OUTER_PRODUCT, FS_VECTOR_FS_VECTOR )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    vector_type vector_b {  };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto prod_matrix { outer_prod( vector_a, vector_b ) };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( prod_matrix, 0, 2 );
+    auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
+    auto val5 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
+    auto val6 = LINALG_DETAIL::access( prod_matrix, 1, 2 );
+    auto val7 = LINALG_DETAIL::access( prod_matrix, 2, 0 );
+    auto val8 = LINALG_DETAIL::access( prod_matrix, 2, 1 );
+    auto val9 = LINALG_DETAIL::access( prod_matrix, 2, 2 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 1.0 );
+    EXPECT_EQ( val2, 2.0 );
+    EXPECT_EQ( val3, 3.0 );
+    EXPECT_EQ( val4, 2.0 );
+    EXPECT_EQ( val5, 4.0 );
+    EXPECT_EQ( val6, 6.0 );
+    EXPECT_EQ( val7, 3.0 );
+    EXPECT_EQ( val8, 6.0 );
+    EXPECT_EQ( val9, 9.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_matrix.rank() ), 2 );
+    // Check extents
+    EXPECT_EQ( ( prod_matrix.extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extent(1) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(1) ), 3 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( OUTER_PRODUCT, DR_VECTOR_FS_VECTOR )
+  {
+    // Construct
+    LINALG::fs_vector< double, 3 > vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    LINALG::dyn_vector< double > vector_b { 3 };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto prod_matrix { outer_prod( vector_a, vector_b ) };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( prod_matrix, 0, 2 );
+    auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
+    auto val5 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
+    auto val6 = LINALG_DETAIL::access( prod_matrix, 1, 2 );
+    auto val7 = LINALG_DETAIL::access( prod_matrix, 2, 0 );
+    auto val8 = LINALG_DETAIL::access( prod_matrix, 2, 1 );
+    auto val9 = LINALG_DETAIL::access( prod_matrix, 2, 2 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 1.0 );
+    EXPECT_EQ( val2, 2.0 );
+    EXPECT_EQ( val3, 3.0 );
+    EXPECT_EQ( val4, 2.0 );
+    EXPECT_EQ( val5, 4.0 );
+    EXPECT_EQ( val6, 6.0 );
+    EXPECT_EQ( val7, 3.0 );
+    EXPECT_EQ( val8, 6.0 );
+    EXPECT_EQ( val9, 9.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_matrix.rank() ), 2 );
+    // Check extents
+    EXPECT_EQ( ( prod_matrix.extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extent(1) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(0) ), 3 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(1) ), 3 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.first() ) ), ( ::std::addressof( vector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( vector_b ) ) );
+  }
+
+  TEST( OUTER_PRODUCT, VECTOR_VIEW_VECTOR_VIEW )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Get subvector
+    auto subvector_a = subvector( vector_a, ::std::tuple(0,2) );
+    // Construct
+    vector_type vector_b {  };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Get subvector
+    auto subvector_b = subvector( vector_b, ::std::tuple(0,2) );
+    // Multiply the vector and vector
+    auto prod_matrix { outer_prod( subvector_a, subvector_b ) };
+    // Access elements from product expression
+    auto val1 = LINALG_DETAIL::access( prod_matrix, 0, 0 );
+    auto val2 = LINALG_DETAIL::access( prod_matrix, 0, 1 );
+    auto val3 = LINALG_DETAIL::access( prod_matrix, 1, 0 );
+    auto val4 = LINALG_DETAIL::access( prod_matrix, 1, 1 );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val1, 1.0 );
+    EXPECT_EQ( val2, 2.0 );
+    EXPECT_EQ( val3, 2.0 );
+    EXPECT_EQ( val4, 4.0 );
+    // Check rank
+    EXPECT_EQ( ( prod_matrix.rank() ), 2 );
+    // Check extents
+    EXPECT_EQ( ( prod_matrix.extent(0) ), 2 );
+    EXPECT_EQ( ( prod_matrix.extent(1) ), 2 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(0) ), 2 );
+    EXPECT_EQ( ( prod_matrix.extents().extent(1) ), 2 );
+    // Check underlying types
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.first() ) ), ( ::std::addressof( subvector_a ) ) );
+    EXPECT_EQ( ( ::std::addressof( prod_matrix.second() ) ), ( ::std::addressof( subvector_b ) ) );
+  }
+
+  TEST( INNER_PRODUCT, DR_VECTOR_DR_VECTOR )
+  {
+    using vector_type = LINALG::dyn_vector< double >;
+    // Construct
+    vector_type vector_a { ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    vector_type vector_b{ ::std::extents< ::std::size_t, 3 >() };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto val = inner_prod( vector_a, vector_b );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val, 14.0 );
+  }
+
+  TEST( INNER_PRODUCT, FS_VECTOR_FS_VECTOR )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    vector_type vector_b {  };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto val = inner_prod( vector_a, vector_b );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val, 14.0 );
+  }
+
+  TEST( INNER_PRODUCT, DR_VECTOR_FS_VECTOR )
+  {
+    // Construct
+    LINALG::fs_vector< double, 3 > vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Construct
+    LINALG::dyn_vector< double > vector_b { 3 };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Multiply the vector and vector
+    auto val = inner_prod( vector_a, vector_b );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val, 14.0 );
+  }
+
+  TEST( INNER_PRODUCT, VECTOR_VIEW_VECTOR_VIEW )
+  {
+    using vector_type = LINALG::fs_vector< double, 3 >;
+    // Construct
+    vector_type vector_a { };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_a, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_a, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_a, 2 ) = 3.0;
+    // Get subvector
+    auto subvector_a = subvector( vector_a, ::std::tuple(0,2) );
+    // Construct
+    vector_type vector_b {  };
+    // Populate via mutable index access
+    LINALG_DETAIL::access( vector_b, 0 ) = 1.0;
+    LINALG_DETAIL::access( vector_b, 1 ) = 2.0;
+    LINALG_DETAIL::access( vector_b, 2 ) = 3.0;
+    // Get subvector
+    auto subvector_b = subvector( vector_b, ::std::tuple(0,2) );
+    // Multiply the vector and vector
+    auto val = inner_prod( subvector_a, subvector_b );
+    // Check the tensors were multiplied properly
+    EXPECT_EQ( val, 5.0 );
   }
 
 }

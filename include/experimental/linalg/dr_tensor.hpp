@@ -132,7 +132,7 @@ class dr_tensor
     /// @param il initializer list of elements to be copied
     /// @param alloc allocator to be used
     #ifdef LINALG_ENABLE_CONCEPTS
-    explicit constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() )
+    constexpr dr_tensor( const ::std::initializer_list<value_type>& il, const allocator_type& alloc = allocator_type() )
       requires ( extents_type::rank_dynamic() == 0 );
     #else
     template < typename Enable >
@@ -303,7 +303,7 @@ class dr_tensor
     [[nodiscard]] constexpr size_type max_size() const noexcept;
     /// @brief Returns the current capacity of (rows,columns,depth,etc.)
     /// @return capacity of (rows,columns,depth,etc.)
-    [[nodiscard]] constexpr extents_type capacity() const noexcept;
+    [[nodiscard]] constexpr capacity_extents_type capacity() const noexcept;
     /// @tparam OtherSizeType size_type of input size
     /// @tparam OtherExtents extents of the input size
     /// @brief Attempts to resize the dr_tensor to the input extents
@@ -493,6 +493,7 @@ template < class T, class Extents, class LayoutPolicy, class CapExtents, class A
 LINALG_CONSTEXPR_DESTRUCTOR dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::~dr_tensor()
   noexcept( ::std::is_nothrow_destructible_v< typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::element_type > )
 {
+  static_assert( LINALG_CONCEPTS::dynamic_tensor< self_type > );
   // If the elements pointer has been set, then destroy and deallocate
   if ( this->tm_.data() ) LINALG_LIKELY
   {
@@ -1053,7 +1054,7 @@ dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::max_size(
 }
 
 template < class T, class Extents, class LayoutPolicy, class CapExtents, class Allocator, class AccessorPolicy >
-[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::extents_type
+[[nodiscard]] constexpr typename dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::capacity_extents_type
 dr_tensor<T,Extents,LayoutPolicy,CapExtents,Allocator,AccessorPolicy>::capacity() const noexcept
 {
   return this->cap_map_.extents();

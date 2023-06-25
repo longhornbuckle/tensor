@@ -54,20 +54,20 @@ template < class FirstTensor, class SecondTensor >
              LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondTensor > > )
 struct allocator_result< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >
 {
-  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().first() ) > > ||
-                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().second() ) > >,
-                                                                decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().first() ),
-                                                                decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().second() ) > >::type;
+  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< FirstTensor > > ||
+                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< SecondTensor > >,
+                                                                FirstTensor,
+                                                                SecondTensor > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( const LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor >& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().first() ) > > ||
-                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().second() ) > > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< FirstTensor > > ||
+                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< SecondTensor > > )
     {
-      return allocator_result< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().first() ) >::get_allocator( t.first() );
+      return allocator_result< FirstTensor >::get_allocator( t.first() );
     }
     else
     {
-      return allocator_result< decltype( ::std::declval< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor > >().second() ) >::get_allocator( t.second() );
+      return allocator_result< SecondTensor >::get_allocator( t.second() );
     }
   }
 };
@@ -80,20 +80,20 @@ struct allocator_result< LINALG_EXPRESSIONS::addition_tensor_expression< FirstTe
 private:
   using T = LINALG_EXPRESSIONS::addition_tensor_expression< FirstTensor, SecondTensor, Enable >;
 public:
-  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
-                                                                  ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > >,
-                                                                decltype( ::std::declval< T >().first() ),
-                                                                decltype( ::std::declval< T >().second() ) > >::type;
+  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< FirstTensor > > ||
+                                                                  ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< SecondTensor > >,
+                                                                FirstTensor,
+                                                                SecondTensor > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( const T& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
-                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< FirstTensor > > ||
+                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< SecondTensor > > )
     {
-      return allocator_result< decltype( ::std::declval< T >().first() ) >::get_allocator( t.first() );
+      return allocator_result< FirstTensor >::get_allocator( t.first() );
     }
     else
     {
-      return allocator_result< decltype( ::std::declval< T >().second() ) >::get_allocator( t.second() );
+      return allocator_result< SecondTensor >::get_allocator( t.second() );
     }
   }
 };
@@ -315,17 +315,6 @@ class addition_tensor_expression :
     };
   public:
     using evaluated_type = typename helper< self_type, ( extents_type::rank_dynamic() == 0 ) >::type;
-    // using evaluated_type = ::std::conditional_t< ( extents_type::rank_dynamic() == 0 ),
-    //                                              LINALG::fs_tensor< value_type,
-    //                                                                 extents_type,
-    //                                                                 LINALG::layout_result_t< self_type >,
-    //                                                                 LINALG::accessor_result_t< self_type > >,
-    //                                              LINALG::dr_tensor< value_type,
-    //                                                                 extents_type,
-    //                                                                 LINALG::layout_result_t< self_type >,
-    //                                                                 extents_type,
-    //                                                                 typename ::std::allocator_traits< LINALG::allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-    //                                                                 LINALG::accessor_result_t< self_type > > >;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< FirstTensor >::rank(); }
     [[nodiscard]] constexpr extents_type extents() const noexcept { if constexpr ( ( ::std::remove_reference_t< FirstTensor >::extents_type::rank_dynamic() == 0 ) || ( ::std::remove_reference_t< SecondTensor >::extents_type::rank_dynamic() != 0 ) ) { return this->t1_.extents(); } else { return this->t2_.extents(); } }
@@ -379,6 +368,11 @@ class addition_tensor_expression :
         return evaluated_type( *static_cast< const base_type* >( this ), LINALG::allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
     }
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( conversion_is_noexcept() )
+    {
+      return evaluated_type( *this );
+    }
   private:
     // Data
     FirstTensor&  t1_;
@@ -426,7 +420,6 @@ operator += ( T1& t1, const T2& t2 ) noexcept
              ::std::is_assignable_v< T1&, LINALG_EXPRESSIONS::addition_tensor_expression< T1&, const T2& > > )
 #endif
 {
-  static_assert( LINALG_CONCEPTS::unevaluated_tensor_expression< LINALG_EXPRESSIONS::addition_tensor_expression< T1&, const T2& > > );
   return t1 = LINALG_EXPRESSIONS::addition_tensor_expression< T1&, const T2& >( t1, t2 );
 }
 

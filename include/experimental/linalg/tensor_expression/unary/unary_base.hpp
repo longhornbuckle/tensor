@@ -15,6 +15,18 @@ LINALG_EXPRESSIONS_DETAIL_BEGIN // expressions detail namespace
 template < class Tensor, class Traits >
 class unary_tensor_expression_base;
 
+LINALG_EXPRESSIONS_DETAIL_END // expressions detail namespace
+
+LINALG_BEGIN // linalg namespace
+
+template < class Tensor, class Traits >
+struct is_alias_assignable< LINALG_EXPRESSIONS_DETAIL::unary_tensor_expression_base< Tensor, Traits > > :
+  public is_alias_assignable< Tensor > { };
+
+LINALG_END // linalg namespace
+
+LINALG_EXPRESSIONS_DETAIL_BEGIN // expressions detail namespace
+
 #ifdef LINALG_ENABLE_CONCEPTS
 template < template < class > class UTE,
                               class Tensor,
@@ -65,6 +77,11 @@ class unary_tensor_expression_base< UTE< Tensor, Enable >, Traits >
     #endif
       { return static_cast< const expression_type* >(this)->operator()( indices ... ); }
     #endif
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( this->UTE< Tensor >::conversion_is_noexcept() )
+    {
+      return this->UTE< Tensor >::evaluate();
+    }
 };
 
 #ifdef LINALG_ENABLE_CONCEPTS
@@ -119,6 +136,11 @@ class unary_tensor_expression_base< UTE< Tensor, Param, Enable >, Traits >
     #endif
       { return static_cast< const expression_type* >(this)->operator()( indices ... ); }
     #endif
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( this->UTE< Tensor, Param >::conversion_is_noexcept() )
+    {
+      return this->UTE< Tensor, Param >::evaluate();
+    }
 };
 
 LINALG_EXPRESSIONS_DETAIL_END // expressions namespace

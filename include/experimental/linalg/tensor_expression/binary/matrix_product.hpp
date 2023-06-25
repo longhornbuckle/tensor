@@ -28,7 +28,7 @@ template < class FirstMatrix, class SecondMatrix >
 struct accessor_result< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >
 {
   using type = rebind_accessor_t< typename ::std::remove_reference_t< FirstMatrix >::accessor_type,
-                                  decltype( ::std::declval< typename ::std::remove_reference_t< FirstMatrix >::value_type >() + ::std::declval< typename ::std::remove_reference_t< SecondMatrix >::value_type >() ) >;
+                                  decltype( ::std::declval< typename ::std::remove_reference_t< FirstMatrix >::value_type >() * ::std::declval< typename ::std::remove_reference_t< SecondMatrix >::value_type >() ) >;
 };
 
 #else
@@ -37,7 +37,7 @@ template < class FirstMatrix, class SecondMatrix, class Enable >
 struct accessor_result< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix, Enable > >
 {
   using type = rebind_accessor_t< typename ::std::remove_reference_t< FirstMatrix >::accessor_type,
-                                  decltype( ::std::declval< typename ::std::remove_reference_t< FirstMatrix >::value_type >() + ::std::declval< typename ::std::remove_reference_t< SecondMatrix >::value_type >() ) >;
+                                  decltype( ::std::declval< typename ::std::remove_reference_t< FirstMatrix >::value_type >() * ::std::declval< typename ::std::remove_reference_t< SecondMatrix >::value_type >() ) >;
 };
 
 #endif
@@ -53,20 +53,20 @@ template < class FirstMatrix, class SecondMatrix >
              LINALG_CONCEPTS::tensor_expression< ::std::remove_reference_t< SecondMatrix > > )
 struct allocator_result< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >
 {
-  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().first() ) > > ||
-                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().second() ) > >,
-                                                                decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().first() ),
-                                                                decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().second() ) > >::type;
+  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< FirstMatrix > > ||
+                                                                  ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< SecondMatrix > >,
+                                                                FirstMatrix,
+                                                                SecondMatrix > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( const LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix >& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().first() ) > > ||
-                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::decay_t< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().second() ) > > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< FirstMatrix > > ||
+                   ! LINALG_CONCEPTS::dynamic_tensor< ::std::remove_reference_t< SecondMatrix > > )
     {
-      return allocator_result< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().first() ) >::get_allocator( t.first() );
+      return allocator_result< FirstMatrix >::get_allocator( t.first() );
     }
     else
     {
-      return allocator_result< decltype( ::std::declval< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix > >().second() ) >::get_allocator( t.second() );
+      return allocator_result< SecondMatrix >::get_allocator( t.second() );
     }
   }
 };
@@ -77,22 +77,22 @@ template < class FirstMatrix, class SecondMatrix, class Enable >
 struct allocator_result< LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix, Enable > >
 {
 private:
-  using T = LINALG_EXPRESSIONS::addition_tensor_expression< FirstMatrix, SecondMatrix, Enable >;
+  using T = LINALG_EXPRESSIONS::matrix_product_expression< FirstMatrix, SecondMatrix, Enable >;
 public:
-  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
-                                                                  ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > >,
-                                                                decltype( ::std::declval< T >().first() ),
-                                                                decltype( ::std::declval< T >().second() ) > >::type;
+  using type = typename allocator_result< ::std::conditional_t< LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< FirstMatrix > > ||
+                                                                  ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< SecondMatrix > >,
+                                                                FirstMatrix,
+                                                                SecondMatrix > >::type;
   [[nodiscard]] static inline constexpr type get_allocator( const T& t ) noexcept
   {
-    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().first() ) > > ||
-                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::decay_t< decltype( ::std::declval< T >().second() ) > > )
+    if constexpr ( LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< FirstMatrix > > ||
+                    ! LINALG_CONCEPTS::dynamic_tensor_v< ::std::remove_reference_t< SecondMatrix > > )
     {
-      return allocator_result< decltype( ::std::declval< T >().first() ) >::get_allocator( t.first() );
+      return allocator_result< FirstMatrix >::get_allocator( t.first() );
     }
     else
     {
-      return allocator_result< decltype( ::std::declval< T >().second() ) >::get_allocator( t.second() );
+      return allocator_result< SecondMatrix >::get_allocator( t.second() );
     }
   }
 };
@@ -273,17 +273,27 @@ class matrix_product_expression :
     using size_type      = typename traits_type::size_type;
     using extents_type   = typename traits_type::extents_type;
     using rank_type      = typename traits_type::rank_type;
-    using evaluated_type = ::std::conditional_t< ( extents_type::rank_dynamic() == 0 ),
-                                                 LINALG::fs_tensor< value_type,
-                                                                    extents_type,
-                                                                    LINALG::layout_result_t< self_type >,
-                                                                    LINALG::accessor_result_t< self_type > >,
-                                                 LINALG::dr_tensor< value_type,
-                                                                    extents_type,
-                                                                    LINALG::layout_result_t< self_type >,
-                                                                    extents_type,
-                                                                    typename ::std::allocator_traits< LINALG::allocator_result_t< self_type > >::template rebind_alloc< value_type >,
-                                                                    LINALG::accessor_result_t< self_type > > >;
+  private:
+    template < class T, bool >
+    struct helper
+    {
+      using type = LINALG::fs_tensor< typename T::value_type,
+                                      typename T::extents_type,
+                                      LINALG::layout_result_t< T >,
+                                      LINALG::accessor_result_t< T > >;
+    };
+    template < class T >
+    struct helper< T, false >
+    {
+      using type = LINALG::dr_tensor< typename T::value_type,
+                                      typename T::extents_type,
+                                      LINALG::layout_result_t< T >,
+                                      typename T::extents_type,
+                                      typename ::std::allocator_traits< LINALG::allocator_result_t< T > >::template rebind_alloc< typename T::value_type >,
+                                      LINALG::accessor_result_t< T > >;
+    };
+  public:
+    using evaluated_type = typename helper< self_type, ( extents_type::rank_dynamic() == 0 ) >::type;
     // Tensor expression functions
     [[nodiscard]] static constexpr rank_type rank() noexcept { return ::std::remove_reference_t< FirstMatrix >::rank(); }
     [[nodiscard]] constexpr extents_type extents() const noexcept { return extents_type( this->m1_.extent(0), this->m2_.extent(1) ); }
@@ -359,6 +369,11 @@ class matrix_product_expression :
         return evaluated_type( *static_cast< const base_type* >( this ), LINALG::allocator_result< self_type >::get_allocator( ::std::forward< const self_type >( *this ) ) );
       }
     }
+    // Evaluated expression
+    [[nodiscard]] constexpr LINALG_FORCE_INLINE_FUNCTION auto evaluate() const noexcept( conversion_is_noexcept() )
+    {
+      return evaluated_type( *this );
+    }
   private:
     // Data
     FirstMatrix&  m1_;
@@ -402,7 +417,7 @@ template < class M1, class M2 >
 #else
 template < class M1, class M2,
            typename = ::std::enable_if_t< ( ::std::is_constructible_v< LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& >, M1&, const M2& > &&
-                                            ::std::is_assignable_v< TM&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > ) >,
+                                            ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > ) >,
            typename = ::std::enable_if_t< true >,
            typename = ::std::enable_if_t< true > >
 #endif
@@ -413,7 +428,6 @@ operator *= ( M1& m1, const M2& m2 ) noexcept
              ::std::is_assignable_v< M1&, LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > )
 #endif
 {
-  static_assert( LINALG_CONCEPTS::unevaluated_tensor_expression< LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& > > );
   return m1 = LINALG_EXPRESSIONS::matrix_product_expression< M1&, const M2& >( m1, m2 );
 }
 
